@@ -1,14 +1,15 @@
 import logging
 
+from api.schemas import customer as customer_schema
+from api.utils import auth, hashing
+from database.session import get_db
 from fastapi import APIRouter, Depends, HTTPException
+from models.customer import Customer
 from sqlalchemy.orm import Session
 
-from ...database.session import get_db
-from ...models.customer import Customer
-from ..schemas import customer as customer_schema
-from ..utils import auth, hashing
-
 router = APIRouter()
+
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

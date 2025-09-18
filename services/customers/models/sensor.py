@@ -1,7 +1,6 @@
+from database.session import Base
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
-from ..database.session import Base
 
 
 class Sensor(Base):
