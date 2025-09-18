@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from ..database.session import Base
-from .room import Room
 
 
 class Customer(Base):
