@@ -7,7 +7,7 @@ class CustomerBase(BaseModel):
 
     @field_validator("username")
     def validate_username(cls, usr: str) -> str:
-        if len(usr) < 6 and len(usr) > 12:
+        if len(usr) < 6 or len(usr) > 12:
             raise ValueError(
                 f"Username must be between 6 and 12 caracters!. Got: {len(usr)}"
             )
