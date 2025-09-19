@@ -70,7 +70,7 @@ class TestCustomerRegistration:
 
     def test_register_customer_success(self, sample_customer_data):
         """Test successful customer registration."""
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -81,7 +81,7 @@ class TestCustomerRegistration:
 
     def test_register_duplicate_email(self, existing_customer, sample_customer_data):
         """Test registration with duplicate email should fail."""
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 400
         assert response.json()["detail"] == "Email already registered"
@@ -89,14 +89,14 @@ class TestCustomerRegistration:
     def test_register_invalid_email(self, sample_customer_data):
         """Test registration with invalid email format."""
         sample_customer_data["email"] = "invalid-email"
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 422  # Validation error
 
     def test_register_short_username(self, sample_customer_data):
         """Test registration with username too short."""
         sample_customer_data["username"] = "short"  # Less than 6 characters
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 422
         error_detail = response.json()["detail"][0]
@@ -105,7 +105,7 @@ class TestCustomerRegistration:
     def test_register_long_username(self, sample_customer_data):
         """Test registration with username too long."""
         sample_customer_data["username"] = "verylongusername"  # More than 12 characters
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 422
         error_detail = response.json()["detail"][0]
@@ -114,7 +114,7 @@ class TestCustomerRegistration:
     def test_register_weak_password_only_numbers(self, sample_customer_data):
         """Test registration with password containing only numbers."""
         sample_customer_data["password"] = "123456789"
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 422
         error_detail = response.json()["detail"][0]
@@ -123,7 +123,7 @@ class TestCustomerRegistration:
     def test_register_weak_password_only_letters(self, sample_customer_data):
         """Test registration with password containing only letters."""
         sample_customer_data["password"] = "onlyletters"
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 422
         error_detail = response.json()["detail"][0]
@@ -132,7 +132,7 @@ class TestCustomerRegistration:
     def test_register_short_password(self, sample_customer_data):
         """Test registration with password too short."""
         sample_customer_data["password"] = "short1"  # Less than 8 characters
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 422
         error_detail = response.json()["detail"][0]
@@ -141,13 +141,13 @@ class TestCustomerRegistration:
     def test_register_missing_fields(self):
         """Test registration with missing required fields."""
         incomplete_data = {"email": "test@example.com"}
-        response = client.post("/customers/register", json=incomplete_data)
+        response = client.post("api/v1/customers/register", json=incomplete_data)
 
         assert response.status_code == 422
 
     def test_register_empty_request(self):
         """Test registration with empty request body."""
-        response = client.post("/customers/register", json={})
+        response = client.post("api/v1/customers/register", json={})
 
         assert response.status_code == 422
 
@@ -161,7 +161,7 @@ class TestCustomerLogin:
             "email": sample_customer_data["email"],
             "password": sample_customer_data["password"],
         }
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -179,7 +179,7 @@ class TestCustomerLogin:
             "email": sample_customer_data["email"],
             "password": "wrongpassword123",
         }
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 401
         assert response.json()["detail"] == "Incorrect email or password"
@@ -187,7 +187,7 @@ class TestCustomerLogin:
     def test_login_nonexistent_user(self):
         """Test login with non-existent email."""
         login_data = {"email": "nonexistent@example.com", "password": "password123"}
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 401
         assert response.json()["detail"] == "Incorrect email or password"
@@ -195,28 +195,28 @@ class TestCustomerLogin:
     def test_login_invalid_email_format(self):
         """Test login with invalid email format."""
         login_data = {"email": "invalid-email", "password": "password123"}
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 422  # Validation error
 
     def test_login_missing_email(self):
         """Test login with missing email field."""
         login_data = {"password": "password123"}
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 422
 
     def test_login_missing_password(self):
         """Test login with missing password field."""
         login_data = {"email": "test@example.com"}
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 422
 
     def test_login_empty_credentials(self):
         """Test login with empty credentials."""
         login_data = {"email": "", "password": ""}
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 422
 
@@ -230,7 +230,7 @@ class TestTokenGeneration:
             "email": sample_customer_data["email"],
             "password": sample_customer_data["password"],
         }
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 200
         token = response.json()["access_token"]
@@ -255,7 +255,7 @@ class TestTokenGeneration:
             "email": sample_customer_data["email"],
             "password": sample_customer_data["password"],
         }
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 200
         mock_create_token.assert_called_once_with(
@@ -271,7 +271,7 @@ class TestPasswordHashing:
         """Test that password is hashed during registration."""
         mock_hash.return_value = "hashed_password"
 
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
 
         assert response.status_code == 200
         mock_hash.assert_called_once_with(sample_customer_data["password"])
@@ -287,7 +287,7 @@ class TestPasswordHashing:
             "email": sample_customer_data["email"],
             "password": sample_customer_data["password"],
         }
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 200
         mock_verify.assert_called_once()
@@ -298,7 +298,7 @@ class TestDatabaseInteraction:
 
     def test_customer_saved_to_database(self, sample_customer_data):
         """Test that customer is actually saved to database after registration."""
-        response = client.post("/customers/register", json=sample_customer_data)
+        response = client.post("api/v1/customers/register", json=sample_customer_data)
         assert response.status_code == 200
 
         # Check if customer exists in database
@@ -319,7 +319,7 @@ class TestDatabaseInteraction:
             "email": sample_customer_data["email"],
             "password": sample_customer_data["password"],
         }
-        response = client.post("/customers/login", json=login_data)
+        response = client.post("api/v1/customers/login", json=login_data)
 
         assert response.status_code == 200
         # If we get here, the database query worked correctly
@@ -331,7 +331,7 @@ class TestErrorHandling:
     def test_malformed_json_registration(self):
         """Test registration with malformed JSON."""
         response = client.post(
-            "/customers/register",
+            "api/v1/customers/register",
             data="invalid json",
             headers={"content-type": "application/json"},
         )
@@ -340,7 +340,7 @@ class TestErrorHandling:
     def test_malformed_json_login(self):
         """Test login with malformed JSON."""
         response = client.post(
-            "/customers/login",
+            "api/v1/customers/login",
             data="invalid json",
             headers={"content-type": "application/json"},
         )
@@ -349,7 +349,7 @@ class TestErrorHandling:
     def test_content_type_not_json(self, sample_customer_data):
         """Test endpoints with wrong content type."""
         response = client.post(
-            "/customers/register",
+            "api/v1/customers/register",
             data=json.dumps(sample_customer_data),
             headers={"content-type": "text/plain"},
         )
@@ -364,7 +364,7 @@ class TestIntegration:
         """Test complete flow: register a customer then login."""
         # Register customer
         register_response = client.post(
-            "/customers/register", json=sample_customer_data
+            "api/v1/customers/register", json=sample_customer_data
         )
         assert register_response.status_code == 200
 
@@ -373,7 +373,7 @@ class TestIntegration:
             "email": sample_customer_data["email"],
             "password": sample_customer_data["password"],
         }
-        login_response = client.post("/customers/login", json=login_data)
+        login_response = client.post("api/v1/customers/login", json=login_data)
         assert login_response.status_code == 200
 
         # Verify token is returned
@@ -402,7 +402,7 @@ class TestIntegration:
         ]
 
         for customer_data in customers:
-            response = client.post("/customers/register", json=customer_data)
+            response = client.post("api/v1/customers/register", json=customer_data)
             assert response.status_code == 200
 
             # Verify each can login
@@ -410,5 +410,5 @@ class TestIntegration:
                 "email": customer_data["email"],
                 "password": customer_data["password"],
             }
-            login_response = client.post("/customers/login", json=login_data)
+            login_response = client.post("api/v1/customers/login", json=login_data)
             assert login_response.status_code == 200

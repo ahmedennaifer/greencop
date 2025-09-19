@@ -3,7 +3,8 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-app.include_router(customer.router, prefix="/customers", tags=["customers"])
+
+app.include_router(customer.router, prefix="/api/v1/customers", tags=["customers"])
 
 
 @app.get("/health")
