@@ -4,7 +4,7 @@ from api.schemas import customer as customer_schema
 from api.utils import auth, hashing
 from database.session import get_db
 from fastapi import APIRouter, Depends, HTTPException
-from models.customer import Customer
+from database.models.customer import Customer
 from sqlalchemy.orm import Session
 
 router = APIRouter()

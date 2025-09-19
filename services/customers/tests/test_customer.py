@@ -6,7 +6,7 @@ from api.utils import hashing
 from database.session import Base, get_db
 from fastapi.testclient import TestClient
 from main import app
-from models.customer import Customer
+from database.models.customer import Customer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -23,7 +23,7 @@ def override_get_db():
         db = TestingSessionLocal()
         yield db
     finally:
-        db.close()
+        db.close()  # pyright: ignore
 
 
 app.dependency_overrides[get_db] = override_get_db
