@@ -11,7 +11,7 @@ class Customer(Base):
     password_hash = Column(String(120), nullable=False)
     email = Column(String(120), unique=True, nullable=False)
 
-    rooms = relationship("Room", back_populates="customer")
+    rooms = relationship("ServerRoom", back_populates="customer")
 
     def __repr__(self):
         return f"<Customer {self.username}>"

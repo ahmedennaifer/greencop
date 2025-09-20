@@ -14,7 +14,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-from customers.database.models import customer, room, sensor  # noqa
+from customers.database.models import customer, server_room, sensor  # noqa
 
 Base.metadata.create_all(bind=engine)
 
