@@ -7,6 +7,11 @@ on:
 jobs:
   setup-env:
     name: "tests"
+    env:
+        DB_URL: ${{ secrets.DB_URL }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+        ALGORITHM: ${{ secrets.ALGORITHM }}
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +25,7 @@ jobs:
           python -m pip install pytest
           uv sync
       - name: Run tests
+
         run: |
           PYTHONPATH=./services uv run pytest services/customers/tests -vv -x
 
