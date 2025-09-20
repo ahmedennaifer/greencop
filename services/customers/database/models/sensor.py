@@ -11,7 +11,7 @@ class Sensor(Base):
     type = Column(String(50))
 
     room_id = Column(Integer, ForeignKey("rooms.id"))
-    room = relationship("Room", back_populates="sensors")
+    room = relationship("ServerRoom", back_populates="sensors")
 
     def __repr__(self):
         return f"<Sensor {self.name}>"
