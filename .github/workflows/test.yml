@@ -5,7 +5,7 @@ on:
        branches: [ main ]
 
 jobs:
-  setup-env:
+  test:
     name: "tests"
     env:
         DB_URL: ${{ secrets.DB_URL }}
