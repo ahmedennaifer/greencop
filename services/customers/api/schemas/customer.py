@@ -1,11 +1,21 @@
+from __future__ import annotations
+
 from pydantic import BaseModel, EmailStr, field_validator
+
+from typing import TYPE_CHECKING, Optional, List
+
+
+if TYPE_CHECKING:
+    from .room import Room
 
 
 class CustomerBase(BaseModel):
     email: EmailStr
     username: str
+    rooms: Optional[List["Room"]]
 
     @field_validator("username")
+    @classmethod
     def validate_username(cls, usr: str) -> str:
         if len(usr) < 6 or len(usr) > 12:
             raise ValueError(
@@ -18,6 +28,7 @@ class CustomerCreate(CustomerBase):
     password: str
 
     @field_validator("password")
+    @classmethod
     def validate_password(cls, pwd: str) -> str:
         if pwd.isdigit() or pwd.isalpha() or len(pwd) < 8:
             raise ValueError(

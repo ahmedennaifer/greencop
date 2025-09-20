@@ -1,11 +1,14 @@
+from __future__ import annotations
 import logging
+from typing import TYPE_CHECKING
 
-from api.schemas import customer as customer_schema
 from api.utils import auth, hashing
 from database.session import get_db
 from fastapi import APIRouter, Depends, HTTPException
-from database.models.customer import Customer
 from sqlalchemy.orm import Session
+
+from database.models.customer import Customer
+from api.schemas import customer as customer_schema
 
 router = APIRouter()
 
@@ -14,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=customer_schema.Customer)
-def register_customer(
+async def register_customer(
     customer: customer_schema.CustomerCreate, db: Session = Depends(get_db)
 ):
     db_customer = db.query(Customer).filter(Customer.email == customer.email).first()
@@ -34,7 +37,7 @@ def register_customer(
 
 
 @router.post("/login")
-def login(customer: customer_schema.CustomerLogin, db: Session = Depends(get_db)):
+async def login(customer: customer_schema.CustomerLogin, db: Session = Depends(get_db)):
     db_customer = db.query(Customer).filter(Customer.email == customer.email).first()
     if not db_customer or not hashing.verify_password(
         customer.password,
@@ -46,3 +49,18 @@ def login(customer: customer_schema.CustomerLogin, db: Session = Depends(get_db)
     access_token = auth.create_access_token(data={"sub": db_customer.email})
     logger.info(f"Customer logged in: {customer.email}")
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/info/{id}")
+async def get_customer_info_by_id(
+    customer: customer_schema.Customer, db: Session = Depends(get_db)
+):
+    customer_id: int = customer.id
+    logger.debug(f"Fetching info for customer id: {id}")
+    try:
+        db_customer = db.query(Customer).filter(Customer.id == customer_id)
+        logger.debug(f"Fetched customer: {db_customer}")
+        return db_customer
+    except Exception as e:
+        logger.error(f"Error fetching customer by id: {e}")
+        return HTTPException(status_code=404, detail=f"Customer not found: {e}")
