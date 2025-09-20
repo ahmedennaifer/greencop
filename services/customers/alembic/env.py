@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from customers.database.session import Base
-from customers.database.models import customer, room, sensor  # noqa - direct import
+from customers.database.models import customer, server_room, sensor  # noqa - direct import
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 

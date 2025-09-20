@@ -3,7 +3,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 
-class Room(Base):
+class ServerRoom(Base):
     __tablename__ = "rooms"
 
     id = Column(Integer, primary_key=True)
