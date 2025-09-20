@@ -1,7 +1,6 @@
-from database.session import Base
-from sqlalchemy import Column, ForeignKey, Integer, String, JSON
+from customers.database.session import Base
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.mutable import MutableList
 
 
 class Room(Base):
@@ -9,10 +8,9 @@ class Room(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(120), nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"))
 
-    customer_ids = Column(MutableList.as_mutable(JSON), default=[])
-
-    customers = relationship("Customer", back_populates="rooms")
+    customer = relationship("Customer", back_populates="rooms")
     sensors = relationship("Sensor", back_populates="room")
 
     def __repr__(self):

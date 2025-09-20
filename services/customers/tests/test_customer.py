@@ -2,11 +2,11 @@ import json
 from unittest.mock import patch
 
 import pytest
-from api.utils import hashing
-from database.session import Base, get_db
+from customers.api.utils import hashing
+from customers.database.session import Base, get_db
 from fastapi.testclient import TestClient
-from main import app
-from database.models.customer import Customer
+from customers.main import app
+from customers.database.models.customer import Customer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -41,9 +41,11 @@ def setup_database():
 @pytest.fixture
 def sample_customer_data():
     """Sample customer data for testing."""
+
     return {
         "email": "test@example.com",
         "username": "testuser123",
+        "rooms": [0],
         "password": "password123",
     }
 
@@ -235,7 +237,6 @@ class TestTokenGeneration:
         assert response.status_code == 200
         token = response.json()["access_token"]
 
-        # Verify token can be decoded and contains correct email
         import os
 
         from jose import jwt
@@ -244,7 +245,7 @@ class TestTokenGeneration:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         assert payload["sub"] == sample_customer_data["email"]
 
-    @patch("api.utils.auth.create_access_token")
+    @patch("customers.api.utils.auth.create_access_token")
     def test_token_creation_called(
         self, mock_create_token, existing_customer, sample_customer_data
     ):
@@ -266,7 +267,7 @@ class TestTokenGeneration:
 class TestPasswordHashing:
     """Test cases for password hashing functionality."""
 
-    @patch("api.utils.hashing.hash_password")
+    @patch("customers.api.utils.hashing.hash_password")
     def test_password_hashed_during_registration(self, mock_hash, sample_customer_data):
         """Test that password is hashed during registration."""
         mock_hash.return_value = "hashed_password"
@@ -276,7 +277,7 @@ class TestPasswordHashing:
         assert response.status_code == 200
         mock_hash.assert_called_once_with(sample_customer_data["password"])
 
-    @patch("api.utils.hashing.verify_password")
+    @patch("customers.api.utils.hashing.verify_password")
     def test_password_verified_during_login(
         self, mock_verify, existing_customer, sample_customer_data
     ):
@@ -354,6 +355,27 @@ class TestErrorHandling:
             headers={"content-type": "text/plain"},
         )
         assert response.status_code == 422
+
+
+class TestCustomerInfo:
+    """Tests info getters"""
+
+    def test_customer_get_info_by_id(self, sample_customer_data):
+        register_response = client.post(
+            "api/v1/customers/register",
+            json=sample_customer_data,
+        )
+        assert register_response.status_code == 200
+
+        customer = Customer(**register_response.json())
+
+        response = client.post(f"api/v1/customers/info/{customer.id}")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["id"] == customer.id
+        assert data["email"] == sample_customer_data["email"]
+        assert data["username"] == sample_customer_data["username"]
 
 
 # Integration tests

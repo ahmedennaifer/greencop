@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from jose import JWTError, jwt
 
-from ..schemas.token import TokenData
+from customers.api.schemas.token import TokenData
 
 load_dotenv()
 

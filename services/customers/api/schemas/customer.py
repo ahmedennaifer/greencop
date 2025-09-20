@@ -1,18 +1,14 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 
-from typing import TYPE_CHECKING, Optional, List
-
-
-if TYPE_CHECKING:
-    from .room import Room
+from typing import Optional, List
 
 
 class CustomerBase(BaseModel):
     email: EmailStr
     username: str
-    rooms: Optional[List["Room"]]
+    rooms: Optional[List[int]] = []
 
     @field_validator("username")
     @classmethod
@@ -40,8 +36,7 @@ class CustomerCreate(CustomerBase):
 class Customer(CustomerBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CustomerLogin(BaseModel):

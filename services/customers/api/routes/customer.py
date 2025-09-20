@@ -1,14 +1,13 @@
 from __future__ import annotations
 import logging
-from typing import TYPE_CHECKING
 
-from api.utils import auth, hashing
-from database.session import get_db
+from customers.api.utils import auth, hashing
+from customers.database.session import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database.models.customer import Customer
-from api.schemas import customer as customer_schema
+from customers.database.models.customer import Customer
+from customers.api.schemas import customer as customer_schema
 
 router = APIRouter()
 
@@ -51,14 +50,11 @@ async def login(customer: customer_schema.CustomerLogin, db: Session = Depends(g
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/info/{id}")
-async def get_customer_info_by_id(
-    customer: customer_schema.Customer, db: Session = Depends(get_db)
-):
-    customer_id: int = customer.id
+@router.post("/info/{customer_id}")
+async def get_customer_info_by_id(customer_id: int, db: Session = Depends(get_db)):
     logger.debug(f"Fetching info for customer id: {id}")
     try:
-        db_customer = db.query(Customer).filter(Customer.id == customer_id)
+        db_customer = db.query(Customer).filter(Customer.id == customer_id).first()
         logger.debug(f"Fetched customer: {db_customer}")
         return db_customer
     except Exception as e:
