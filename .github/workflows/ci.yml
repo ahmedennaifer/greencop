@@ -20,6 +20,6 @@ jobs:
 
       - name: Run Ruff
         run: |
-          ruff check --output-format=github
           ruff format
+          ruff check --output-format=github
 
