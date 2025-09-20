@@ -19,5 +19,7 @@ jobs:
           python -m pip install ruff
 
       - name: Run Ruff
-        run: ruff check --output-format=github
+        run: |
+          ruff check --output-format=github
+          ruff format
 
