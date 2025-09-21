@@ -392,7 +392,6 @@ class TestServerRooms:
             "api/v1/server_rooms/new_room", json=sample_server_room_data
         )
         assert create_server_room_response.status_code == 200
-        server_room = ServerRoom(**create_server_room_response.json())
         db = TestingSessionLocal()
         existing_server_room = (
             db.query(ServerRoom)
