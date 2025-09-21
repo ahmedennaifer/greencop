@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from os import stat
+from fastapi import APIRouter, Depends, HTTPException, status
 import logging
 
 from sqlalchemy.orm.session import Session
@@ -6,6 +7,7 @@ from sqlalchemy.orm.session import Session
 from customers.api.schemas.server_room import ServerRoomBase
 from customers.database.session import get_db
 from customers.database.models.server_room import ServerRoom
+from customers.database.models.customer import Customer
 
 server_room_router = APIRouter()
 
@@ -22,12 +24,13 @@ async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get
     server_room_exists = (
         db.query(ServerRoom)
         .filter(
-            ServerRoom.customer_id == server_room.customer_id
-            and ServerRoom.name == server_room.name
+            ServerRoom.customer_id == server_room.customer_id,
+            ServerRoom.name == server_room.name,
         )
         .first()
     )
     if server_room_exists:
+        logger.info(server_room_exists.name)
         logger.warning(
             f"Room {server_room_exists.name} already exists for customer: {server_room.customer_id}"
         )
@@ -58,4 +61,21 @@ async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get
 # TODO: make secure with get_current_user
 @server_room_router.get("/list_rooms/{customer_id}")
 async def list_server_rooms(customer_id: int, db: Session = Depends(get_db)):
-    pass
+    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    logger.debug(f"Found customer with id {customer_id}")
+    if not customer:
+        logger.error(f"Customer with id {customer_id} not found!")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Customer with id:{customer_id} does not exist",
+        )
+    try:
+        rooms = db.query(ServerRoom).filter(ServerRoom.customer_id == customer_id).all()
+        logger.debug(f"Found {len(rooms)} for customer_id: {customer_id}")
+        return rooms
+    except Exception as e:
+        logger.error(f"Error while fetching rooms: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error while fetching rooms for customer_id {customer_id}",
+        )
