@@ -7,6 +7,7 @@ from customers.database.session import Base, get_db
 from fastapi.testclient import TestClient
 from customers.main import app
 from customers.database.models.customer import Customer
+from customers.database.models.server_room import ServerRoom
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -45,9 +46,15 @@ def sample_customer_data():
     return {
         "email": "test@example.com",
         "username": "testuser123",
-        "rooms": [0],
         "password": "password123",
     }
+
+
+@pytest.fixture
+def sample_server_room_data():
+    """Sample server room data for testing."""
+
+    return {"name": "test server room", "customer_id": "1"}
 
 
 @pytest.fixture
@@ -365,6 +372,7 @@ class TestCustomerInfo:
             "api/v1/customers/register",
             json=sample_customer_data,
         )
+
         assert register_response.status_code == 200
 
         customer = Customer(**register_response.json())
@@ -376,6 +384,24 @@ class TestCustomerInfo:
         assert data["id"] == customer.id
         assert data["email"] == sample_customer_data["email"]
         assert data["username"] == sample_customer_data["username"]
+
+
+class TestServerRooms:
+    def test_create_server_room(self, sample_server_room_data):
+        create_server_room_response = client.post(
+            "api/v1/server_rooms/new_room", json=sample_server_room_data
+        )
+        assert create_server_room_response.status_code == 200
+        db = TestingSessionLocal()
+        existing_server_room = (
+            db.query(ServerRoom)
+            .filter(
+                ServerRoom.name == sample_server_room_data["name"]
+                and ServerRoom.customer_id == sample_server_room_data["customer_id"]
+            )
+            .first()
+        )
+        assert existing_server_room is not None
 
 
 # Integration tests
