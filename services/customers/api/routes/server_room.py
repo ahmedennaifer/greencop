@@ -32,7 +32,6 @@ async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get
             f"Room {server_room_exists.name} already exists for customer: {server_room.customer_id}"
         )
         raise HTTPException(status_code=400, detail="Room already exists for customer")
-    # add to db
     logger.debug("Adding to db..")
     try:
         db_server_room = ServerRoom(
@@ -54,3 +53,9 @@ async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get
         raise HTTPException(
             status_code=401, detail=f"Error registering customer to db: {e}"
         )
+
+
+# TODO: make secure with get_current_user
+@server_room_router.get("/list_rooms/{customer_id}")
+async def list_server_rooms(customer_id: int, db: Session = Depends(get_db)):
+    pass
