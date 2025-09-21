@@ -8,7 +8,6 @@ from typing import Optional, List
 class CustomerBase(BaseModel):
     email: EmailStr
     username: str
-    rooms: Optional[List[int]] = []
 
     @field_validator("username")
     @classmethod
