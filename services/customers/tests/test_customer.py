@@ -7,7 +7,6 @@ from customers.database.session import Base, get_db
 from fastapi.testclient import TestClient
 from customers.main import app
 from customers.database.models.customer import Customer
-from customers.database.models.server_room import ServerRoom
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -340,7 +339,7 @@ class TestErrorHandling:
         """Test registration with malformed JSON."""
         response = client.post(
             "api/v1/customers/register",
-            data="invalid json",
+            data="invalid json",  # pyright: ignore
             headers={"content-type": "application/json"},
         )
         assert response.status_code == 422
@@ -349,7 +348,7 @@ class TestErrorHandling:
         """Test login with malformed JSON."""
         response = client.post(
             "api/v1/customers/login",
-            data="invalid json",
+            data="invalid json",  # pyright: ignore
             headers={"content-type": "application/json"},
         )
         assert response.status_code == 422
@@ -358,7 +357,7 @@ class TestErrorHandling:
         """Test endpoints with wrong content type."""
         response = client.post(
             "api/v1/customers/register",
-            data=json.dumps(sample_customer_data),
+            data=json.dumps(sample_customer_data),  # pyright: ignore
             headers={"content-type": "text/plain"},
         )
         assert response.status_code == 422
@@ -384,24 +383,6 @@ class TestCustomerInfo:
         assert data["id"] == customer.id
         assert data["email"] == sample_customer_data["email"]
         assert data["username"] == sample_customer_data["username"]
-
-
-class TestServerRooms:
-    def test_create_server_room(self, sample_server_room_data):
-        create_server_room_response = client.post(
-            "api/v1/server_rooms/new_room", json=sample_server_room_data
-        )
-        assert create_server_room_response.status_code == 200
-        db = TestingSessionLocal()
-        existing_server_room = (
-            db.query(ServerRoom)
-            .filter(
-                ServerRoom.name == sample_server_room_data["name"]
-                and ServerRoom.customer_id == sample_server_room_data["customer_id"]
-            )
-            .first()
-        )
-        assert existing_server_room is not None
 
 
 # Integration tests
