@@ -1,4 +1,3 @@
-from os import stat
 from fastapi import APIRouter, Depends, HTTPException, status
 import logging
 
@@ -49,7 +48,7 @@ async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get
         return db_server_room
     except Exception as e:
         logger.error(
-            f"Error adding server room {db_server_room.id}:{db_server_room.name} to db: {e}"
+            f"Error adding server room {db_server_room.id}:{db_server_room.name} to db: {e}"  # pyright: ignore
         )
         db.rollback()
 
@@ -78,4 +77,30 @@ async def list_server_rooms(customer_id: int, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error while fetching rooms for customer_id {customer_id}",
+        )
+
+
+@server_room_router.get("/list_room_by_id/{server_room_id}")
+async def list_server_room_by_id(server_room_id: int, db: Session = Depends(get_db)):
+    logger.debug(f"Fetching server room with id:{server_room_id}")
+    try:
+        server_room = (
+            db.query(ServerRoom).filter(ServerRoom.id == server_room_id).first()
+        )
+        if not server_room:
+            logger.error(f"Server room with id {server_room_id} not found!")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Server room with id:{server_room_id} does not exist",
+            )
+        logger.info(
+            f"Found room with name: {server_room.name} for room id: {server_room_id}"
+        )
+        return server_room
+
+    except Exception as e:
+        logger.error(f"Error while fetching room with id {server_room_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error while fetching room with id {server_room_id}",
         )
