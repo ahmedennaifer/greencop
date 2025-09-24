@@ -87,7 +87,6 @@ class TestServerRooms:
         sample_customer_data,
         sample_server_room_data,
         sample_server_room_data_2,
-        sample_server_room_data_info,
     ):
         create_client_response = client.post(
             "api/v1/customers/register", json=sample_customer_data
@@ -106,3 +105,30 @@ class TestServerRooms:
         existing_server_rooms_request = client.get("api/v1/server_rooms/list_rooms/1")
         assert existing_server_rooms_request.status_code == 200
         assert len(existing_server_rooms_request.json()) == 2
+
+    def test_list_server_room_by_id(
+        self,
+        sample_customer_data,
+        sample_server_room_data,
+        sample_server_room_data_2,
+    ):
+        create_client_response = client.post(
+            "api/v1/customers/register", json=sample_customer_data
+        )
+        assert create_client_response.status_code == 200
+        create_server_room_response = client.post(
+            "api/v1/server_rooms/new_room", json=sample_server_room_data
+        )
+        assert create_server_room_response.status_code == 200
+
+        create_server_room_response_2 = client.post(
+            "api/v1/server_rooms/new_room", json=sample_server_room_data_2
+        )
+        assert create_server_room_response_2.status_code == 200
+
+        existing_server_room_request = client.get(
+            "api/v1/server_rooms/list_room_by_id/1"
+        )
+
+        assert existing_server_room_request.status_code == 200
+        assert existing_server_room_request.json()["id"] == 1
