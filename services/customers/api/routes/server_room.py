@@ -3,10 +3,18 @@ import logging
 
 from sqlalchemy.orm.session import Session
 
-from customers.api.schemas.server_room import ServerRoomBase
+from customers.api.schemas.server_room import (
+    ServerRoomBase,
+    ServerRoomCreate,
+    ServerRoom,
+)
 from customers.database.session import get_db
+<<<<<<< HEAD
 from customers.database.models.server_room import ServerRoom
 from customers.database.models.customer import Customer
+=======
+from customers.database.models.server_room import ServerRoom as ServerRoomModel
+>>>>>>> 8647602 (feat: add server_room/sensor endpoints)
 
 server_room_router = APIRouter()
 
@@ -14,17 +22,22 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-@server_room_router.post("/new_room")
-async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get_db)):
+@server_room_router.post("/new_room", response_model=ServerRoom)
+async def create_new_room(server_room: ServerRoomCreate, db: Session = Depends(get_db)):
     logger.debug(
         f"Adding new room with name {server_room.name} for customer: {server_room.customer_id}"
     )
     logger.debug("Checking if room exists...")
     server_room_exists = (
-        db.query(ServerRoom)
+        db.query(ServerRoomModel)
         .filter(
+<<<<<<< HEAD
             ServerRoom.customer_id == server_room.customer_id,
             ServerRoom.name == server_room.name,
+=======
+            ServerRoomModel.customer_id == server_room.customer_id,
+            ServerRoomModel.name == server_room.name,
+>>>>>>> 8647602 (feat: add server_room/sensor endpoints)
         )
         .first()
     )
@@ -36,7 +49,7 @@ async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get
         raise HTTPException(status_code=400, detail="Room already exists for customer")
     logger.debug("Adding to db..")
     try:
-        db_server_room = ServerRoom(
+        db_server_room = ServerRoomModel(
             name=server_room.name, customer_id=server_room.customer_id
         )
         db.add(db_server_room)
@@ -52,14 +65,24 @@ async def create_new_room(server_room: ServerRoomBase, db: Session = Depends(get
         )
         db.rollback()
 
-        raise HTTPException(
-            status_code=401, detail=f"Error registering customer to db: {e}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error creating server room: {e}")
 
 
-# TODO: make secure with get_current_user
+@server_room_router.get("/room/{room_id}", response_model=ServerRoom)
+async def get_server_room(room_id: int, db: Session = Depends(get_db)):
+    logger.debug(f"Fetching server room with id: {room_id}")
+
+    room = db.query(ServerRoomModel).filter(ServerRoomModel.id == room_id).first()
+    if not room:
+        logger.warning(f"Server room with id {room_id} not found")
+        raise HTTPException(status_code=404, detail="Server room not found")
+
+    return room
+
+
 @server_room_router.get("/list_rooms/{customer_id}")
 async def list_server_rooms(customer_id: int, db: Session = Depends(get_db)):
+<<<<<<< HEAD
     customer = db.query(Customer).filter(Customer.id == customer_id).first()
     logger.debug(f"Found customer with id {customer_id}")
     if not customer:
@@ -104,3 +127,57 @@ async def list_server_room_by_id(server_room_id: int, db: Session = Depends(get_
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error while fetching room with id {server_room_id}",
         )
+=======
+    logger.debug(f"Fetching server rooms for customer: {customer_id}")
+
+    rooms = (
+        db.query(ServerRoomModel)
+        .filter(ServerRoomModel.customer_id == customer_id)
+        .all()
+    )
+    return rooms
+
+
+@server_room_router.put("/update_room/{room_id}", response_model=ServerRoom)
+async def update_server_room(
+    room_id: int, room_update: ServerRoomCreate, db: Session = Depends(get_db)
+):
+    logger.debug(f"Updating server room with id: {room_id}")
+
+    db_room = db.query(ServerRoomModel).filter(ServerRoomModel.id == room_id).first()
+    if not db_room:
+        logger.warning(f"Server room with id {room_id} not found")
+        raise HTTPException(status_code=404, detail="Server room not found")
+
+    try:
+        db_room.name = room_update.name
+        db_room.customer_id = room_update.customer_id
+        db.commit()
+        db.refresh(db_room)
+        logger.info(f"Updated server room {db_room.id}")
+        return db_room
+    except Exception as e:
+        logger.error(f"Error updating server room: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating server room: {e}")
+
+
+@server_room_router.delete("/delete_room/{room_id}")
+async def delete_server_room(room_id: int, db: Session = Depends(get_db)):
+    logger.debug(f"Deleting server room with id: {room_id}")
+
+    db_room = db.query(ServerRoomModel).filter(ServerRoomModel.id == room_id).first()
+    if not db_room:
+        logger.warning(f"Server room with id {room_id} not found")
+        raise HTTPException(status_code=404, detail="Server room not found")
+
+    try:
+        db.delete(db_room)
+        db.commit()
+        logger.info(f"Deleted server room {room_id}")
+        return {"message": "Server room deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting server room: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error deleting server room: {e}")
+>>>>>>> 8647602 (feat: add server_room/sensor endpoints)
