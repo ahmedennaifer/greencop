@@ -1,5 +1,6 @@
 from customers.api.routes.customer import customer_router
 from customers.api.routes.server_room import server_room_router
+from customers.api.routes.sensor import sensor_router
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -9,6 +10,7 @@ app.include_router(customer_router, prefix="/api/v1/customers", tags=["customers
 app.include_router(
     server_room_router, prefix="/api/v1/server_rooms", tags=["server_rooms"]
 )
+app.include_router(sensor_router, prefix="/api/v1/sensors", tags=["sensors"])
 
 
 @app.get("/health")
