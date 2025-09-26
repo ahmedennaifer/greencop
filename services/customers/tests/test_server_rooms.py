@@ -65,6 +65,16 @@ def sample_customer_data():
     }
 
 
+<<<<<<< HEAD
+=======
+@pytest.fixture
+def sample_server_room_data():
+    """Sample server room data for testing."""
+
+    return {"name": "test server room", "customer_id": 1}
+
+
+>>>>>>> 8647602 (feat: add server_room/sensor endpoints)
 class TestServerRooms:
     def test_create_server_room(self, sample_server_room_data):
         create_server_room_response = client.post(
@@ -82,6 +92,7 @@ class TestServerRooms:
         )
         assert existing_server_room is not None
 
+<<<<<<< HEAD
     def test_list_server_rooms(
         self,
         sample_customer_data,
@@ -132,3 +143,65 @@ class TestServerRooms:
 
         assert existing_server_room_request.status_code == 200
         assert existing_server_room_request.json()["id"] == 1
+=======
+    def test_create_duplicate_server_room(self, sample_server_room_data):
+        client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+
+        response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Room already exists for customer"
+
+    def test_get_server_room_success(self, sample_server_room_data):
+        create_response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        room_id = create_response.json()["id"]
+
+        response = client.get(f"api/v1/server_rooms/room/{room_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == room_id
+        assert data["name"] == sample_server_room_data["name"]
+
+    def test_get_nonexistent_server_room(self):
+        response = client.get("api/v1/server_rooms/room/999")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Server room not found"
+
+    def test_list_server_rooms(self, sample_server_room_data):
+        client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+
+        response = client.get(f"api/v1/server_rooms/list_rooms/{sample_server_room_data['customer_id']}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["name"] == sample_server_room_data["name"]
+
+    def test_update_server_room_success(self, sample_server_room_data):
+        create_response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        room_id = create_response.json()["id"]
+
+        updated_data = sample_server_room_data.copy()
+        updated_data["name"] = "Updated Room"
+
+        response = client.put(f"api/v1/server_rooms/update_room/{room_id}", json=updated_data)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "Updated Room"
+
+    def test_update_nonexistent_server_room(self, sample_server_room_data):
+        response = client.put("api/v1/server_rooms/update_room/999", json=sample_server_room_data)
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Server room not found"
+
+    def test_delete_server_room_success(self, sample_server_room_data):
+        create_response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        room_id = create_response.json()["id"]
+
+        response = client.delete(f"api/v1/server_rooms/delete_room/{room_id}")
+        assert response.status_code == 200
+        assert response.json()["message"] == "Server room deleted successfully"
+
+    def test_delete_nonexistent_server_room(self):
+        response = client.delete("api/v1/server_rooms/delete_room/999")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Server room not found"
+>>>>>>> 8647602 (feat: add server_room/sensor endpoints)
