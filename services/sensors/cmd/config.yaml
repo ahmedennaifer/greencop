@@ -1,0 +1,6 @@
+customer:
+  new: false
+  id: 23
+  room_id: 1
+  # TODO: room parsing
+  # TODO: sensor parsing
