@@ -1,3 +1,8 @@
+import os
+
+# Override DB_URL for tests before importing anything else
+os.environ["DB_URL"] = "sqlite:///./test.db"
+
 import json
 from unittest.mock import patch
 

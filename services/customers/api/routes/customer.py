@@ -66,8 +66,15 @@ async def get_customer_info_by_id(customer_id: int, db: Session = Depends(get_db
     logger.debug(f"Fetching info for customer id: {id}")
     try:
         db_customer = db.query(Customer).filter(Customer.id == customer_id).first()
+        if not db_customer:
+            logger.error(f"Customer with id: {customer_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Customer with id: {customer_id} not found"
+            )
+
         logger.debug(f"Fetched customer: {db_customer}")
         return db_customer
+
     except Exception as e:
         logger.error(f"Error fetching customer by id: {e}")
         raise HTTPException(status_code=404, detail=f"Customer not found: {e}")
