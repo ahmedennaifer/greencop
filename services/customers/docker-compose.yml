@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: nafra
       POSTGRES_PASSWORD: test
     ports:
-      - "5433:5432"  # Different port to avoid conflict with local
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
