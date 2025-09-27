@@ -82,7 +82,11 @@ async def list_server_rooms(customer_id: int, db: Session = Depends(get_db)):
             detail=f"Customer with id:{customer_id} does not exist",
         )
     try:
-        rooms = db.query(ServerRoomModel).filter(ServerRoomModel.customer_id == customer_id).all()
+        rooms = (
+            db.query(ServerRoomModel)
+            .filter(ServerRoomModel.customer_id == customer_id)
+            .all()
+        )
         logger.debug(f"Found {len(rooms)} for customer_id: {customer_id}")
         return rooms
     except Exception as e:
@@ -98,7 +102,9 @@ async def list_server_room_by_id(server_room_id: int, db: Session = Depends(get_
     logger.debug(f"Fetching server room with id:{server_room_id}")
     try:
         server_room = (
-            db.query(ServerRoomModel).filter(ServerRoomModel.id == server_room_id).first()
+            db.query(ServerRoomModel)
+            .filter(ServerRoomModel.id == server_room_id)
+            .first()
         )
         if not server_room:
             logger.error(f"Server room with id {server_room_id} not found!")

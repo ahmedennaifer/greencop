@@ -7,7 +7,10 @@ __pycache__/
 *.so
 *.db
 .DS_Store
-
+test.db
+.env.*
+*.env
+*.env.*
 # Distribution / packaging
 .Python
 build/
