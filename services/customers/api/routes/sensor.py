@@ -106,4 +106,3 @@ async def delete_sensor(sensor_id: int, db: Session = Depends(get_db)):
         logger.error(f"Error deleting sensor: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error deleting sensor: {e}")
-

@@ -1,3 +1,8 @@
+import os
+
+# Override DB_URL for tests before importing anything else
+os.environ["DB_URL"] = "sqlite:///./test.db"
+
 import pytest
 from customers.database.session import Base, get_db
 from fastapi.testclient import TestClient
@@ -79,12 +84,16 @@ class TestServerRooms:
     def test_create_duplicate_server_room(self, sample_server_room_data):
         client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
 
-        response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        response = client.post(
+            "api/v1/server_rooms/new_room", json=sample_server_room_data
+        )
         assert response.status_code == 400
         assert response.json()["detail"] == "Room already exists for customer"
 
     def test_get_server_room_success(self, sample_server_room_data):
-        create_response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        create_response = client.post(
+            "api/v1/server_rooms/new_room", json=sample_server_room_data
+        )
         room_id = create_response.json()["id"]
 
         response = client.get(f"api/v1/server_rooms/room/{room_id}")
@@ -144,24 +153,32 @@ class TestServerRooms:
         assert existing_server_room_request.json()["id"] == 1
 
     def test_update_server_room_success(self, sample_server_room_data):
-        create_response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        create_response = client.post(
+            "api/v1/server_rooms/new_room", json=sample_server_room_data
+        )
         room_id = create_response.json()["id"]
 
         updated_data = sample_server_room_data.copy()
         updated_data["name"] = "Updated Room"
 
-        response = client.put(f"api/v1/server_rooms/update_room/{room_id}", json=updated_data)
+        response = client.put(
+            f"api/v1/server_rooms/update_room/{room_id}", json=updated_data
+        )
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Updated Room"
 
     def test_update_nonexistent_server_room(self, sample_server_room_data):
-        response = client.put("api/v1/server_rooms/update_room/999", json=sample_server_room_data)
+        response = client.put(
+            "api/v1/server_rooms/update_room/999", json=sample_server_room_data
+        )
         assert response.status_code == 404
         assert response.json()["detail"] == "Server room not found"
 
     def test_delete_server_room_success(self, sample_server_room_data):
-        create_response = client.post("api/v1/server_rooms/new_room", json=sample_server_room_data)
+        create_response = client.post(
+            "api/v1/server_rooms/new_room", json=sample_server_room_data
+        )
         room_id = create_response.json()["id"]
 
         response = client.delete(f"api/v1/server_rooms/delete_room/{room_id}")
