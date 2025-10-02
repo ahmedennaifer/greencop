@@ -6,8 +6,4 @@ import (
 
 func main() {
 	cmd.Execute()
-	conf := cmd.Config
-	if conf.Customer.Id == 0 {
-		return
-	}
 }
