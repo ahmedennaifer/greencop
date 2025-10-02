@@ -1,0 +1,10 @@
+customer:
+  new: false
+  id: 1
+sensor:
+  type: "heat"
+  name: "sensor_test_01"
+  room_id: 1 # validate from customer
+
+  # TODO: sensor parsing
+  # TODO: room parsing
