@@ -2,5 +2,6 @@ package types
 
 type Config struct {
 	Customer CustomerExists `yaml:"customer"`
-	// TODO: add sensor parsing
+	Sensor   Sensor         `yaml:"sensor"`
+	// TODO: add room parsing
 }
