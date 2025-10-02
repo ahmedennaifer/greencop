@@ -3,9 +3,9 @@ package types
 import "time"
 
 type Sensor struct {
-	Id   int    `yaml:"id"`
-	Name string `yaml:"name"`
-	Type string `yaml:"type"`
+	RoomId int    `yaml:"room_id"`
+	Name   string `yaml:"name"`
+	Type   string `yaml:"type"`
 }
 
 type SensorPayload struct {

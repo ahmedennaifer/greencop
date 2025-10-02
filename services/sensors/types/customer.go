@@ -7,7 +7,6 @@ type CustomerRegister struct {
 }
 
 type CustomerExists struct {
-	New    bool `yaml:"new"`
-	Id     int  `yaml:"id"`
-	RoomId int  `yaml:"room_id"`
+	New bool `yaml:"new"`
+	Id  int  `yaml:"id"`
 }

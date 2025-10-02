@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -9,6 +8,7 @@ import (
 	"greencop.iot/sensors/utils"
 )
 
+var Config types.Config
 var logger = utils.Logger()
 
 func ParseConfigFile(configFile string) error {
@@ -18,12 +18,11 @@ func ParseConfigFile(configFile string) error {
 		logger.Error("Error reading content of config file", "error", err, "file", configFile)
 		return err
 	}
-	config := types.Config{}
-	err = yaml.Unmarshal([]byte(fileContent), &config)
+	err = yaml.Unmarshal([]byte(fileContent), &Config)
 	if err != nil {
 		logger.Error("Error unmarshalling config file", "error", err, "file", configFile)
 		return err
 	}
-	fmt.Print(config)
+	logger.Info("Parsed config files with success", "file", configFile, "customer", Config.Customer, "sensor", Config.Sensor)
 	return nil
 }
