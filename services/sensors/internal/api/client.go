@@ -1,6 +1,9 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 type Client struct {
 	httpClient  *http.Client
@@ -8,10 +11,17 @@ type Client struct {
 	contentType string
 }
 
-func NewClient() *Client {
+func NewClient(endpoint Endpoint) *Client {
+	baseUrl := BaseURL
+	endpointStr := strings.TrimPrefix(endpoint.String(), "/")
+
+	if endpointStr != "" {
+		baseUrl += endpointStr
+	}
+
 	return &Client{
 		httpClient:  &http.Client{},
-		baseUrl:     "http://localhost:8080/api/v1/sensors/new_sensor/",
+		baseUrl:     baseUrl,
 		contentType: "application/json",
 	}
 }
