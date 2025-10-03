@@ -18,7 +18,7 @@ var registerCmd = &cobra.Command{
 			logger.Error(err.Error())
 			return
 		}
-		client := api.NewClient()
+		client := api.NewClient(api.SensorNew)
 		if err := client.AddSensor(Config.Sensor); err != nil {
 			logger.Error(err.Error())
 			return
