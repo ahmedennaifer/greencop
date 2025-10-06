@@ -1,6 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* === Définition de ton thème / tokens === */
+@theme {
+  /* Définir tes couleurs personnalisées comme des variables CSS utilisables dans Tailwind */
+  --color-primary: #00b894;
+  --color-secondary: #0984e3;
+  --color-neutral: #f5f5f5;
+  --color-dark: #2d3436;
+
+  /* Par exemple si tu veux définir des animations personnalisées */
+  /* --animate-typing: typing 2s steps(20) infinite alternate, blink .7s infinite; */
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  /* etc. */
+}
+
+/* === Extensions utilitaires et composants === */
+@layer base {
+  /* Tu peux ré-définir ou ajuster les styles de base ici */
+}
 
 @layer components {
   .card {
@@ -10,24 +31,34 @@
   .btn {
     @apply px-4 py-2 rounded-xl text-white font-semibold transition;
   }
-
   .btn-primary {
-    @apply bg-primary hover:bg-green-600;
+    /* utiliser la variable thème définie plus haut */
+    background-color: var(--color-primary);
   }
-
+  .btn-primary:hover {
+    /* tu peux choisir une teinte plus foncée ou ajuster manuellement */
+    background-color: #008f6b; /* ou une teinte plus sombre du vert */
+  }
   .btn-secondary {
-    @apply bg-secondary hover:bg-blue-700;
+    background-color: var(--color-secondary);
+  }
+  .btn-secondary:hover {
+    background-color: #0764b0;
   }
 
   .title {
-    @apply text-2xl font-bold text-dark;
+    @apply text-2xl font-bold;
+    color: var(--color-dark);
   }
-
   .subtitle {
     @apply text-gray-600;
   }
 
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary;
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)];
   }
+}
+
+@layer utilities {
+  /* Ici tu peux ajouter des utilitaires personnalisés, si besoin */
 }
