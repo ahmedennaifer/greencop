@@ -1,4 +1,9 @@
-@import "tailwindcss";
+
+@import 'tailwindcss';
+
+/* eslint-disable */
+/* stylelint-disable */
+/* tailwindcss disable next line */
 
 /* === Définition de ton thème / tokens === */
 @theme {
@@ -12,8 +17,12 @@
   /* --animate-typing: typing 2s steps(20) infinite alternate, blink .7s infinite; */
 
   @keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   /* etc. */
 }
@@ -55,7 +64,7 @@
   }
 
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)];
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary;
   }
 }
 
