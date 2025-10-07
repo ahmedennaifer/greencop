@@ -1,32 +1,33 @@
 FROM python:3.12-slim as builder
 
+
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        build-essential \
-        libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends \
+  build-essential \
+  libpq-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+  && pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.12-slim
 
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
+  PYTHONUNBUFFERED=1 \
+  PYTHONPATH=/app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        libpq5 \
-        postgresql-client \
-        curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && useradd --create-home --shell /bin/bash app
+  && apt-get install -y --no-install-recommends \
+  libpq5 \
+  postgresql-client \
+  curl \
+  && rm -rf /var/lib/apt/lists/* \
+  && useradd --create-home --shell /bin/bash app
 
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
