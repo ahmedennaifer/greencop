@@ -1,8 +1,8 @@
 <template>
   <AppLayout>
-    <h2 class="title mb-4">Analyse Chaleur</h2>
+    <h2 class="title mb-4">Prévisions IA</h2>
     <BaseCard>
-      <p class="subtitle">Données des capteurs de température en temps réel.</p>
+      <p class="subtitle">Prévisions de températures, humidité & consommation.</p>
     </BaseCard>
   </AppLayout>
 </template>
