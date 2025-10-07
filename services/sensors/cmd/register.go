@@ -4,10 +4,9 @@ import (
 	"github.com/spf13/cobra"
 	. "greencop.iot/sensors/internal"
 	"greencop.iot/sensors/internal/api"
-	"greencop.iot/sensors/utils"
 )
 
-var logger = utils.Logger()
+var logger = Logger()
 
 var registerCmd = &cobra.Command{
 	Use:   "register",

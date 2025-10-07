@@ -222,5 +222,23 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+infra/scripts
+*scripts/*
+*/scripts/*
+*.sh
 # Streamlit
 .streamlit/secrets.toml
+
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/terraform.tfvars
+
+scripts/*
+*.terraform
+*.tfstate
+*.tfstate.backup
+terraform.tfvars
+*.tfvars
+
+creds.json
