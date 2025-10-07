@@ -3,7 +3,7 @@ import logging
 
 from customers.api.utils import auth, hashing
 from customers.database.session import get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from customers.database.models.customer import Customer

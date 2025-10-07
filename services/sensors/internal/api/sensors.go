@@ -7,11 +7,11 @@ import (
 	"io"
 	"net/http"
 
+	. "greencop.iot/sensors/internal" // logger
 	"greencop.iot/sensors/types"
-	"greencop.iot/sensors/utils"
 )
 
-var logger = utils.Logger()
+var logger = Logger()
 
 func (c *Client) FetchSensor(sensor types.Sensor) error {
 	url := fmt.Sprintf("%s/%d/%s", c.baseUrl, sensor.RoomId, sensor.Name)
