@@ -1,73 +1,50 @@
-
 @import 'tailwindcss';
 
-/* eslint-disable */
-/* stylelint-disable */
-/* tailwindcss disable next line */
-
-/* === Définition de ton thème / tokens === */
-@theme {
-  /* Définir tes couleurs personnalisées comme des variables CSS utilisables dans Tailwind */
+/* ===== Définir le thème via variables CSS (approche CSS-first) ===== */
+:root {
   --color-primary: #00b894;
   --color-secondary: #0984e3;
-  --color-neutral: #f5f5f5;
+  --color-neutral: #e61313;
   --color-dark: #2d3436;
-
-  /* Par exemple si tu veux définir des animations personnalisées */
-  /* --animate-typing: typing 2s steps(20) infinite alternate, blink .7s infinite; */
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  /* etc. */
 }
 
-/* === Extensions utilitaires et composants === */
 @layer base {
-  /* Tu peux ré-définir ou ajuster les styles de base ici */
+  body {
+    background-color: var(--color-neutral);
+    color: var(--color-dark);
+  }
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-2xl shadow p-4 transition hover:shadow-lg;
+    @apply bg-white rounded-2xl shadow-sm p-4 transition hover:shadow-md;
   }
 
   .btn {
     @apply px-4 py-2 rounded-xl text-white font-semibold transition;
   }
   .btn-primary {
-    /* utiliser la variable thème définie plus haut */
     background-color: var(--color-primary);
   }
   .btn-primary:hover {
-    /* tu peux choisir une teinte plus foncée ou ajuster manuellement */
-    background-color: #008f6b; /* ou une teinte plus sombre du vert */
+    background-color: color-mix(in srgb, var(--color-primary) 80%, #000000 20%);
   }
   .btn-secondary {
     background-color: var(--color-secondary);
   }
   .btn-secondary:hover {
-    background-color: #0764b0;
+    background-color: color-mix(in srgb, var(--color-secondary) 80%, #000000 20%);
   }
 
   .title {
-    @apply text-2xl font-bold;
-    color: var(--color-dark);
+    @apply rounded-b-lg shadow-md;
   }
   .subtitle {
     @apply text-gray-600;
   }
 
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary;
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2;
+    border-color: var(--color-primary);
   }
-}
-
-@layer utilities {
-  /* Ici tu peux ajouter des utilitaires personnalisés, si besoin */
 }
