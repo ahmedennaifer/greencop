@@ -64,7 +64,9 @@ async def list_sensors_by_room(room_id: int, db: Session = Depends(get_db)):
 
 
 @sensor_router.get("/sensor_by_name/{room_id}/{sensor_name}", response_model=Sensor)
-async def get_sensor_by_name_and_room(room_id: int, sensor_name: str, db: Session = Depends(get_db)):
+async def get_sensor_by_name_and_room(
+    room_id: int, sensor_name: str, db: Session = Depends(get_db)
+):
     logger.debug(f"Fetching sensor '{sensor_name}' in room: {room_id}")
 
     try:
@@ -75,9 +77,13 @@ async def get_sensor_by_name_and_room(room_id: int, sensor_name: str, db: Sessio
         )
         if not sensor:
             logger.warning(f"Sensor '{sensor_name}' not found in room {room_id}")
-            raise HTTPException(status_code=404, detail="Sensor not found in specified room")
+            raise HTTPException(
+                status_code=404, detail="Sensor not found in specified room"
+            )
 
-        logger.info(f"Found sensor '{sensor_name}' with id: {sensor.id} in room {room_id}")
+        logger.info(
+            f"Found sensor '{sensor_name}' with id: {sensor.id} in room {room_id}"
+        )
         return sensor
     except HTTPException:
         raise
