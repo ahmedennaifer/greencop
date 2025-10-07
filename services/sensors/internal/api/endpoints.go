@@ -20,10 +20,11 @@ const (
 )
 
 const (
-	ServerRoomNew    Endpoint = "server_rooms/new_room"
-	ServerRoomGet    Endpoint = "server_rooms"
-	ServerRoomUpdate Endpoint = "server_rooms"
-	ServerRoomDelete Endpoint = "server_rooms"
+	ServerRoomNew       Endpoint = "server_rooms/new_room"
+	ServerRoomGet       Endpoint = "server_rooms"
+	ServerRoomUpdate    Endpoint = "server_rooms"
+	ServerRoomDelete    Endpoint = "server_rooms"
+	ServerRoomListRooms Endpoint = "server_rooms/list_rooms"
 )
 
 const (
@@ -43,7 +44,7 @@ func (e Endpoint) IsValid() bool {
 	switch e {
 	case CustomersEndpoint, ServerRoomsEndpoint, SensorsEndpoint, HealthEndpoint,
 		CustomerRegister, CustomerLogin, CustomerInfo,
-		ServerRoomNew,
+		ServerRoomNew, ServerRoomListRooms,
 		SensorNew, SensorGet, SensorList, SensorUpdate, SensorDelete, SensorByName:
 		return true
 	default:

@@ -10,3 +10,10 @@ type CustomerExists struct {
 	New bool `yaml:"new"`
 	Id  int  `yaml:"id"`
 }
+
+type CustomerResponse struct {
+	Id       int
+	Username string
+	Email    string
+	Rooms    []int
+}

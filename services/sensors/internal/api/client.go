@@ -7,7 +7,7 @@ import (
 
 type Client struct {
 	httpClient  *http.Client
-	baseUrl     string
+	BaseUrl     string
 	contentType string
 }
 
@@ -21,7 +21,7 @@ func NewClient(endpoint Endpoint) *Client {
 
 	return &Client{
 		httpClient:  &http.Client{},
-		baseUrl:     baseUrl,
+		BaseUrl:     baseUrl,
 		contentType: "application/json",
 	}
 }
