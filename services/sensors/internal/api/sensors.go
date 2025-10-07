@@ -14,7 +14,7 @@ import (
 var logger = Logger()
 
 func (c *Client) FetchSensor(sensor types.Sensor) error {
-	url := fmt.Sprintf("%s/%d/%s", c.baseUrl, sensor.RoomId, sensor.Name)
+	url := fmt.Sprintf("%s/%d/%s", c.BaseUrl, sensor.RoomId, sensor.Name)
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
@@ -45,7 +45,7 @@ func (c *Client) AddSensor(sensor types.Sensor) error {
 		logger.Error(err.Error())
 		return err
 	}
-	resp, err := c.httpClient.Post(c.baseUrl, c.contentType, bytes.NewBuffer(jsonPayload))
+	resp, err := c.httpClient.Post(c.BaseUrl, c.contentType, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		logger.Error(err.Error())
 		return err

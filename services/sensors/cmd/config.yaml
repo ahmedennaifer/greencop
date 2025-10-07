@@ -1,10 +1,10 @@
 customer:
   new: false
-  id: 1
+  id: 34
 sensor:
   type: "cold"
-  name: "sensor_test_cold"
-  room_id: 1 # validate from customer
+  name: "sensor_test_cold_2"
+  room_id: 34 # validate from customer
 
   # TODO: sensor parsing
   # TODO: room parsing
