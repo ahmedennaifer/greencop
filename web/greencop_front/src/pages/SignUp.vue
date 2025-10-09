@@ -1,13 +1,15 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-secondary text-white"
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-green-900 to-white text-black"
   >
-    <div class="bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-full max-w-md">
-      <h1 class="text-3xl font-bold text-center mb-6">Inscription</h1>
+    <div
+      class="bg-white/10 backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20"
+    >
+      <h1 class="text-3xl font-bold text-center mb-6 text-white">Signup</h1>
 
       <form @submit.prevent="onSignup" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium mb-1">Nom complet</label>
+          <label class="block text-sm font-medium mb-1 text-white">Nom complet</label>
           <input
             v-model="name"
             type="text"
@@ -18,7 +20,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1">Email</label>
+          <label class="block text-sm font-medium mb-1 text-white">Email</label>
           <input
             v-model="email"
             type="email"
@@ -29,7 +31,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1">Mot de passe</label>
+          <label class="block text-sm font-medium mb-1 text-white">Mot de passe</label>
           <input
             v-model="password"
             type="password"
@@ -41,15 +43,15 @@
 
         <button
           type="submit"
-          class="w-full py-2 rounded-lg bg-primary text-white font-semibold hover:bg-emerald-600 transition"
+          class="w-full py-2 rounded-lg bg-primary text-black font-semibold hover:bg-emerald-600 transition"
         >
           S’inscrire
         </button>
       </form>
 
-      <p class="text-center text-sm text-white/70 mt-4">
+      <p class="text-center text-sm text-black/70 mt-4">
         Déjà un compte ?
-        <router-link to="/login" class="text-white underline hover:text-secondary">
+        <router-link to="/login" class="text-black underline hover:text-secondary">
           Connectez-vous ici
         </router-link>
       </p>
