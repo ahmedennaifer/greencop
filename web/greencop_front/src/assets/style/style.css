@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+
+/* ===== Définir le thème via variables CSS (approche CSS-first) ===== */
+:root {
+  --color-primary: #00b894;
+  --color-secondary: #0984e3;
+  --color-neutral: #e61313;
+  --color-dark: #2d3436;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-primary);
+    color: var(--color-dark);
+  }
+}
+/* 
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-sm p-4 transition hover:shadow-md;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-xl text-white font-semibold transition;
+  }
+  .btn-primary {
+    background-color: var(--color-primary);
+  }
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 80%, #000000 20%);
+  }
+  .btn-secondary {
+    background-color: var(--color-secondary);
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--color-secondary) 80%, #000000 20%);
+  }
+
+  .title {
+    @apply rounded-b-lg shadow-md;
+  }
+  .subtitle {
+    @apply text-gray-600;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2;
+    border-color: var(--color-primary);
+  }
+} */
