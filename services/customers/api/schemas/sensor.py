@@ -1,5 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
 
 
-class Sensor(BaseModel):
+class SensorBase(BaseModel):
+    name: str
+    type: Optional[str] = None
+    room_id: int
+
+
+class SensorCreate(SensorBase):
     pass
+
+
+class Sensor(SensorBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
