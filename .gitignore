@@ -3,11 +3,19 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+.env.test
+.env
+
+
+
 # C extensions
 *.so
 *.db
 .DS_Store
-
+test.db
+.env.*
+*.env
+*.env.*
 # Distribution / packaging
 .Python
 build/
@@ -214,5 +222,23 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+infra/scripts
+*scripts/*
+*/scripts/*
+*.sh
 # Streamlit
 .streamlit/secrets.toml
+
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/terraform.tfvars
+
+scripts/*
+*.terraform
+*.tfstate
+*.tfstate.backup
+terraform.tfvars
+*.tfvars
+
+creds.json
