@@ -7,5 +7,6 @@
     <router-link to="/alerts" class="hover:text-primary">Alertes</router-link>
     <router-link to="/forecast" class="hover:text-primary">Prévisions</router-link>
     <router-link to="/config" class="hover:text-primary">Configuration</router-link>
+    <router-link to="/profil" class="hover:text-primary">Profil</router-link>
   </aside>
 </template>

@@ -1,15 +1,14 @@
 <template>
   <button
-    :class="['btn', type === 'secondary' ? 'btn-secondary' : 'btn-primary']"
     @click="$emit('click')"
+    class="px-5 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 hover:scale-105 transition-transform duration-200"
   >
-    <slot>{{ label }}</slot>
+    {{ label }}
   </button>
 </template>
 
-<script setup>
-const props = defineProps({
-  label: String,
-  type: { type: String, default: 'primary' },
-})
+<script setup lang="ts">
+defineProps<{
+  label: string
+}>()
 </script>

@@ -8,6 +8,6 @@
 </template>
 
 <script setup>
-import AppLayout from '@/components/layout/AppLayout.vue'
+import AppLayout from '@/components/Layout/AppLayout.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 </script>
