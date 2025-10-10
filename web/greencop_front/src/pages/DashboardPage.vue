@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <div
-      class="min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-green-900 to-white text-black p-6 space-y-10"
+      class="min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-green-900 text-black p-6 space-y-10"
     >
       <!-- Titre -->
       <h2 class="text-3xl font-bold mb-4 text-white drop-shadow-lg">Dashboard</h2>
