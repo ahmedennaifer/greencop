@@ -16,9 +16,9 @@ import Login from '@/pages/Login.vue'
 //  routes
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'Dashboard', component: DashboardPage },
-  { path: '/temp', name: 'Temperature', component: TemperaturePage },
-  { path: '/humidity', name: 'Humidity', component: HumidityPage },
-  { path: '/power', name: 'Electricity', component: ElectricityPage },
+  // { path: '/temp', name: 'Temperature', component: TemperaturePage },
+  // { path: '/humidity', name: 'Humidity', component: HumidityPage },
+  // { path: '/power', name: 'Electricity', component: ElectricityPage },
   { path: '/config', name: 'ConfigPlan', component: ConfigPlanPage },
   { path: '/alerts', name: 'Alerts', component: AlertsPage },
   { path: '/forecast', name: 'Forecast', component: ForecastPage },

@@ -1,14 +1,16 @@
 <template>
-  <div class="card flex flex-col items-center text-center">
-    <p class="text-gray-500">{{ title }}</p>
-    <p :class="['text-3xl font-bold mt-2', valueColor]">{{ value }}</p>
+  <div
+    class="bg-white/20 backdrop-blur-md p-6 rounded-xl shadow-lg text-center border border-white/30 hover:scale-105 transform transition duration-300"
+  >
+    <h3 class="text-lg font-semibold text-white mb-2">{{ title }}</h3>
+    <p :class="['text-2xl font-bold', valueColor]">{{ value }}</p>
   </div>
 </template>
 
-<script setup>
-const props = defineProps({
-  title: String,
-  value: String,
-  valueColor: { type: String, default: 'text-dark' },
-})
+<script setup lang="ts">
+defineProps<{
+  title: string
+  value: string
+  valueColor?: string
+}>()
 </script>
