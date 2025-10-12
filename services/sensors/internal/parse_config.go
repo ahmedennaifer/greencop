@@ -5,11 +5,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 	"greencop.iot/sensors/types"
-	"greencop.iot/sensors/utils"
 )
 
 var Config types.Config
-var logger = utils.Logger()
+var logger = Logger()
 
 func ParseConfigFile(configFile string) error {
 	logger.Info("Started parsing config file", "file", configFile)
