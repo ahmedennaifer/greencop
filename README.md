@@ -179,3 +179,10 @@ sensor:
 - **Error handling**: Comprehensive logging and HTTP error responses
 - **CLI architecture**: Modular Go design with Cobra commands
 - **Docker ready**: Full containerization for easy deployment
+
+## Front-Part
+- How to lauch ?
+         - npm install
+         - npm run dev
+  
+  
