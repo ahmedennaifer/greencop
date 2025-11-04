@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/forecast', name: 'Forecast', component: ForecastPage },
   { path: '/profile', name: 'Profile', component: ProfilePage },
   { path: '/signup', name: 'Signup', component: Signup },
-  { path: '/login', name: 'Profile', component: Login },
+  { path: '/login', name: 'Login', component: Login },
 ]
 
 //Création du routeur

@@ -24,6 +24,9 @@
           >Configuration</RouterLink
         >
         <RouterLink to="/profile" class="block hover:text-green-300 transition">Profil</RouterLink>
+        <RouterLink to="/login" class="block hover:text-green-300 transition"
+          >Deconnexion</RouterLink
+        >
       </nav>
     </aside>
 
