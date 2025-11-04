@@ -182,7 +182,10 @@ sensor:
 
 ## Front-Part
 - How to lauch ?
-         - npm install
-         - npm run dev
+         
+  ```
+  npm install
+  npm run dev
+```
   
   
