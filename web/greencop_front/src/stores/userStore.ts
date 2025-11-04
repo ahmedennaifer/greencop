@@ -48,7 +48,7 @@ export const useUserStore = defineStore('user', {
         // Optionnel : récupérer les infos utilisateur
         await this.fetchUserInfo(email)
 
-        router.push('/dashboard')
+        router.push('/')
       } catch (err: any) {
         this.error = err.response?.data?.detail || 'Erreur de connexion.'
         console.error('Login error:', this.error)
@@ -59,7 +59,7 @@ export const useUserStore = defineStore('user', {
 
     async fetchUserInfo(email: string) {
       try {
-        const res = await axios.get(`http://127.0.0.1:8080/customers/info/${email}`, {
+        const res = await axios.get(`/customers/info/${email}`, {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },

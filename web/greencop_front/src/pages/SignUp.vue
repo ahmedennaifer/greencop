@@ -49,7 +49,7 @@
         </button>
 
         <p v-if="userStore.error" class="text-red-400 text-center text-sm mt-2">
-          {{ userStore.error }}
+          {{ userStore.error }}, {{ console.log(userStore.error) }}
         </p>
       </form>
 
