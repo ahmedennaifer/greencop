@@ -5,6 +5,7 @@ __pycache__/
 
 .env.test
 .env
+.claude/
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,react
@@ -164,6 +165,7 @@ sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/node,react
 
+# End of https://www.toptal.com/developers/gitignore/api/node,react
 # C extensions
 *.so
 *.db
