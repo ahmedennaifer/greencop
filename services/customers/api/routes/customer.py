@@ -78,3 +78,61 @@ async def get_customer_info_by_id(customer_id: int, db: Session = Depends(get_db
     except Exception as e:
         logger.error(f"Error fetching customer by id: {e}")
         raise HTTPException(status_code=404, detail=f"Customer not found: {e}")
+
+
+@customer_router.patch("/{customer_id}", response_model=customer_schema.Customer)
+async def update_customer(
+    customer_id: int,
+    customer_update: customer_schema.CustomerUpdate,
+    db: Session = Depends(get_db)
+):
+    logger.debug(f"Updating customer id: {customer_id}")
+    try:
+        db_customer = db.query(Customer).filter(Customer.id == customer_id).first()
+        if not db_customer:
+            logger.error(f"Customer with id: {customer_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Customer with id: {customer_id} not found"
+            )
+
+        update_data = customer_update.model_dump(exclude_unset=True)
+
+        if "email" in update_data:
+            existing_customer = (
+                db.query(Customer)
+                .filter(Customer.email == update_data["email"])
+                .filter(Customer.id != customer_id)
+                .first()
+            )
+            if existing_customer:
+                logger.warning(f"Update attempt with existing email: {update_data['email']}")
+                raise HTTPException(status_code=400, detail="Email already exists")
+
+        if "username" in update_data:
+            existing_customer = (
+                db.query(Customer)
+                .filter(Customer.username == update_data["username"])
+                .filter(Customer.id != customer_id)
+                .first()
+            )
+            if existing_customer:
+                logger.warning(f"Update attempt with existing username: {update_data['username']}")
+                raise HTTPException(status_code=400, detail="Username already exists")
+
+        if "password" in update_data:
+            update_data["password_hash"] = hashing.hash_password(update_data.pop("password"))
+
+        for field, value in update_data.items():
+            setattr(db_customer, field, value)
+
+        db.commit()
+        db.refresh(db_customer)
+        logger.info(f"Customer updated: {customer_id}")
+        return db_customer
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating customer {customer_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating customer: {e}")
