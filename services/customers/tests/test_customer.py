@@ -390,6 +390,120 @@ class TestCustomerInfo:
         assert data["username"] == sample_customer_data["username"]
 
 
+class TestCustomerUpdate:
+    """Tests customer PATCH endpoint"""
+
+    def test_update_customer_email(self, existing_customer):
+        update_data = {"email": "newemail@example.com"}
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["email"] == "newemail@example.com"
+        assert data["username"] == existing_customer.username
+
+    def test_update_customer_username(self, existing_customer):
+        update_data = {"username": "newuser123"}
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["username"] == "newuser123"
+        assert data["email"] == existing_customer.email
+
+    def test_update_customer_password(self, existing_customer):
+        update_data = {"password": "newpassword123"}
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 200
+
+        login_data = {"email": existing_customer.email, "password": "newpassword123"}
+        login_response = client.post("api/v1/customers/login", json=login_data)
+        assert login_response.status_code == 200
+
+    def test_update_customer_multiple_fields(self, existing_customer):
+        update_data = {
+            "email": "updated@example.com",
+            "username": "updated123",
+            "password": "newpassword123"
+        }
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["email"] == "updated@example.com"
+        assert data["username"] == "updated123"
+
+    def test_update_nonexistent_customer(self):
+        update_data = {"email": "test@example.com"}
+        response = client.patch("api/v1/customers/999", json=update_data)
+
+        assert response.status_code == 404
+        assert "Customer with id: 999 not found" in response.json()["detail"]
+
+    def test_update_customer_duplicate_email(self, existing_customer, sample_customer_data):
+        db = TestingSessionLocal()
+        hashed_password = hashing.hash_password("password456")
+        customer2 = Customer(
+            email="other@example.com",
+            username="otheruser",
+            password_hash=hashed_password,
+        )
+        db.add(customer2)
+        db.commit()
+        db.refresh(customer2)
+        db.close()
+
+        update_data = {"email": "other@example.com"}
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 400
+        assert "Email already exists" in response.json()["detail"]
+
+    def test_update_customer_duplicate_username(self, existing_customer):
+        db = TestingSessionLocal()
+        hashed_password = hashing.hash_password("password456")
+        customer2 = Customer(
+            email="other@example.com",
+            username="otheruser",
+            password_hash=hashed_password,
+        )
+        db.add(customer2)
+        db.commit()
+        db.refresh(customer2)
+        db.close()
+
+        update_data = {"username": "otheruser"}
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 400
+        assert "Username already exists" in response.json()["detail"]
+
+    def test_update_customer_invalid_username(self, existing_customer):
+        update_data = {"username": "short"}
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 422
+        error_detail = response.json()["detail"][0]
+        assert "Username must be between 6 and 12 caracters" in error_detail["msg"]
+
+    def test_update_customer_invalid_password(self, existing_customer):
+        update_data = {"password": "12345678"}
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json=update_data)
+
+        assert response.status_code == 422
+        error_detail = response.json()["detail"][0]
+        assert "Password must be a mix of nums and letters" in error_detail["msg"]
+
+    def test_update_customer_empty_payload(self, existing_customer):
+        response = client.patch(f"api/v1/customers/{existing_customer.id}", json={})
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["email"] == existing_customer.email
+        assert data["username"] == existing_customer.username
+
+
 # Integration tests
 class TestIntegration:
     """Integration tests for complete registration and login flow."""

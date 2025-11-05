@@ -38,6 +38,30 @@ class Customer(CustomerBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CustomerUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, usr: Optional[str]) -> Optional[str]:
+        if usr is not None and (len(usr) < 6 or len(usr) > 12):
+            raise ValueError(
+                f"Username must be between 6 and 12 caracters!. Got: {len(usr)}"
+            )
+        return usr
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, pwd: Optional[str]) -> Optional[str]:
+        if pwd is not None and (pwd.isdigit() or pwd.isalpha() or len(pwd) < 8):
+            raise ValueError(
+                "Password must be a mix of nums and letters, and have more than 8 caracters."
+            )
+        return pwd
+
+
 class CustomerLogin(BaseModel):
     email: EmailStr
     password: str
