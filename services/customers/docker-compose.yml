@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -28,7 +28,6 @@ services:
     command: >
       sh -c "
         cd customers &&
-        alembic upgrade head &&
         cd .. &&
         uvicorn main:app --host 0.0.0.0 --port 8080
       "
