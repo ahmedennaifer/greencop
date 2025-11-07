@@ -58,7 +58,7 @@ async def login(customer: customer_schema.CustomerLogin, db: Session = Depends(g
 
     access_token = auth.create_access_token(data={"sub": db_customer.email})
     logger.info(f"Customer logged in: {customer.email}")
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "user_id": db_customer.id}
 
 
 @customer_router.post("/info/{customer_id}")
