@@ -20,9 +20,9 @@
           >Prévisions</RouterLink
         >
         <RouterLink to="/alerts" class="block hover:text-green-300 transition">Alertes</RouterLink>
-        <RouterLink to="/config" class="block hover:text-green-300 transition"
+        <!-- <RouterLink to="/config" class="block hover:text-green-300 transition"
           >Configuration</RouterLink
-        >
+        > -->
         <RouterLink to="/profile" class="block hover:text-green-300 transition">Profil</RouterLink>
         <RouterLink to="/login" class="block hover:text-green-300 transition"
           >Deconnexion</RouterLink
