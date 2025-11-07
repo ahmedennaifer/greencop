@@ -8,12 +8,14 @@
       >
         <h2 class="text-3xl font-bold text-center text-white mb-6">Profil utilisateur</h2>
 
-        <div class="space-y-4 text-white/90">
-          <p><span class="font-semibold">Nom :</span> {{ user.name }}</p>
+        <div v-if="user" class="space-y-4 text-white/90">
+          <p><span class="font-semibold">Nom :</span> {{ user.username }}</p>
           <p><span class="font-semibold">Email :</span> {{ user.email }}</p>
-          <p><span class="font-semibold">Salles serveurs :</span> {{ user.rooms }}</p>
-          <p><span class="font-semibold">Capteurs :</span> {{ user.sensors }}</p>
         </div>
+
+        <!-- <div v-else class="text-center text-white/70">
+          Chargement des informations utilisateur...
+        </div> -->
 
         <div class="mt-6 text-center">
           <BaseButton label="Modifier le profil" @click="editProfile" />
@@ -24,17 +26,21 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/userStore'
+import { storeToRefs } from 'pinia'
 import AppLayout from '@/components/Layout/AppLayout.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 
-const user = {
-  name: 'Adolo',
-  email: 'adrien@datacenter.ai',
-  rooms: 3,
-  sensors: 36,
-}
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
 
 const editProfile = () => {
   console.log('Ouverture du formulaire de modification de profil...')
 }
+onMounted(async () => {
+  if (!user.value && userStore.token) {
+    await userStore.fetchUserInfo()
+  }
+})
 </script>

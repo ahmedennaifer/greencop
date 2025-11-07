@@ -24,7 +24,7 @@ export const useUserStore = defineStore('user', {
           email,
           password,
         })
-        console.log('Signup success:', res.data)
+        console.log(' Signup success:', res.data)
         router.push('/login')
       } catch (err: any) {
         this.error = err.response?.data?.detail || "Erreur lors de l'inscription."
@@ -42,11 +42,16 @@ export const useUserStore = defineStore('user', {
           email,
           password,
         })
+
         this.token = res.data.access_token
         localStorage.setItem('token', this.token)
 
-        // Optionnel : récupérer les infos utilisateur
-        await this.fetchUserInfo(email)
+        // Récupérer l'ID utilisateur depuis le token ou la réponse
+        // Si votre backend renvoie l'ID dans la réponse de login :
+        if (res.data.user_id) {
+          localStorage.setItem('userId', String(res.data.user_id))
+          await this.fetchUserInfo()
+        }
 
         router.push('/')
       } catch (err: any) {
@@ -57,16 +62,41 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async fetchUserInfo(email: string) {
+    async fetchUserInfo() {
       try {
-        const res = await axios.get(`/customers/info/${email}`, {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
+        const id = localStorage.getItem('userId')
+        if (!id) {
+          console.warn(' Aucun userId trouvé, impossible de charger le profil.')
+          return
+        }
+
+        console.log(' Chargement des infos pour le userId:', id)
+
+        const res = await axios.post(
+          `/customers/info/${id}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+            },
           },
-        })
+        )
+
+        console.log(' Profil utilisateur récupéré:', res.data)
         this.user = res.data
-      } catch (err) {
-        console.error('Impossible de récupérer les infos utilisateur.')
+      } catch (err: any) {
+        console.error(' Erreur lors du fetchUserInfo:', err)
+      }
+    },
+
+    // Fonction pour initialiser l'utilisateur au chargement de l'app
+    async initUser() {
+      const token = localStorage.getItem('token')
+      const userId = localStorage.getItem('userId')
+
+      if (token && userId) {
+        this.token = token
+        await this.fetchUserInfo()
       }
     },
 
@@ -74,6 +104,7 @@ export const useUserStore = defineStore('user', {
       this.token = ''
       this.user = null
       localStorage.removeItem('token')
+      localStorage.removeItem('userId')
       router.push('/login')
     },
   },
