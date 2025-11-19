@@ -41,3 +41,10 @@ variable "db_user" {
 variable "db_user_password" {
   type = string
 }
+
+variable "service_account_email" {
+  description = "Service account email for Pub/Sub access"
+  type        = string
+  default     = "terraform@greencop-473112.iam.gserviceaccount.com"
+}
+
