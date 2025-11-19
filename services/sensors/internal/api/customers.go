@@ -8,14 +8,6 @@ import (
 	"net/http"
 )
 
-/*
-curl -X 'GET' \
-'http://localhost:8080/api/v1/server_rooms/list_rooms/1' \
--H 'accept: application/json'
-*/
-
-// TODO: add auth check
-
 func (c *Client) GetCustomerRooms(customerId int) (error, []types.Room) {
 	var rooms []types.Room
 	logger.Debug("Getting rooms for customer", "customer_id", customerId)

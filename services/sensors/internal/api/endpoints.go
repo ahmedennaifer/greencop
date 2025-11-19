@@ -51,4 +51,3 @@ func (e Endpoint) IsValid() bool {
 		return false
 	}
 }
-
