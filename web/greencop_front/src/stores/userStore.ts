@@ -46,8 +46,6 @@ export const useUserStore = defineStore('user', {
         this.token = res.data.access_token
         localStorage.setItem('token', this.token)
 
-        // Récupérer l'ID utilisateur depuis le token ou la réponse
-        // Si votre backend renvoie l'ID dans la réponse de login :
         if (res.data.user_id) {
           localStorage.setItem('userId', String(res.data.user_id))
           await this.fetchUserInfo()

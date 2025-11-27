@@ -16,10 +16,16 @@ export default defineConfig({
   server: {
     proxy: {
       '/customers': {
-        target: 'http://127.0.0.1:8080',
+        target: 'https://customers-api-74885193017.europe-west1.run.app',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/customers/, '/api/v1/customers'),
+      },
+      '/server_rooms': {
+        target: 'https://customers-api-74885193017.europe-west1.run.app',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/server_rooms/, '/api/v1/server_rooms'),
       },
     },
   },

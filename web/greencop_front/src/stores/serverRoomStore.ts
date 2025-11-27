@@ -35,12 +35,12 @@ export const useServerRoomStore = defineStore('serverRoom', {
             },
           },
         )
-        console.log('✅ Server room créée:', res.data)
+        console.log(' Server room créée:', res.data)
         await this.listServerRooms(customer_id)
         return res.data
       } catch (err: any) {
         this.error = err.response?.data?.detail || 'Erreur lors de la création.'
-        console.error('❌ Erreur création server room:', this.error)
+        console.error('Erreur création server room:', this.error)
         throw err
       } finally {
         this.loading = false
@@ -57,11 +57,11 @@ export const useServerRoomStore = defineStore('serverRoom', {
             Authorization: `Bearer ${token}`,
           },
         })
-        console.log('✅ Server room récupérée:', res.data)
+        console.log(' Server room récupérée:', res.data)
         return res.data
       } catch (err: any) {
         this.error = err.response?.data?.detail || 'Erreur lors de la récupération.'
-        console.error('❌ Erreur récupération server room:', this.error)
+        console.error('Erreur récupération server room:', this.error)
         throw err
       } finally {
         this.loading = false
@@ -78,12 +78,12 @@ export const useServerRoomStore = defineStore('serverRoom', {
             Authorization: `Bearer ${token}`,
           },
         })
-        console.log('✅ Liste des server rooms:', res.data)
+        console.log('Liste des server rooms:', res.data)
         this.serverRooms = res.data
         return res.data
       } catch (err: any) {
         this.error = err.response?.data?.detail || 'Erreur lors de la récupération.'
-        console.error('❌ Erreur liste server rooms:', this.error)
+        console.error(' Erreur liste server rooms:', this.error)
         throw err
       } finally {
         this.loading = false
@@ -100,11 +100,11 @@ export const useServerRoomStore = defineStore('serverRoom', {
             Authorization: `Bearer ${token}`,
           },
         })
-        console.log('✅ Server room par ID:', res.data)
+        console.log(' Server room par ID:', res.data)
         return res.data
       } catch (err: any) {
         this.error = err.response?.data?.detail || 'Erreur lors de la récupération.'
-        console.error('❌ Erreur récupération server room par ID:', this.error)
+        console.error('Erreur récupération server room par ID:', this.error)
         throw err
       } finally {
         this.loading = false
@@ -128,12 +128,12 @@ export const useServerRoomStore = defineStore('serverRoom', {
             },
           },
         )
-        console.log('✅ Server room mise à jour:', res.data)
+        console.log(' Server room mise à jour:', res.data)
         await this.listServerRooms(customer_id)
         return res.data
       } catch (err: any) {
         this.error = err.response?.data?.detail || 'Erreur lors de la mise à jour.'
-        console.error('❌ Erreur mise à jour server room:', this.error)
+        console.error('Erreur mise à jour server room:', this.error)
         throw err
       } finally {
         this.loading = false
@@ -150,12 +150,12 @@ export const useServerRoomStore = defineStore('serverRoom', {
             Authorization: `Bearer ${token}`,
           },
         })
-        console.log('✅ Server room supprimée:', res.data)
+        console.log(' Server room supprimée:', res.data)
         await this.listServerRooms(customer_id)
         return res.data
       } catch (err: any) {
         this.error = err.response?.data?.detail || 'Erreur lors de la suppression.'
-        console.error('❌ Erreur suppression server room:', this.error)
+        console.error('Erreur suppression server room:', this.error)
         throw err
       } finally {
         this.loading = false
