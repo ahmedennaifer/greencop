@@ -30,7 +30,7 @@ async def create_sensor(sensor: SensorCreate, db: Session = Depends(get_db)):
 
     try:
         db_sensor = SensorModel(
-            name=sensor.name, type=sensor.type, room_id=sensor.room_id
+            id=sensor.id, name=sensor.name, type=sensor.type, room_id=sensor.room_id
         )
         db.add(db_sensor)
         db.commit()

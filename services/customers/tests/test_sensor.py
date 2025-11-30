@@ -70,6 +70,7 @@ def sample_room(sample_customer):
 @pytest.fixture
 def sample_sensor_data(sample_room):
     return {
+        "id": 1,
         "name": "Temperature Sensor",
         "type": "temperature",
         "room_id": sample_room.id,
@@ -90,7 +91,9 @@ class TestSensorCrud:
     def test_create_duplicate_sensor(self, sample_sensor_data):
         client.post("api/v1/sensors/new_sensor", json=sample_sensor_data)
 
-        response = client.post("api/v1/sensors/new_sensor", json=sample_sensor_data)
+        duplicate_data = sample_sensor_data.copy()
+        duplicate_data["id"] = 2
+        response = client.post("api/v1/sensors/new_sensor", json=duplicate_data)
         assert response.status_code == 400
         assert response.json()["detail"] == "Sensor already exists in this room"
 
@@ -128,6 +131,7 @@ class TestSensorCrud:
 
         updated_data = sample_sensor_data.copy()
         updated_data["name"] = "Updated Sensor"
+        updated_data["id"] = sensor_id
 
         response = client.put(
             f"api/v1/sensors/update_sensor/{sensor_id}", json=updated_data
@@ -137,8 +141,10 @@ class TestSensorCrud:
         assert data["name"] == "Updated Sensor"
 
     def test_update_nonexistent_sensor(self, sample_sensor_data):
+        update_data = sample_sensor_data.copy()
+        update_data["id"] = 999
         response = client.put(
-            "api/v1/sensors/update_sensor/999", json=sample_sensor_data
+            "api/v1/sensors/update_sensor/999", json=update_data
         )
         assert response.status_code == 404
         assert response.json()["detail"] == "Sensor not found"
