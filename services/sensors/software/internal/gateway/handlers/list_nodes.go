@@ -13,4 +13,3 @@ func HandleListNodes(manager *core.Manager) http.HandlerFunc {
 		json.NewEncoder(w).Encode(manager.Cache.Db)
 	}
 }
-

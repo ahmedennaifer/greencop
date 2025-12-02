@@ -14,4 +14,3 @@ func NewNode(id, ipAddr string, message core.Message) core.Node {
 		LastSeen: time.Now(),
 	}
 }
-

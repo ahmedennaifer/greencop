@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	addr := ":8008"
+	addr := ":8080"
 	server, err := gateway.NewGatewayServer(addr)
 	if err != nil {
 		fmt.Printf("error setting up manager: %v", err)

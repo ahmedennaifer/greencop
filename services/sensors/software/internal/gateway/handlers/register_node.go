@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"greencop.iot/sensors/internal/core"
@@ -16,6 +17,7 @@ func HandleRegisterNode(manager *core.Manager) http.HandlerFunc {
 		}
 		manager.Cache.Db[nodeData.Id] = nodeData
 		w.WriteHeader(http.StatusCreated)
+		fmt.Fprintf(w, "node with id %v registered with success\n", nodeData.Id)
 	}
 }
 
