@@ -11,12 +11,37 @@ import (
 	"go.uber.org/zap"
 	"greencop.iot/sensors/internal/core"
 	"greencop.iot/sensors/internal/gateway/handlers"
+	"greencop.iot/sensors/internal/middleware"
 )
 
 type GatewayServer struct {
 	addr    string
-	router  *http.ServeMux
 	Manager *core.Manager
+}
+
+func (s *GatewayServer) SetupRoutes() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/v1/register", handlers.HandleRegisterNode(s.Manager))
+	mux.HandleFunc("GET /api/v1/nodes", handlers.HandleListNodes(s.Manager))
+	return mux
+}
+
+func (s *GatewayServer) WithMiddleware(handler http.Handler, mw []func(http.Handler) http.Handler) http.Handler {
+	for _, m := range mw {
+		handler = m(handler)
+	}
+	return handler
+}
+
+func (s *GatewayServer) Start() error {
+	if err := s.StartDNS(); err != nil {
+		return err
+	}
+	handler := s.SetupRoutes()
+	handler = s.WithMiddleware(handler, []func(http.Handler) http.Handler{
+		middleware.LoggingMiddleware,
+	})
+	return http.ListenAndServe(s.addr, handler)
 }
 
 func NewGatewayServer(addr string) (*GatewayServer, error) {
@@ -26,20 +51,14 @@ func NewGatewayServer(addr string) (*GatewayServer, error) {
 	}
 	return &GatewayServer{
 		addr:    addr,
-		router:  http.NewServeMux(),
 		Manager: mgr,
 	}, nil
 }
 
-func (s *GatewayServer) SetupRoutes() {
-	s.router.HandleFunc("POST /api/v1/register",
-		handlers.HandleRegisterNode(s.Manager))
+func (s *GatewayServer) StartDNS() error {
+	// mDNS broadcasts to peers in localnetwork
+	// We dont have to hardcode IPs.
 
-	s.router.HandleFunc("GET /api/v1/nodes",
-		handlers.HandleListNodes(s.Manager))
-}
-
-func (s *GatewayServer) Start() error {
 	parts := strings.Split(s.addr, ":")
 	port, _ := strconv.Atoi(parts[len(parts)-1])
 
@@ -47,7 +66,6 @@ func (s *GatewayServer) Start() error {
 	if len(ips) == 0 {
 		s.Manager.Logger.Warn("No local IP addresses found for mDNS")
 	}
-
 	service, err := mdns.NewMDNSService(
 		"greencop-gateway",
 		"_http._tcp",
@@ -59,17 +77,18 @@ func (s *GatewayServer) Start() error {
 	)
 	if err != nil {
 		s.Manager.Logger.Error("Failed to create mDNS service", zap.Error(err))
+		return err
 	} else {
 		_, err := mdns.NewServer(&mdns.Config{Zone: service})
 		if err != nil {
 			s.Manager.Logger.Error("Failed to start mDNS server", zap.Error(err))
+			return err
 		} else {
 			s.Manager.Logger.Info("mDNS broadcasting", zap.String("hostname", "greencop-gateway.local"))
 		}
 	}
-
 	fmt.Printf("Starting gateway server on: %v\n", s.addr)
-	return http.ListenAndServe(s.addr, s.router)
+	return nil
 }
 
 func getLocalIPs() []net.IP {
@@ -78,7 +97,6 @@ func getLocalIPs() []net.IP {
 	if err != nil {
 		return ips
 	}
-
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
