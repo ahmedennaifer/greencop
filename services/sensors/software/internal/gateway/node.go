@@ -10,7 +10,8 @@ func NewNode(id, ipAddr string, message core.Message) core.Node {
 	return core.Node{
 		Id:       id,
 		IpAddr:   ipAddr,
-		Message:  message,
+		Messages: make([]core.Message, 0),
 		LastSeen: time.Now(),
+		IsAlive:  true,
 	}
 }

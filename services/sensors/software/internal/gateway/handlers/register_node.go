@@ -12,6 +12,7 @@ func HandleRegisterNode(manager *core.Manager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		nodeData, err := parseNodeFromRequest(r)
 		if err != nil {
+			fmt.Printf("cannot parse node with id: %v", nodeData.Id)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

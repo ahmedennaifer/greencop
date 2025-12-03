@@ -22,6 +22,8 @@ type GatewayServer struct {
 func (s *GatewayServer) SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/v1/register", handlers.HandleRegisterNode(s.Manager))
+	mux.HandleFunc("POST /api/v1/messages", handlers.HandleSendMessage(s.Manager))
+	mux.HandleFunc("POST /api/v1/heartbeat", handlers.HandleHeartbeat(s.Manager))
 	mux.HandleFunc("GET /api/v1/nodes", handlers.HandleListNodes(s.Manager))
 	return mux
 }
@@ -39,7 +41,7 @@ func (s *GatewayServer) Start() error {
 	}
 	handler := s.SetupRoutes()
 	handler = s.WithMiddleware(handler, []func(http.Handler) http.Handler{
-		middleware.LoggingMiddleware,
+		middleware.Logging,
 	})
 	return http.ListenAndServe(s.addr, handler)
 }
@@ -56,7 +58,7 @@ func NewGatewayServer(addr string) (*GatewayServer, error) {
 }
 
 func (s *GatewayServer) StartDNS() error {
-	// mDNS broadcasts to peers in localnetwork
+	// mDNS broadcasts its hostname to peers, in the localnetwork
 	// We dont have to hardcode IPs.
 
 	parts := strings.Split(s.addr, ":")
