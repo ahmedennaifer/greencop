@@ -53,13 +53,11 @@ def write_to_bigquery(sensor_data):
             timestamp_str = timestamp_str.replace("+01:00", "Z")
 
         row = {
-            "sensor_id": sensor_data.get("sensor_id"),
-            "room_id": sensor_data.get("room_id"),
-            "timestamp": timestamp_str,
+            "node_id": sensor_data.get("node_id"),
+            "message_id": sensor_data.get("message_id"),
+            "timestamp": sensor_data.get("timestamp"),
             "temperature": float(sensor_data.get("temperature", 0)),
             "humidity": float(sensor_data.get("humidity", 0)),
-            "pressure": float(sensor_data.get("pressure", 0)),
-            "air_quality": int(sensor_data.get("air_quality", 0)),
         }
 
         errors = client.insert_rows_json(table, [row])
@@ -73,4 +71,3 @@ def write_to_bigquery(sensor_data):
     except Exception as e:
         logger.error(f"Failed to write to BigQuery: {str(e)}")
         raise
-

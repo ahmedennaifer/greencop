@@ -5,7 +5,7 @@ import requests
 import network
 import time
 import usocket
-
+import random
 from config import WIFI_SSID, WIFI_PASSWORD
 
 
@@ -88,17 +88,19 @@ class Node:
         payload = {
             "id": msg_id,
             "node_id": self.node_id,
-            "temperature": 22.5,
-            "humidity": 34.5,
+            "temperature": random.uniform(20, 30),
+            "humidity": random.uniform(30, 50),
         }
 
         res = requests.post(
             f"http://{server_ip}:{self.port}/api/v1/message", json=payload
         )
-        if res and res.status_code == 200:
+        if res.status_code == 200:
             print(f"sent message {msg_id}: {payload} ")
         else:
-            print(f"failed to send message {msg_id}")
+            print(
+                f"failed to send message {msg_id}. status code: {res.status_code}, body:{res.json}"
+            )
 
     def heartbeat(self) -> None:
         if not self.connected and not self.registered:

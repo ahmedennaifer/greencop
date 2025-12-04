@@ -5,6 +5,7 @@ resource "google_bigquery_dataset" "sensor_data" {
   location      = var.region
   project       = var.project_id
 
+  deletion_prote
   labels = {
     environment = "dev"
     service     = "sensor-data"
@@ -50,5 +51,5 @@ resource "google_bigquery_table" "sensor_readings" {
       mode = "NULLABLE"
     },
   ])
-
 }
+

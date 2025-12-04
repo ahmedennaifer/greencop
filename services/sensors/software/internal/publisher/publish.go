@@ -11,11 +11,11 @@ import (
 )
 
 type Payload struct {
-	SensorID    string    `json:"sensor_id"`
+	NodeId      string    `json:"node_id"`
+	MessageId   string    `json:"message_id"`
 	Timestamp   time.Time `json:"timestamp"`
 	Temperature float64   `json:"temperature"`
 	Humidity    float64   `json:"humidity"`
-	RoomID      string    `json:"room_id"`
 }
 
 type Publisher struct {
@@ -62,8 +62,7 @@ func (p *Publisher) Publish(data Payload) error {
 	message := &pubsub.Message{
 		Data: jsonData,
 		Attributes: map[string]string{
-			"sensor_id": data.SensorID,
-			"room_id":   data.RoomID,
+			"sensor_id": data.NodeId,
 			"timestamp": data.Timestamp.Format(time.RFC3339),
 		},
 	}

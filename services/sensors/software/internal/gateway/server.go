@@ -22,7 +22,7 @@ type GatewayServer struct {
 func (s *GatewayServer) SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/v1/register", handlers.HandleRegisterNode(s.Manager))
-	mux.HandleFunc("POST /api/v1/message", handlers.HandleSendMessage(s.Manager))
+	mux.HandleFunc("POST /api/v1/message", handlers.HandlePublishMessage(s.Manager))
 	mux.HandleFunc("POST /api/v1/heartbeat", handlers.HandleHeartbeat(s.Manager))
 	mux.HandleFunc("GET /api/v1/nodes", handlers.HandleListNodes(s.Manager))
 	return mux

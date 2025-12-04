@@ -1,14 +1,18 @@
 package handlers
 
+// TODO: re implement node auth check, now removed because no more cache
+
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"greencop.iot/sensors/internal/core"
+	"greencop.iot/sensors/internal/publisher"
 )
 
-func HandleSendMessage(manager *core.Manager) http.HandlerFunc {
+func HandlePublishMessage(manager *core.Manager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		msg, err := decodeMessage(r)
 		if err != nil {
@@ -16,17 +20,18 @@ func HandleSendMessage(manager *core.Manager) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		node, exists := manager.Cache.Db[msg.NodeId]
-		if !exists {
-			fmt.Fprintf(w, "node with id %v is not registered, thus cannot publish messages\n", msg.NodeId)
-			w.WriteHeader(http.StatusNotFound)
-			return
+		payload := publisher.Payload{
+			NodeId:      msg.NodeId,
+			MessageId:   msg.Id,
+			Timestamp:   time.Now(),
+			Temperature: float64(msg.Temperature),
+			Humidity:    float64(msg.Humidity),
 		}
-
-		node.Messages = append(node.Messages, msg)
-		manager.Cache.Db[msg.NodeId] = node
-		fmt.Fprintf(w, "message with id %v sent with success\n", msg.Id)
-		w.WriteHeader(http.StatusCreated)
+		if err := manager.Publisher.Publish(payload); err != nil {
+			fmt.Printf("error publishing message %v from node %v\n", payload.NodeId)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+		fmt.Printf("published message with id %v from node \n", payload.MessageId, payload.NodeId)
 	}
 }
 
