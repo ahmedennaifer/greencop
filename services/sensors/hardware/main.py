@@ -1,5 +1,6 @@
 import machine
 import ubinascii
+import urandom
 import requests
 import network
 import time
@@ -49,6 +50,7 @@ class Node:
         return addr_info[0][-1][0]
 
     def register_node(self):
+        print(f"trying to register node: {self.node_id}")
         if self.registered:
             return
         while self.attemps > 0:
@@ -79,14 +81,33 @@ class Node:
                 self._connect_wifi()
                 self.attemps -= 1
 
+    def send_message(self) -> None:
+        server_ip = self.resolve_host()
+        message = bytes([urandom.getrandbits(8) for _ in range(4)])
+        msg_id = ubinascii.hexlify(message).decode()
+        payload = {
+            "id": msg_id,
+            "node_id": self.node_id,
+            "temperature": 22.5,
+            "humidity": 34.5,
+        }
+
+        res = requests.post(
+            f"http://{server_ip}:{self.port}/api/v1/message", json=payload
+        )
+        if res and res.status_code == 200:
+            print(f"sent message {msg_id}: {payload} ")
+        else:
+            print(f"failed to send message {msg_id}")
+
     def heartbeat(self) -> None:
         if not self.connected and not self.registered:
             raise RuntimeError(
                 "cannot send heartbeat while not connected or not registered"
             )
 
-        max_retries = 5
-        while True and max_retries <= 5:
+        max_retries = 0
+        if max_retries <= 5:
             server_ip = self.resolve_host()
             payload = {
                 "node_id": self.node_id,
@@ -104,10 +125,18 @@ class Node:
                 )
                 max_retries += 1
 
+    def run(self):
+        try:
+            self.register_node()
+        except Exception as e:
+            raise ValueError(f"Failed to register node: {e}") from e
+        while True:
+            self.heartbeat()
+            self.send_message()
+
 
 if __name__ == "__main__":
     c = CONFIG()
     n = Node(c)
-    print("trying to register node...")
-    n.register_node()
-    n.heartbeat()
+    print(f"Starting node {n.node_id}")
+    n.run()
