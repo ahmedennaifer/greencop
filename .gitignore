@@ -395,9 +395,14 @@ terraform/terraform.tfvars
 
 scripts/*
 *.terraform
+*.terraform.lock.hcl
 *.tfstate
 *.tfstate.backup
+*.tfstate.*.backup
 terraform.tfvars
 *.tfvars
+tfplan
+*.tfplan
 
 creds.json
+sa.json
