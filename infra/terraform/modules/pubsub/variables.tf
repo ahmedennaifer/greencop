@@ -9,6 +9,12 @@ variable "topic_name" {
   default     = "data"
 }
 
+variable "service_label" {
+  description = "Service label for the topic"
+  type        = string
+  default     = "sensor-data"
+}
+
 variable "environment" {
   description = "Environment label"
   type        = string
