@@ -23,6 +23,10 @@ class Node:
         self.node_id: str = ubinascii.hexlify(machine.unique_id()).decode()
         self.attemps: int = 5
         self.registered: bool = False
+        self.led_green = machine.Pin(5, machine.Pin.OUT)
+        self.led_green.off()
+        self.led_red = machine.Pin(4, machine.Pin.OUT)
+        self.led_red.off()
 
     def _connect_wifi(self):
         wlan = network.WLAN(network.STA_IF)
@@ -92,15 +96,29 @@ class Node:
             "humidity": random.uniform(30, 60),
         }
 
-        res = requests.post(
-            f"http://{server_ip}:{self.port}/api/v1/message", json=payload
-        )
-        if res.status_code == 200:
-            print(f"sent message {msg_id}: {payload} ")
-        else:
-            print(
-                f"failed to send message {msg_id}. status code: {res.status_code}, body:{res.json}"
+        self.led_green.on()
+        try:
+            res = requests.post(
+                f"http://{server_ip}:{self.port}/api/v1/message", json=payload
             )
+            if res.status_code == 200:
+                print(f"sent message {msg_id}: {payload} ")
+            else:
+                print(
+                    f"failed to send message {msg_id}. status code: {res.status_code}, body:{res.json}"
+                )
+                self.led_green.off()
+                self.led_red.on()
+                time.sleep(0.5)
+                self.led_red.off()
+        except Exception as e:
+            self.led_green.off()
+            self.led_red.on()
+            time.sleep(0.5)
+            self.led_red.off()
+            print(f"Error sending message: {e}")
+        finally:
+            self.led_green.off()
 
     def heartbeat(self) -> None:
         if not self.connected and not self.registered:
