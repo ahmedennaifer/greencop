@@ -9,7 +9,7 @@ class SensorBase(BaseModel):
 
 
 class SensorCreate(SensorBase):
-    pass
+    id: int
 
 
 class Sensor(SensorBase):

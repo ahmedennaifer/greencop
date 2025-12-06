@@ -15,22 +15,22 @@ resource "google_bigquery_table" "sensor_readings" {
   dataset_id = google_bigquery_dataset.sensor_data.dataset_id
   table_id   = var.table_id
   project    = var.project_id
-
+  deletion_protection = false
   time_partitioning {
     type  = "DAY"
     field = "timestamp"
   }
 
-  clustering = ["sensor_id", "room_id"]
+  clustering = ["node_id", "message_id"]
 
   schema = jsonencode([
     {
-      name = "sensor_id"
+      name = "node_id"
       type = "STRING"
       mode = "REQUIRED"
     },
     {
-      name = "room_id"
+      name = "message_id"
       type = "STRING"
       mode = "REQUIRED"
     },
@@ -49,15 +49,6 @@ resource "google_bigquery_table" "sensor_readings" {
       type = "FLOAT64"
       mode = "NULLABLE"
     },
-    {
-      name = "pressure"
-      type = "FLOAT64"
-      mode = "NULLABLE"
-    },
-    {
-      name = "air_quality"
-      type = "INTEGER"
-      mode = "NULLABLE"
-    }
   ])
+
 }
