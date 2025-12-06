@@ -88,8 +88,8 @@ class Node:
         payload = {
             "id": msg_id,
             "node_id": self.node_id,
-            "temperature": random.uniform(20, 30),
-            "humidity": random.uniform(30, 50),
+            "temperature": random.uniform(20, 60),
+            "humidity": random.uniform(30, 60),
         }
 
         res = requests.post(
