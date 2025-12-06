@@ -60,9 +60,27 @@ module "customers_service_db" {
 }
 
 module "sensor_data_pubsub" {
-  source     = "./modules/pubsub"
-  project_id = var.project_id
-  topic_name = "data"
+  source        = "./modules/pubsub"
+  project_id    = var.project_id
+  topic_name    = "data"
+  service_label = "sensor-data"
+
+  publisher_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  subscriber_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  depends_on = [google_project_service.pubsub_api]
+}
+
+module "alerts_pubsub" {
+  source        = "./modules/pubsub"
+  project_id    = var.project_id
+  topic_name    = "alerts"
+  service_label = "alerts"
 
   publisher_members = [
     "serviceAccount:${var.service_account_email}"
@@ -83,6 +101,12 @@ module "sensor_bigquery" {
   depends_on = [google_project_service.bigquery_api]
 }
 
+resource "google_storage_bucket" "cloud_functions_bucket" {
+  name     = "${var.project_id}-cloud-functions"
+  location = var.region
+  project  = var.project_id
+}
+
 module "data_ingestion_function" {
   source              = "./modules/cloud_function"
   project_id          = var.project_id
@@ -91,6 +115,7 @@ module "data_ingestion_function" {
   entry_point         = "pubsub_to_bigquery"
   source_archive_path = "../../services/data/function_source.zip"
   pubsub_topic_id     = module.sensor_data_pubsub.topic_id
+  bucket_name         = google_storage_bucket.cloud_functions_bucket.name
 
   environment_variables = {
     PROJECT_ID = var.project_id
@@ -103,6 +128,35 @@ module "data_ingestion_function" {
     google_project_service.cloudbuild_api,
     google_project_service.eventarc_api,
     module.sensor_data_pubsub,
-    module.sensor_bigquery
+    module.sensor_bigquery,
+    google_storage_bucket.cloud_functions_bucket
   ]
 }
+
+module "alert_detection_function" {
+  source              = "./modules/cloud_function"
+  project_id          = var.project_id
+  region              = var.region
+  function_name       = "alert-detection"
+  entry_point         = "detect_excessive_metrics"
+  source_archive_path = "../../services/alerts/function_source.zip"
+  pubsub_topic_id     = module.sensor_data_pubsub.topic_id
+  bucket_name         = google_storage_bucket.cloud_functions_bucket.name
+
+  environment_variables = {
+    PROJECT_ID           = var.project_id
+    MAX_ALLOWED_TEMP     = "50.0"
+    MAX_ALLOWED_HUMIDITY = "50.0"
+    ALERT_TOPIC          = module.alerts_pubsub.topic_name
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions_api,
+    google_project_service.cloudbuild_api,
+    google_project_service.eventarc_api,
+    module.sensor_data_pubsub,
+    module.alerts_pubsub,
+    google_storage_bucket.cloud_functions_bucket
+  ]
+}
+
