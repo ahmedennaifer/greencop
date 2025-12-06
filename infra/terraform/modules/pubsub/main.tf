@@ -1,24 +1,12 @@
-resource "google_pubsub_topic" "sensor_data_topic" {
+resource "google_pubsub_topic" "topic" {
   name    = var.topic_name
   project = var.project_id
 
   labels = {
     environment = var.environment
-    service     = "sensor-data"
+    service     = var.service_label
   }
 
-  message_retention_duration = "86400s" # 24 hours
+  message_retention_duration = "86400s"
 }
 
-# IAM bindings commented out - use gcloud for local testing
-# resource "google_pubsub_topic_iam_binding" "publisher_binding" {
-#   topic   = google_pubsub_topic.sensor_data_topic.name
-#   role    = "roles/pubsub.publisher"
-#   members = var.publisher_members
-# }
-
-# resource "google_pubsub_topic_iam_binding" "subscriber_binding" {
-#   topic   = google_pubsub_topic.sensor_data_topic.name
-#   role    = "roles/pubsub.subscriber"
-#   members = var.subscriber_members
-# }

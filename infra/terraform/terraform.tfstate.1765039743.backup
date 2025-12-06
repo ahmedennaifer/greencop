@@ -1,0 +1,1032 @@
+{
+  "version": 4,
+  "terraform_version": "1.5.7",
+  "serial": 36,
+  "lineage": "e56a2c98-2b3f-21d1-ccb2-205cae864233",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "bigquery_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": true,
+            "id": "greencop-473112/bigquery.googleapis.com",
+            "project": "greencop-473112",
+            "service": "bigquery.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "cloud_sql_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": true,
+            "id": "greencop-473112/sqladmin.googleapis.com",
+            "project": "greencop-473112",
+            "service": "sqladmin.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "cloudbuild_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": true,
+            "id": "greencop-473112/cloudbuild.googleapis.com",
+            "project": "greencop-473112",
+            "service": "cloudbuild.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "cloudfunctions_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": true,
+            "id": "greencop-473112/cloudfunctions.googleapis.com",
+            "project": "greencop-473112",
+            "service": "cloudfunctions.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "eventarc_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": true,
+            "id": "greencop-473112/eventarc.googleapis.com",
+            "project": "greencop-473112",
+            "service": "eventarc.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "pubsub_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": true,
+            "id": "greencop-473112/pubsub.googleapis.com",
+            "project": "greencop-473112",
+            "service": "pubsub.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_project_service",
+      "name": "resource_manager_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "disable_dependent_services": null,
+            "disable_on_destroy": true,
+            "id": "greencop-473112/cloudresourcemanager.googleapis.com",
+            "project": "greencop-473112",
+            "service": "cloudresourcemanager.googleapis.com",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInJlYWQiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjoxMjAwMDAwMDAwMDAwfX0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "name": "cloud_functions_bucket",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "autoclass": [],
+            "cors": [],
+            "custom_placement_config": [],
+            "default_event_based_hold": false,
+            "encryption": [],
+            "force_destroy": false,
+            "id": "greencop-473112-cloud-functions",
+            "labels": {},
+            "lifecycle_rule": [],
+            "location": "EUROPE-WEST1",
+            "logging": [],
+            "name": "greencop-473112-cloud-functions",
+            "project": "greencop-473112",
+            "public_access_prevention": "inherited",
+            "requester_pays": false,
+            "retention_policy": [],
+            "self_link": "https://www.googleapis.com/storage/v1/b/greencop-473112-cloud-functions",
+            "soft_delete_policy": [
+              {
+                "effective_time": "2025-11-19T20:06:17.660Z",
+                "retention_duration_seconds": 604800
+              }
+            ],
+            "storage_class": "STANDARD",
+            "timeouts": {
+              "create": null,
+              "read": null,
+              "update": null
+            },
+            "uniform_bucket_level_access": false,
+            "url": "gs://greencop-473112-cloud-functions",
+            "versioning": [],
+            "website": []
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsInJlYWQiOjI0MDAwMDAwMDAwMCwidXBkYXRlIjoyNDAwMDAwMDAwMDB9LCJzY2hlbWFfdmVyc2lvbiI6IjAifQ=="
+        }
+      ]
+    },
+    {
+      "module": "module.alerts_pubsub",
+      "mode": "managed",
+      "type": "google_pubsub_topic",
+      "name": "topic",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "projects/greencop-473112/topics/alerts",
+            "kms_key_name": "",
+            "labels": {
+              "environment": "dev",
+              "service": "alerts"
+            },
+            "message_retention_duration": "86400s",
+            "message_storage_policy": [],
+            "name": "alerts",
+            "project": "greencop-473112",
+            "schema_settings": [],
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "google_project_service.pubsub_api"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.customers_service",
+      "mode": "managed",
+      "type": "google_cloud_run_service_iam_member",
+      "name": "invoker",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "condition": [],
+            "etag": "BwZFS0wJrCY=",
+            "id": "v1/projects/greencop-473112/locations/europe-west1/services/my-web-service/roles/run.invoker/allUsers",
+            "location": "europe-west1",
+            "member": "allUsers",
+            "project": "greencop-473112",
+            "role": "roles/run.invoker",
+            "service": "v1/projects/greencop-473112/locations/europe-west1/services/my-web-service"
+          },
+          "sensitive_attributes": [],
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.customers_service.google_cloud_run_v2_service.service",
+            "module.customers_service_db.google_sql_database.customers_db",
+            "module.customers_service_db.google_sql_database_instance.customers",
+            "module.customers_service_db.google_sql_user.user"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.customers_service",
+      "mode": "managed",
+      "type": "google_cloud_run_v2_service",
+      "name": "service",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "annotations": null,
+            "binary_authorization": [],
+            "client": "",
+            "client_version": "",
+            "conditions": [
+              {
+                "execution_reason": "",
+                "last_transition_time": "2025-12-06T16:45:59.726009Z",
+                "message": "",
+                "reason": "",
+                "revision_reason": "",
+                "severity": "",
+                "state": "CONDITION_SUCCEEDED",
+                "type": "RoutesReady"
+              },
+              {
+                "execution_reason": "",
+                "last_transition_time": "2025-12-06T16:45:50.512066Z",
+                "message": "",
+                "reason": "",
+                "revision_reason": "",
+                "severity": "",
+                "state": "CONDITION_SUCCEEDED",
+                "type": "ConfigurationsReady"
+              }
+            ],
+            "create_time": "2025-12-06T16:45:49.616845Z",
+            "creator": "ahmedennaifer00@gmail.com",
+            "delete_time": "",
+            "description": "",
+            "etag": "\"CL270ckGEMidkaYC/cHJvamVjdHMvZ3JlZW5jb3AtNDczMTEyL2xvY2F0aW9ucy9ldXJvcGUtd2VzdDEvc2VydmljZXMvbXktd2ViLXNlcnZpY2U\"",
+            "expire_time": "",
+            "generation": "1",
+            "id": "projects/greencop-473112/locations/europe-west1/services/my-web-service",
+            "ingress": "INGRESS_TRAFFIC_ALL",
+            "labels": null,
+            "last_modifier": "ahmedennaifer00@gmail.com",
+            "latest_created_revision": "projects/greencop-473112/locations/europe-west1/services/my-web-service/revisions/my-web-service-00001-pmg",
+            "latest_ready_revision": "projects/greencop-473112/locations/europe-west1/services/my-web-service/revisions/my-web-service-00001-pmg",
+            "launch_stage": "GA",
+            "location": "europe-west1",
+            "name": "my-web-service",
+            "observed_generation": "1",
+            "project": "greencop-473112",
+            "reconciling": false,
+            "template": [
+              {
+                "annotations": {},
+                "containers": [
+                  {
+                    "args": null,
+                    "command": null,
+                    "env": [
+                      {
+                        "name": "DB_URL",
+                        "value": "postgresql://greencop:greencop@/customers-db?host=/cloudsql/greencop-473112:europe-west1:customers-db-instance",
+                        "value_source": []
+                      }
+                    ],
+                    "image": "europe-west1-docker.pkg.dev/greencop-473112/greencop-services/customers:latest",
+                    "liveness_probe": [],
+                    "name": "",
+                    "ports": [
+                      {
+                        "container_port": 8080,
+                        "name": "http1"
+                      }
+                    ],
+                    "resources": [
+                      {
+                        "cpu_idle": true,
+                        "limits": {
+                          "cpu": "1000m",
+                          "memory": "512Mi"
+                        },
+                        "startup_cpu_boost": false
+                      }
+                    ],
+                    "startup_probe": [
+                      {
+                        "failure_threshold": 1,
+                        "grpc": [],
+                        "http_get": [],
+                        "initial_delay_seconds": 0,
+                        "period_seconds": 240,
+                        "tcp_socket": [
+                          {
+                            "port": 8080
+                          }
+                        ],
+                        "timeout_seconds": 240
+                      }
+                    ],
+                    "volume_mounts": [
+                      {
+                        "mount_path": "/cloudsql",
+                        "name": "cloudsql"
+                      }
+                    ],
+                    "working_dir": ""
+                  }
+                ],
+                "encryption_key": "",
+                "execution_environment": "",
+                "labels": null,
+                "max_instance_request_concurrency": 80,
+                "revision": "",
+                "scaling": [
+                  {
+                    "max_instance_count": 20,
+                    "min_instance_count": 0
+                  }
+                ],
+                "service_account": "74885193017-compute@developer.gserviceaccount.com",
+                "session_affinity": false,
+                "timeout": "300s",
+                "volumes": [
+                  {
+                    "cloud_sql_instance": [
+                      {
+                        "instances": [
+                          "greencop-473112:europe-west1:customers-db-instance"
+                        ]
+                      }
+                    ],
+                    "name": "cloudsql",
+                    "secret": []
+                  }
+                ],
+                "vpc_access": []
+              }
+            ],
+            "terminal_condition": [
+              {
+                "execution_reason": "",
+                "last_transition_time": "2025-12-06T16:45:59.750649Z",
+                "message": "",
+                "reason": "",
+                "revision_reason": "",
+                "severity": "",
+                "state": "CONDITION_SUCCEEDED",
+                "type": "Ready"
+              }
+            ],
+            "timeouts": null,
+            "traffic": [
+              {
+                "percent": 100,
+                "revision": "",
+                "tag": "",
+                "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
+              }
+            ],
+            "traffic_statuses": [
+              {
+                "percent": 100,
+                "revision": "",
+                "tag": "",
+                "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST",
+                "uri": ""
+              }
+            ],
+            "uid": "444e149a-85c3-4a53-bca0-a5858e2ec1ce",
+            "update_time": "2025-12-06T16:45:49.616845Z",
+            "uri": "https://my-web-service-x6j3tvo2ca-ew.a.run.app"
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.customers_service_db.google_sql_database.customers_db",
+            "module.customers_service_db.google_sql_database_instance.customers",
+            "module.customers_service_db.google_sql_user.user"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.customers_service_db",
+      "mode": "managed",
+      "type": "google_sql_database",
+      "name": "customers_db",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "charset": "UTF8",
+            "collation": "en_US.UTF8",
+            "deletion_policy": "DELETE",
+            "id": "projects/greencop-473112/instances/customers-db-instance/databases/customers-db",
+            "instance": "customers-db-instance",
+            "name": "customers-db",
+            "project": "greencop-473112",
+            "self_link": "https://sqladmin.googleapis.com/sql/v1beta4/projects/greencop-473112/instances/customers-db-instance/databases/customers-db",
+            "timeouts": {
+              "create": null,
+              "delete": null,
+              "update": null
+            }
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "module.customers_service_db.google_sql_database_instance.customers"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.customers_service_db",
+      "mode": "managed",
+      "type": "google_sql_database_instance",
+      "name": "customers",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "available_maintenance_versions": [
+              "POSTGRES_15_15.R20251004.01_19"
+            ],
+            "clone": [],
+            "connection_name": "greencop-473112:europe-west1:customers-db-instance",
+            "database_version": "POSTGRES_15",
+            "deletion_protection": true,
+            "dns_name": "",
+            "encryption_key_name": null,
+            "first_ip_address": "34.140.129.193",
+            "id": "customers-db-instance",
+            "instance_type": "CLOUD_SQL_INSTANCE",
+            "ip_address": [
+              {
+                "ip_address": "34.140.129.193",
+                "time_to_retire": "",
+                "type": "PRIMARY"
+              },
+              {
+                "ip_address": "34.77.202.202",
+                "time_to_retire": "",
+                "type": "OUTGOING"
+              }
+            ],
+            "maintenance_version": "POSTGRES_15_14.R20251004.01_14",
+            "master_instance_name": "",
+            "name": "customers-db-instance",
+            "private_ip_address": "",
+            "project": "greencop-473112",
+            "psc_service_attachment_link": "",
+            "public_ip_address": "34.140.129.193",
+            "region": "europe-west1",
+            "replica_configuration": [],
+            "restore_backup_context": [],
+            "root_password": null,
+            "self_link": "https://sqladmin.googleapis.com/sql/v1beta4/projects/greencop-473112/instances/customers-db-instance",
+            "server_ca_cert": [
+              {
+                "cert": "-----BEGIN CERTIFICATE-----\nMIIDfzCCAmegAwIBAgIBADANBgkqhkiG9w0BAQsFADB3MS0wKwYDVQQuEyQ2MDEw\nNjIzYS1mNTBiLTRiZGMtYjQzZS01MDRiZjZlYTM1OWYxIzAhBgNVBAMTGkdvb2ds\nZSBDbG91ZCBTUUwgU2VydmVyIENBMRQwEgYDVQQKEwtHb29nbGUsIEluYzELMAkG\nA1UEBhMCVVMwHhcNMjUxMTA3MTgwNDQxWhcNMzUxMTA1MTgwNTQxWjB3MS0wKwYD\nVQQuEyQ2MDEwNjIzYS1mNTBiLTRiZGMtYjQzZS01MDRiZjZlYTM1OWYxIzAhBgNV\nBAMTGkdvb2dsZSBDbG91ZCBTUUwgU2VydmVyIENBMRQwEgYDVQQKEwtHb29nbGUs\nIEluYzELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB\nAQCu9QbWxHXxJ6OR6CMSAxBi6GD6gLz/oZF3tefIlOOcsfyx1kmrg7hIN+VHLMrf\nQRpqKYPbnvaaBTUaWQyNTGs5/XjAq6sLn6qOe/ryWQ1J8a6CoXTJ03mbq0JDeO0b\nqU+f/nH3jyxhvSOua09qgVHyZkfWEqEdeyhjuwqeyVjZ9W1DSZnab6cJIrS2ABbX\nRK+YJkntsVk5YB+UqCAZno3HUnisfBgh0NViKl83ACbaft6zyWzAQW+ZOT0wsmdJ\nd0FoJZCgIg67PgD0tDIjg8clFcsbFgUmvGJT261Y9PUpzcfyynK/BlaMDUNs15Rj\n3yTQFrLsCY78H4FcAhGV8DV1AgMBAAGjFjAUMBIGA1UdEwEB/wQIMAYBAf8CAQAw\nDQYJKoZIhvcNAQELBQADggEBAGExpObYD9Ym7YNZKqM6dZWDdp9DU384eAElme/Q\ntwIFF2AUAavah7UWEXY0TvJ5BSiQDmoL6P62ABg5wqmtrNpmsqWx64NTyrwI6w65\nNyhtx1OsJmmeAt8B4bjugLlF+5FQT5Us0ELBSz5apIq6e7RLGFyahEjuWPThlABs\nqf59IO6hm+JhFSWpZJDLq8Ot+xi0NjvsvmPVZ+ikqc70+bDtcPLVoSxi8MXPNG7E\n+WTcq0DsQ2We2jLPGnskFa+7Oe3N4IgjHsPdaQl8dHANopvZqlzCtcXZlj8b5XLe\nx+Jbyn3gmkpuczdFkpnLTCWweJPzcZPTtIlE8dKa8Xe2vp0=\n-----END CERTIFICATE-----",
+                "common_name": "C=US,O=Google\\, Inc,CN=Google Cloud SQL Server CA,dnQualifier=6010623a-f50b-4bdc-b43e-504bf6ea359f",
+                "create_time": "2025-11-07T18:04:41.508Z",
+                "expiration_time": "2035-11-05T18:05:41.508Z",
+                "sha1_fingerprint": "665a35440f0ca6eecc41ee44cb110f2404734456"
+              }
+            ],
+            "service_account_email_address": "p74885193017-4pzzw2@gcp-sa-cloud-sql.iam.gserviceaccount.com",
+            "settings": [
+              {
+                "activation_policy": "ALWAYS",
+                "active_directory_config": [],
+                "advanced_machine_features": [],
+                "availability_type": "ZONAL",
+                "backup_configuration": [
+                  {
+                    "backup_retention_settings": [
+                      {
+                        "retained_backups": 7,
+                        "retention_unit": "COUNT"
+                      }
+                    ],
+                    "binary_log_enabled": false,
+                    "enabled": false,
+                    "location": "",
+                    "point_in_time_recovery_enabled": false,
+                    "start_time": "18:00",
+                    "transaction_log_retention_days": 7
+                  }
+                ],
+                "collation": "",
+                "connector_enforcement": "NOT_REQUIRED",
+                "data_cache_config": [],
+                "database_flags": [],
+                "deletion_protection_enabled": false,
+                "deny_maintenance_period": [],
+                "disk_autoresize": true,
+                "disk_autoresize_limit": 0,
+                "disk_size": 10,
+                "disk_type": "PD_SSD",
+                "edition": "",
+                "insights_config": [],
+                "ip_configuration": [
+                  {
+                    "allocated_ip_range": "",
+                    "authorized_networks": [],
+                    "enable_private_path_for_google_cloud_services": false,
+                    "ipv4_enabled": true,
+                    "private_network": "",
+                    "psc_config": [],
+                    "require_ssl": false
+                  }
+                ],
+                "location_preference": [
+                  {
+                    "follow_gae_application": "",
+                    "secondary_zone": "",
+                    "zone": "europe-west1-c"
+                  }
+                ],
+                "maintenance_window": [],
+                "password_validation_policy": [],
+                "pricing_plan": "PER_USE",
+                "sql_server_audit_config": [],
+                "tier": "db-f1-micro",
+                "time_zone": "",
+                "user_labels": {},
+                "version": 37
+              }
+            ],
+            "timeouts": {
+              "create": null,
+              "delete": null,
+              "update": null
+            }
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDAsInVwZGF0ZSI6MTgwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9"
+        }
+      ]
+    },
+    {
+      "module": "module.customers_service_db",
+      "mode": "managed",
+      "type": "google_sql_user",
+      "name": "user",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "deletion_policy": null,
+            "host": "",
+            "id": "greencop//customers-db-instance",
+            "instance": "customers-db-instance",
+            "name": "greencop",
+            "password": "greencop",
+            "password_policy": [],
+            "project": "greencop-473112",
+            "sql_server_user_details": [],
+            "timeouts": null,
+            "type": ""
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.customers_service_db.google_sql_database_instance.customers"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.data_ingestion_function",
+      "mode": "managed",
+      "type": "google_cloudfunctions2_function",
+      "name": "function",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "build_config": [
+              {
+                "build": "projects/74885193017/locations/europe-west1/builds/effc1ac6-cb6c-4f8d-852b-27ddb3c3ab9d",
+                "docker_repository": "projects/greencop-473112/locations/europe-west1/repositories/gcf-artifacts",
+                "entry_point": "pubsub_to_bigquery",
+                "environment_variables": {},
+                "runtime": "python311",
+                "source": [
+                  {
+                    "repo_source": [],
+                    "storage_source": [
+                      {
+                        "bucket": "greencop-473112-cloud-functions",
+                        "generation": 1765039550575560,
+                        "object": "pubsub-to-bigquery-source.zip"
+                      }
+                    ]
+                  }
+                ],
+                "worker_pool": ""
+              }
+            ],
+            "description": "",
+            "environment": "GEN_2",
+            "event_trigger": [
+              {
+                "event_filters": [],
+                "event_type": "google.cloud.pubsub.topic.v1.messagePublished",
+                "pubsub_topic": "projects/greencop-473112/topics/data",
+                "retry_policy": "RETRY_POLICY_DO_NOT_RETRY",
+                "service_account_email": "74885193017-compute@developer.gserviceaccount.com",
+                "trigger": "projects/greencop-473112/locations/europe-west1/triggers/pubsub-to-bigquery-343149",
+                "trigger_region": "europe-west1"
+              }
+            ],
+            "id": "projects/greencop-473112/locations/europe-west1/functions/pubsub-to-bigquery",
+            "kms_key_name": "",
+            "labels": {},
+            "location": "europe-west1",
+            "name": "pubsub-to-bigquery",
+            "project": "greencop-473112",
+            "service_config": [
+              {
+                "all_traffic_on_latest_revision": true,
+                "available_cpu": "0.1666",
+                "available_memory": "256M",
+                "environment_variables": {
+                  "DATASET_ID": "sensor_data",
+                  "LOG_EXECUTION_ID": "true",
+                  "PROJECT_ID": "greencop-473112",
+                  "TABLE_ID": "readings"
+                },
+                "gcf_uri": "",
+                "ingress_settings": "ALLOW_ALL",
+                "max_instance_count": 10,
+                "max_instance_request_concurrency": 1,
+                "min_instance_count": 0,
+                "secret_environment_variables": [],
+                "secret_volumes": [],
+                "service": "projects/greencop-473112/locations/europe-west1/services/pubsub-to-bigquery",
+                "service_account_email": "74885193017-compute@developer.gserviceaccount.com",
+                "timeout_seconds": 60,
+                "uri": "https://pubsub-to-bigquery-x6j3tvo2ca-ew.a.run.app",
+                "vpc_connector": "",
+                "vpc_connector_egress_settings": ""
+              }
+            ],
+            "state": "ACTIVE",
+            "timeouts": null,
+            "update_time": "2025-12-06T16:46:58.088547392Z",
+            "url": "https://europe-west1-greencop-473112.cloudfunctions.net/pubsub-to-bigquery"
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozNjAwMDAwMDAwMDAwLCJkZWxldGUiOjM2MDAwMDAwMDAwMDAsInVwZGF0ZSI6MzYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "google_project_service.bigquery_api",
+            "google_project_service.cloudbuild_api",
+            "google_project_service.cloudfunctions_api",
+            "google_project_service.eventarc_api",
+            "google_project_service.pubsub_api",
+            "module.data_ingestion_function.google_storage_bucket.function_bucket",
+            "module.data_ingestion_function.google_storage_bucket_object.function_source",
+            "module.sensor_bigquery.google_bigquery_dataset.sensor_data",
+            "module.sensor_bigquery.google_bigquery_table.sensor_readings",
+            "module.sensor_data_pubsub.google_pubsub_topic.topic"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.data_ingestion_function",
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "name": "function_bucket",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "autoclass": [],
+            "cors": [],
+            "custom_placement_config": [],
+            "default_event_based_hold": false,
+            "encryption": [],
+            "force_destroy": false,
+            "id": "greencop-473112-cloud-functions",
+            "labels": {},
+            "lifecycle_rule": [],
+            "location": "EUROPE-WEST1",
+            "logging": [],
+            "name": "greencop-473112-cloud-functions",
+            "project": "greencop-473112",
+            "public_access_prevention": "inherited",
+            "requester_pays": false,
+            "retention_policy": [],
+            "self_link": "https://www.googleapis.com/storage/v1/b/greencop-473112-cloud-functions",
+            "soft_delete_policy": [
+              {
+                "effective_time": "2025-11-19T20:06:17.660Z",
+                "retention_duration_seconds": 604800
+              }
+            ],
+            "storage_class": "STANDARD",
+            "timeouts": {
+              "create": null,
+              "read": null,
+              "update": null
+            },
+            "uniform_bucket_level_access": false,
+            "url": "gs://greencop-473112-cloud-functions",
+            "versioning": [],
+            "website": []
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsInJlYWQiOjI0MDAwMDAwMDAwMCwidXBkYXRlIjoyNDAwMDAwMDAwMDB9LCJzY2hlbWFfdmVyc2lvbiI6IjAifQ==",
+          "dependencies": [
+            "google_project_service.bigquery_api",
+            "google_project_service.cloudbuild_api",
+            "google_project_service.cloudfunctions_api",
+            "google_project_service.eventarc_api",
+            "google_project_service.pubsub_api",
+            "module.sensor_bigquery.google_bigquery_dataset.sensor_data",
+            "module.sensor_bigquery.google_bigquery_table.sensor_readings",
+            "module.sensor_data_pubsub.google_pubsub_topic.topic"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.data_ingestion_function",
+      "mode": "managed",
+      "type": "google_storage_bucket_object",
+      "name": "function_source",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "bucket": "greencop-473112-cloud-functions",
+            "cache_control": "",
+            "content": null,
+            "content_disposition": "",
+            "content_encoding": "",
+            "content_language": "",
+            "content_type": "application/zip",
+            "crc32c": "Ep325A==",
+            "customer_encryption": [],
+            "detect_md5hash": "SNb5ZWUZzfpaBV5GXk8rxQ==",
+            "event_based_hold": false,
+            "id": "greencop-473112-cloud-functions-pubsub-to-bigquery-source.zip",
+            "kms_key_name": "",
+            "md5hash": "SNb5ZWUZzfpaBV5GXk8rxQ==",
+            "media_link": "https://storage.googleapis.com/download/storage/v1/b/greencop-473112-cloud-functions/o/pubsub-to-bigquery-source.zip?generation=1765039453074112\u0026alt=media",
+            "metadata": {},
+            "name": "pubsub-to-bigquery-source.zip",
+            "output_name": "pubsub-to-bigquery-source.zip",
+            "self_link": "https://www.googleapis.com/storage/v1/b/greencop-473112-cloud-functions/o/pubsub-to-bigquery-source.zip",
+            "source": "../../services/data/function_source.zip",
+            "storage_class": "STANDARD",
+            "temporary_hold": false,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoyNDAwMDAwMDAwMDAsImRlbGV0ZSI6MjQwMDAwMDAwMDAwLCJ1cGRhdGUiOjI0MDAwMDAwMDAwMH19",
+          "dependencies": [
+            "google_project_service.bigquery_api",
+            "google_project_service.cloudbuild_api",
+            "google_project_service.cloudfunctions_api",
+            "google_project_service.eventarc_api",
+            "google_project_service.pubsub_api",
+            "module.data_ingestion_function.google_storage_bucket.function_bucket",
+            "module.sensor_bigquery.google_bigquery_dataset.sensor_data",
+            "module.sensor_bigquery.google_bigquery_table.sensor_readings",
+            "module.sensor_data_pubsub.google_pubsub_topic.topic"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.sensor_bigquery",
+      "mode": "managed",
+      "type": "google_bigquery_dataset",
+      "name": "sensor_data",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "access": [
+              {
+                "dataset": [],
+                "domain": "",
+                "group_by_email": "",
+                "role": "OWNER",
+                "routine": [],
+                "special_group": "",
+                "user_by_email": "greencop-admin@greencop-473112.iam.gserviceaccount.com",
+                "view": []
+              },
+              {
+                "dataset": [],
+                "domain": "",
+                "group_by_email": "",
+                "role": "OWNER",
+                "routine": [],
+                "special_group": "projectOwners",
+                "user_by_email": "",
+                "view": []
+              },
+              {
+                "dataset": [],
+                "domain": "",
+                "group_by_email": "",
+                "role": "READER",
+                "routine": [],
+                "special_group": "projectReaders",
+                "user_by_email": "",
+                "view": []
+              },
+              {
+                "dataset": [],
+                "domain": "",
+                "group_by_email": "",
+                "role": "WRITER",
+                "routine": [],
+                "special_group": "projectWriters",
+                "user_by_email": "",
+                "view": []
+              }
+            ],
+            "creation_time": 1763582757975,
+            "dataset_id": "sensor_data",
+            "default_collation": "",
+            "default_encryption_configuration": [],
+            "default_partition_expiration_ms": 0,
+            "default_table_expiration_ms": 0,
+            "delete_contents_on_destroy": false,
+            "description": "IoT sensor readings from Pub/Sub",
+            "etag": "Xf4+boE6OdTadzM9boQmcQ==",
+            "friendly_name": "Sensor Data",
+            "id": "projects/greencop-473112/datasets/sensor_data",
+            "is_case_insensitive": false,
+            "labels": {
+              "environment": "dev",
+              "service": "sensor-data"
+            },
+            "last_modified_time": 1763582757975,
+            "location": "EU",
+            "max_time_travel_hours": "168",
+            "project": "greencop-473112",
+            "self_link": "https://bigquery.googleapis.com/bigquery/v2/projects/greencop-473112/datasets/sensor_data",
+            "storage_billing_model": "",
+            "timeouts": {
+              "create": null,
+              "delete": null,
+              "update": null
+            }
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "google_project_service.bigquery_api"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.sensor_bigquery",
+      "mode": "managed",
+      "type": "google_bigquery_table",
+      "name": "sensor_readings",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "clustering": [
+              "node_id",
+              "message_id"
+            ],
+            "creation_time": 1764883127400,
+            "dataset_id": "sensor_data",
+            "deletion_protection": false,
+            "description": "",
+            "encryption_configuration": [],
+            "etag": "c3vVnO1QYL0+nLdkrg2aEg==",
+            "expiration_time": 0,
+            "external_data_configuration": [],
+            "friendly_name": "",
+            "id": "projects/greencop-473112/datasets/sensor_data/tables/readings",
+            "labels": {},
+            "last_modified_time": 1764971963145,
+            "location": "EU",
+            "materialized_view": [],
+            "max_staleness": "",
+            "num_bytes": 23664,
+            "num_long_term_bytes": 0,
+            "num_rows": 493,
+            "project": "greencop-473112",
+            "range_partitioning": [],
+            "schema": "[{\"mode\":\"REQUIRED\",\"name\":\"node_id\",\"type\":\"STRING\"},{\"mode\":\"REQUIRED\",\"name\":\"message_id\",\"type\":\"STRING\"},{\"mode\":\"REQUIRED\",\"name\":\"timestamp\",\"type\":\"TIMESTAMP\"},{\"mode\":\"NULLABLE\",\"name\":\"temperature\",\"type\":\"FLOAT\"},{\"mode\":\"NULLABLE\",\"name\":\"humidity\",\"type\":\"FLOAT\"}]",
+            "self_link": "https://bigquery.googleapis.com/bigquery/v2/projects/greencop-473112/datasets/sensor_data/tables/readings",
+            "table_constraints": [],
+            "table_id": "readings",
+            "time_partitioning": [
+              {
+                "expiration_ms": 0,
+                "field": "timestamp",
+                "require_partition_filter": false,
+                "type": "DAY"
+              }
+            ],
+            "type": "TABLE",
+            "view": []
+          },
+          "sensitive_attributes": [],
+          "private": "bnVsbA==",
+          "dependencies": [
+            "google_project_service.bigquery_api",
+            "module.sensor_bigquery.google_bigquery_dataset.sensor_data"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.sensor_data_pubsub",
+      "mode": "managed",
+      "type": "google_pubsub_topic",
+      "name": "topic",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "projects/greencop-473112/topics/data",
+            "kms_key_name": "",
+            "labels": {
+              "environment": "dev",
+              "service": "sensor-data"
+            },
+            "message_retention_duration": "86400s",
+            "message_storage_policy": [],
+            "name": "data",
+            "project": "greencop-473112",
+            "schema_settings": [],
+            "timeouts": {
+              "create": null,
+              "delete": null,
+              "update": null
+            }
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9",
+          "dependencies": [
+            "google_project_service.pubsub_api"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
