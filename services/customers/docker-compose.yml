@@ -19,11 +19,15 @@ services:
   customers-api:
     build: .
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       postgres:
         condition: service_healthy
     env_file: .env
+    volumes:
+      - ~/.config/gcloud:/home/app/.config/gcloud:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/home/app/.config/gcloud/application_default_credentials.json
     command: >
       sh -c "
         cd customers &&

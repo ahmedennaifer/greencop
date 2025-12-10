@@ -10,7 +10,7 @@ import (
 )
 
 type aliveRequest struct {
-	NodeId string `json:"node_id"`
+	NodeID string `json:"node_id"`
 }
 
 func HandleHeartbeat(manager *core.Manager) http.HandlerFunc {
@@ -23,18 +23,18 @@ func HandleHeartbeat(manager *core.Manager) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		node, exists := manager.Cache.Db[alive.NodeId]
+		node, exists := manager.Cache.Db[alive.NodeID]
 
 		if !exists {
-			fmt.Printf("node with id %v is not registered, thus cannot be alive\n", alive.NodeId)
+			fmt.Printf("node with id %v is not registered, thus cannot be alive\n", alive.NodeID)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		} else {
 			node.IsAlive = true
 			node.LastSeen = time.Now()
 			manager.Cache.Db[node.Id] = node
-			fmt.Printf("node with id %v is alive\n", alive.NodeId)
-			fmt.Fprintf(w, "node with id %v is alive: %v\n", err)
+			fmt.Printf("node with id %v is alive\n", alive.NodeID)
+			fmt.Fprintf(w, "node with id %v is alive: %v\n", err, alive.NodeID)
 		}
 	}
 }
