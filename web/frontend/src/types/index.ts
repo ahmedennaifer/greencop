@@ -34,10 +34,9 @@ export type SensorData = {
 
 export type Alert = {
   id: number;
-  sensor_id: number;
+  sensor_id: string;
   alert_type: 'temperature' | 'humidity';
-  value: number;
-  threshold: number;
+  message: string;
   timestamp: string;
   acknowledged: boolean;
 }

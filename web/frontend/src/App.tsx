@@ -7,8 +7,10 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import RoomsPage from './pages/RoomsPage';
 import SensorsPage from './pages/SensorsPage';
+import SensorDetailPage from './pages/SensorDetailPage';
 import AlertsPage from './pages/AlertsPage';
 import SettingsPage from './pages/SettingsPage';
+import AssistantPage from './pages/AssistantPage';
 
 function App() {
   return (
@@ -42,6 +44,14 @@ function App() {
             }
           />
           <Route
+            path="/sensors/:sensorId"
+            element={
+              <ProtectedRoute>
+                <SensorDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/alerts"
             element={
               <ProtectedRoute>
@@ -54,6 +64,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/assistant"
+            element={
+              <ProtectedRoute>
+                <AssistantPage />
               </ProtectedRoute>
             }
           />

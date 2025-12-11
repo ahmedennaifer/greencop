@@ -8,17 +8,14 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id = Column(Integer, primary_key=True)
-    sensor_id = Column(Integer, ForeignKey("sensors.id"), nullable=False)
-    alert_type = Column(String(20), nullable=False)  # 'temperature' or 'humidity'
-    value = Column(Float, nullable=False)
-    threshold = Column(Float, nullable=False)
+    sensor_id = Column(String(50), nullable=False)
+    alert_type = Column(String(50), nullable=False)  # 'temperature' or 'humidity'
+    message = Column(String, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     acknowledged = Column(Boolean, default=False)
 
-    sensor = relationship("Sensor")
-
     def __repr__(self):
-        return f"<Alert {self.alert_type} sensor={self.sensor_id} value={self.value}>"
+        return f"<Alert {self.alert_type} sensor={self.sensor_id} message={self.message}>"
 
 
 class AlertThreshold(Base):

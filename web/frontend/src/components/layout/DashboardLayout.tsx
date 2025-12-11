@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   Leaf,
+  MessageSquare,
 } from 'lucide-react';
 import Button from '../ui/Button';
 
@@ -31,6 +32,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Assistant', href: '/assistant', icon: MessageSquare },
+  ];
+
+  const managementItems = [
     { name: 'Server Rooms', href: '/rooms', icon: Server },
     { name: 'Sensors', href: '/sensors', icon: Activity },
     { name: 'Alerts', href: '/alerts', icon: AlertTriangle },
@@ -66,25 +71,57 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-600 font-medium'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+          <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+            {/* Main Navigation */}
+            <div className="space-y-1">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-600 font-medium'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Management Section */}
+            <div>
+              <div className="px-4 mb-2">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Management
+                </h3>
+              </div>
+              <div className="space-y-1">
+                {managementItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
 
           {/* User Section */}
@@ -114,7 +151,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : ''}`}>
-        {/* Top Bar */}
+        {/* Top Bar / Navbar */}
         <header className="bg-white shadow-sm border-b sticky top-0 z-40">
           <div className="flex items-center justify-between px-6 py-4">
             <button
@@ -123,8 +160,70 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             >
               <Menu className="w-6 h-6 text-gray-600" />
             </button>
-            <div className="text-sm text-gray-600">
-              Welcome back, <span className="font-semibold">{user?.username}</span>
+
+            {/* Navbar Links */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link
+                to="/dashboard"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/dashboard'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="text-sm font-medium">Dashboard</span>
+              </Link>
+              <Link
+                to="/assistant"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/assistant'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span className="text-sm font-medium">Assistant</span>
+              </Link>
+              <Link
+                to="/rooms"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/rooms'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Server className="w-4 h-4" />
+                <span className="text-sm font-medium">Rooms</span>
+              </Link>
+              <Link
+                to="/sensors"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/sensors'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Activity className="w-4 h-4" />
+                <span className="text-sm font-medium">Sensors</span>
+              </Link>
+              <Link
+                to="/alerts"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/alerts'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-sm font-medium">Alerts</span>
+              </Link>
+            </nav>
+
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                Welcome back, <span className="font-semibold">{user?.username}</span>
+              </div>
             </div>
           </div>
         </header>

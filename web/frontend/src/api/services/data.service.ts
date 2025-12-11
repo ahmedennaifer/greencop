@@ -3,13 +3,13 @@ import type { SensorData } from '../../types';
 
 // Note: These endpoints will be implemented in the BigQuery data API service
 export const dataService = {
-  async getLatestReading(sensorId: number): Promise<SensorData> {
+  async getLatestReading(sensorId: string): Promise<SensorData> {
     const response = await apiClient.get<SensorData>(`/api/v1/data/latest/${sensorId}`);
     return response.data;
   },
 
   async getHistoricalData(
-    sensorId: number,
+    sensorId: string,
     startTime: string,
     endTime: string
   ): Promise<SensorData[]> {
@@ -19,14 +19,14 @@ export const dataService = {
     return response.data;
   },
 
-  async getMultiSensorData(sensorIds: number[]): Promise<Record<number, SensorData>> {
-    const response = await apiClient.post<Record<number, SensorData>>('/api/v1/data/multi-sensor', {
+  async getMultiSensorData(sensorIds: string[]): Promise<Record<string, SensorData>> {
+    const response = await apiClient.post<Record<string, SensorData>>('/api/v1/data/multi-sensor', {
       sensor_ids: sensorIds,
     });
     return response.data;
   },
 
-  async getSensorStats(sensorId: number, period: '1h' | '24h' | '7d' | '30d'): Promise<{
+  async getSensorStats(sensorId: string, period: '1h' | '24h' | '7d' | '30d'): Promise<{
     avg_temperature: number;
     avg_humidity: number;
     min_temperature: number;

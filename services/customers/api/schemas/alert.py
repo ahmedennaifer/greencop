@@ -4,10 +4,9 @@ from typing import Literal
 
 
 class AlertBase(BaseModel):
-    sensor_id: int
+    sensor_id: str
     alert_type: Literal["temperature", "humidity"]
-    value: float
-    threshold: float
+    message: str
 
 
 class AlertCreate(AlertBase):
