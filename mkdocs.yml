@@ -1,6 +1,7 @@
 site_name: GreenCop Documentation
 site_description: IoT Sensor Monitoring System - Complete Documentation
 site_author: GreenCop Team
+site_url: https://ahmedennaifer.github.io/greencop/
 repo_url: https://github.com/ahmedennaifer/greencop
 edit_uri: ""
 
