@@ -4,7 +4,6 @@ import logging
 from sqlalchemy.orm.session import Session
 
 from customers.api.schemas.server_room import (
-    ServerRoomBase,
     ServerRoomCreate,
     ServerRoom,
 )

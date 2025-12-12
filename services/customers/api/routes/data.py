@@ -2,7 +2,6 @@ import os
 import logging
 from fastapi import APIRouter, HTTPException, Query
 from google.cloud import bigquery
-from datetime import datetime, timedelta
 from typing import List, Dict
 from customers.api.schemas.data import SensorData, SensorStats
 

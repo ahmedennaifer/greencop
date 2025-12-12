@@ -7,7 +7,6 @@ import pytest
 from customers.database.session import Base, get_db
 from fastapi.testclient import TestClient
 from customers.main import app
-from customers.database.models.sensor import Sensor
 from customers.database.models.server_room import ServerRoom
 from customers.database.models.customer import Customer
 from customers.api.utils import hashing

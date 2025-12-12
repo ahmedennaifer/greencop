@@ -8,7 +8,6 @@ import json
 import os
 import logging
 import functions_framework
-import requests
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
