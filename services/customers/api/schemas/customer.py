@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 
-from typing import Optional, List
+from typing import Optional
 
 
 class CustomerBase(BaseModel):

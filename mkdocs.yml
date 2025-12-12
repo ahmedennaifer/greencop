@@ -1,0 +1,120 @@
+site_name: GreenCop Documentation
+site_description: IoT Sensor Monitoring System - Complete Documentation
+site_author: GreenCop Team
+repo_url: https://github.com/ahmedennaifer/greencop
+edit_uri: ""
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - scheme: default
+      primary: green
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: green
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - glightbox
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Introduction: getting-started/introduction.md
+      - Quick Start: getting-started/quick-start.md
+      - Installation: getting-started/installation.md
+      - Architecture: getting-started/architecture.md
+      - Gateway & mDNS: getting-started/architecture-update.md
+  - Features:
+      - Dashboard: features/dashboard.md
+      - Sensor Monitoring: features/sensor-monitoring.md
+      - Alerts: features/alerts.md
+      - Server Rooms: features/server-rooms.md
+      - Data Analytics: features/data-analytics.md
+  - User Guide:
+      - Registration: user-guide/registration.md
+      - Managing Rooms: user-guide/managing-rooms.md
+      - Managing Sensors: user-guide/managing-sensors.md
+      - Viewing Data: user-guide/viewing-data.md
+      - Configuring Alerts: user-guide/configuring-alerts.md
+      - Interpreting Charts: user-guide/interpreting-charts.md
+  - API Reference:
+      - Overview: api-reference/overview.md
+      - Authentication: api-reference/authentication.md
+      - Customers: api-reference/customers.md
+      - Server Rooms: api-reference/server-rooms.md
+      - Sensors: api-reference/sensors.md
+      - Data: api-reference/data.md
+      - Alerts: api-reference/alerts.md
+      - Gateway (Go): api-reference/gateway.md
+      - Error Codes: api-reference/error-codes.md
+  - Hardware:
+      - ESP32 Setup: hardware/esp32-setup.md
+      - Sensor Configuration: hardware/sensor-configuration.md
+      - Troubleshooting: hardware/troubleshooting.md
+      - Specifications: hardware/specifications.md
+  - Development:
+      - Local Setup: development/local-setup.md
+      - Frontend Development: development/frontend-development.md
+      - Backend Development: development/backend-development.md
+      - Database Migrations: development/database-migrations.md
+      - Testing: development/testing.md
+      - Infrastructure: development/terraform.md
+  - Advanced:
+      - Data Pipeline: advanced/data-pipeline.md
+      - Cloud Functions: advanced/cloud-functions.md
+      - BigQuery Queries: advanced/bigquery-queries.md
+      - Security: advanced/security.md
+  - Future Features:
+      - ML Anomaly Detection: future-features/ml-anomaly-detection.md
+      - Notifications: future-features/notifications.md
+      - AI Assistant: future-features/assistant.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ahmedennaifer/greencop

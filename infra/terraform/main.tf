@@ -113,7 +113,7 @@ module "data_ingestion_function" {
   region              = var.region
   function_name       = "pubsub-to-bigquery"
   entry_point         = "pubsub_to_bigquery"
-  source_archive_path = "../../services/data/function_source.zip"
+  source_archive_path = "../../services/pubsub_bq_bridge/function_source.zip"
   pubsub_topic_id     = module.sensor_data_pubsub.topic_id
   bucket_name         = google_storage_bucket.cloud_functions_bucket.name
 

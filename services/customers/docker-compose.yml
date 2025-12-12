@@ -1,31 +1,33 @@
 
 services:
-  postgres:
-    image: postgres:15-alpine
+  cloud-sql-proxy:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
+    command:
+      - "--address"
+      - "0.0.0.0"
+      - "greencop-473112:europe-west1:customers-db-instance"
+    volumes:
+      - ~/.config/gcloud:/config
     environment:
-      POSTGRES_DB: greencop
-      POSTGRES_USER: nafra
-      POSTGRES_PASSWORD: test
+      - GOOGLE_APPLICATION_CREDENTIALS=/config/application_default_credentials.json
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nafra -d greencop"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    restart: always
 
   customers-api:
     build: .
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
-      postgres:
-        condition: service_healthy
+      - cloud-sql-proxy
     env_file: .env
+    volumes:
+      - ~/.config/gcloud:/home/app/.config/gcloud:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/home/app/.config/gcloud/application_default_credentials.json
     command: >
       sh -c "
+        sleep 5 &&
         cd customers &&
         cd .. &&
         uvicorn main:app --host 0.0.0.0 --port 8080

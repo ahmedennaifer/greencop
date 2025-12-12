@@ -44,7 +44,7 @@ async def create_sensor(sensor: SensorCreate, db: Session = Depends(get_db)):
 
 
 @sensor_router.get("/sensor/{sensor_id}", response_model=Sensor)
-async def get_sensor(sensor_id: int, db: Session = Depends(get_db)):
+async def get_sensor(sensor_id: str, db: Session = Depends(get_db)):
     logger.debug(f"Fetching sensor with id: {sensor_id}")
 
     sensor = db.query(SensorModel).filter(SensorModel.id == sensor_id).first()
@@ -94,7 +94,7 @@ async def get_sensor_by_name_and_room(
 
 @sensor_router.put("/update_sensor/{sensor_id}", response_model=Sensor)
 async def update_sensor(
-    sensor_id: int, sensor_update: SensorCreate, db: Session = Depends(get_db)
+    sensor_id: str, sensor_update: SensorCreate, db: Session = Depends(get_db)
 ):
     logger.debug(f"Updating sensor with id: {sensor_id}")
 
@@ -118,7 +118,7 @@ async def update_sensor(
 
 
 @sensor_router.delete("/delete_sensor/{sensor_id}")
-async def delete_sensor(sensor_id: int, db: Session = Depends(get_db)):
+async def delete_sensor(sensor_id: str, db: Session = Depends(get_db)):
     logger.debug(f"Deleting sensor with id: {sensor_id}")
 
     db_sensor = db.query(SensorModel).filter(SensorModel.id == sensor_id).first()

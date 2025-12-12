@@ -9,10 +9,10 @@ class SensorBase(BaseModel):
 
 
 class SensorCreate(SensorBase):
-    id: int
+    id: str
 
 
 class Sensor(SensorBase):
-    id: int
+    id: str
 
     model_config = ConfigDict(from_attributes=True)
