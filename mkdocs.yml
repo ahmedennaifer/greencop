@@ -35,6 +35,9 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
+extra_javascript:
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+
 plugins:
   - search
   - glightbox
