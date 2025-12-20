@@ -111,6 +111,7 @@ def detect_excessive_metrics(cloud_event):
                     )
                     publish_alert(sensor_data, "threshold")
 
+                prediction = None
                 if ML_PREDICT_URL:
                     try:
                         import requests
@@ -126,13 +127,35 @@ def detect_excessive_metrics(cloud_event):
                         )
 
                         predictions = response.json()["predictions"]
+                        prediction = predictions[0]
 
-                        if predictions[0] == -1:
+                        if prediction == -1:
                             logger.warning(f"Anomaly detected by ML model")
                             publish_alert(sensor_data, "ml_anomaly")
 
                     except Exception as e:
                         logger.error(f"ML prediction failed: {e}")
+
+                # Insert sensor data with prediction to BigQuery
+                try:
+                    from google.cloud import bigquery
+                    bq_client = bigquery.Client(project=PROJECT_ID)
+                    table_ref = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
+
+                    row = {
+                        "node_id": sensor_data['node_id'],
+                        "message_id": sensor_data.get('message_id', ''),
+                        "timestamp": sensor_data['timestamp'],
+                        "temperature": sensor_data['temperature'],
+                        "humidity": sensor_data['humidity'],
+                        "prediction": prediction
+                    }
+
+                    errors = bq_client.insert_rows_json(table_ref, [row])
+                    if errors:
+                        logger.error(f"Failed to insert to BigQuery: {errors}")
+                except Exception as e:
+                    logger.error(f"Failed to write to BigQuery: {e}")
 
                 return "OK"
             else:

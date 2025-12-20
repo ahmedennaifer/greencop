@@ -181,3 +181,37 @@ async def get_sensor_stats(
     except Exception as e:
         logger.error(f"Error fetching sensor stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@data_router.get("/recent", response_model=List[Dict])
+async def get_recent_data(limit: int = Query(50, le=500)):
+    """Get recent sensor readings with ML predictions"""
+    query = f"""
+    SELECT
+        node_id,
+        timestamp,
+        temperature,
+        humidity,
+        prediction
+    FROM `{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}`
+    ORDER BY timestamp DESC
+    LIMIT {limit}
+    """
+
+    try:
+        query_job = client.query(query)
+        results = list(query_job.result())
+
+        return [
+            {
+                "node_id": row.node_id,
+                "timestamp": row.timestamp.isoformat(),
+                "temperature": row.temperature,
+                "humidity": row.humidity,
+                "prediction": row.prediction if hasattr(row, 'prediction') else None,
+            }
+            for row in results
+        ]
+    except Exception as e:
+        logger.error(f"Error fetching recent data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

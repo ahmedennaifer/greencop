@@ -11,6 +11,7 @@ import SensorDetailPage from './pages/SensorDetailPage';
 import AlertsPage from './pages/AlertsPage';
 import SettingsPage from './pages/SettingsPage';
 import AssistantPage from './pages/AssistantPage';
+import MLDashboardPage from './pages/MLDashboardPage';
 
 function App() {
   return (
@@ -72,6 +73,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AssistantPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ml"
+            element={
+              <ProtectedRoute>
+                <MLDashboardPage />
               </ProtectedRoute>
             }
           />

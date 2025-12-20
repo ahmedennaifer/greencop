@@ -32,7 +32,7 @@ resource "google_cloudfunctions2_function" "function" {
 
   service_config {
     max_instance_count = 10
-    available_memory   = "256M"
+    available_memory   = "512M"
     timeout_seconds    = 60
 
     environment_variables = var.environment_variables
