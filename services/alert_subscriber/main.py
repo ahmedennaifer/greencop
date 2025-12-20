@@ -1,8 +1,3 @@
-"""
-Alert Subscriber Cloud Function
-Subscribes to alerts topic and stores alerts in Cloud SQL
-"""
-
 import base64
 import json
 import os
@@ -13,15 +8,11 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# API endpoint for creating alerts
 API_URL = os.environ.get("API_URL", "https://customers-api-url.run.app")
+
 
 @functions_framework.cloud_event
 def store_alert(cloud_event):
-    """
-    Triggered from a message on a Cloud Pub/Sub topic.
-    Stores alert data to Cloud SQL via the customers API.
-    """
     try:
         if "message" in cloud_event.data:
             pubsub_message = cloud_event.data["message"]
@@ -32,23 +23,25 @@ def store_alert(cloud_event):
 
                 logger.info(f"Received alert for sensor: {sensor_data}")
 
-                # Determine alert type and message
-                alert_type = None
-                message = None
-
+                alert_source = sensor_data.get("alert_source", "threshold")
                 temp = float(sensor_data.get("temperature", 0))
                 humidity = float(sensor_data.get("humidity", 0))
 
-                # Check which threshold was exceeded
-                if temp > 50.0:  # This should match the threshold from alerts service
-                    alert_type = "temperature"
-                    message = f"High temperature detected: {temp}°C"
-                elif humidity > 40.0:
-                    alert_type = "humidity"
-                    message = f"High humidity detected: {humidity}%"
+                alert_type = None
+                message = None
+
+                if alert_source == "threshold":
+                    if temp > 50.0:
+                        alert_type = "temperature"
+                        message = f"High temperature detected: {temp}°C (threshold exceeded)"
+                    elif humidity > 40.0:
+                        alert_type = "humidity"
+                        message = f"High humidity detected: {humidity}% (threshold exceeded)"
+                elif alert_source == "ml_anomaly":
+                    alert_type = "anomaly"
+                    message = f"Anomaly detected: temp={temp}°C, humidity={humidity}% (ML prediction)"
 
                 if alert_type and message:
-                    # Create alert via API
                     alert_data = {
                         "sensor_id": int(sensor_data["node_id"]) if str(sensor_data["node_id"]).isdigit() else 0,
                         "alert_type": alert_type,
@@ -57,7 +50,6 @@ def store_alert(cloud_event):
                         "acknowledged": False
                     }
 
-                    # Store directly to database (simplified approach)
                     store_alert_to_db(alert_data)
 
                 logger.info("Successfully processed alert")
@@ -85,12 +77,8 @@ def store_alert_to_db(alert_data: dict):
         return
 
     try:
-        # Parse database URL
-        # Format: postgresql://user:pass@host:port/dbname
         conn = psycopg2.connect(db_url)
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-        # Insert alert
         cursor.execute(
             """
             INSERT INTO alerts (sensor_id, alert_type, message, timestamp, acknowledged)

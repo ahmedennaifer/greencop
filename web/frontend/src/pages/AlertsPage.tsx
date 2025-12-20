@@ -59,6 +59,15 @@ const AlertsPage: React.FC = () => {
     }
   };
 
+  const handleFeedback = async (alertId: number, feedbackType: 'false_positive' | 'true_positive') => {
+    try {
+      await alertService.submitFeedback(alertId, feedbackType);
+      fetchAlerts();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Failed to submit feedback');
+    }
+  };
+
   const getAlertIcon = (type: string) => {
     if (type === 'temperature') {
       return <ThermometerSun className="w-5 h-5" />;
@@ -104,11 +113,11 @@ const AlertsPage: React.FC = () => {
                       key={alert.id}
                       className={`p-4 bg-${color}-50 border border-${color}-200 rounded-lg flex items-start justify-between`}
                     >
-                      <div className="flex items-start space-x-3">
+                      <div className="flex items-start space-x-3 flex-1">
                         <div className={`p-2 bg-${color}-100 rounded-lg text-${color}-600`}>
                           {getAlertIcon(alert.alert_type)}
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold text-gray-900">
                             {sensorNames[alert.sensor_id] || `Sensor ${alert.sensor_id}`}
                           </h4>
@@ -117,17 +126,42 @@ const AlertsPage: React.FC = () => {
                             <Clock className="w-3 h-3 inline mr-1" />
                             {new Date(alert.timestamp).toLocaleString()}
                           </p>
+                          {alert.feedback && (
+                            <p className="text-xs mt-1 text-gray-500">
+                              Feedback: {alert.feedback.replace('_', ' ')}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      {!alert.acknowledged && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAcknowledge(alert.id)}
-                        >
-                          Acknowledge
-                        </Button>
-                      )}
+                      <div className="flex flex-col space-y-2">
+                        {!alert.acknowledged && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleAcknowledge(alert.id)}
+                          >
+                            Acknowledge
+                          </Button>
+                        )}
+                        {!alert.feedback && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleFeedback(alert.id, 'false_positive')}
+                            >
+                              False Alarm
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleFeedback(alert.id, 'true_positive')}
+                            >
+                              Confirm
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

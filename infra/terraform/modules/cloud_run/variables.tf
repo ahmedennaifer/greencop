@@ -25,17 +25,27 @@ variable "port" {
 }
 
 variable "db_tier" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "db_user_password" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "db_user" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "db_name" {
-  type = string
+  type    = string
+  default = ""
+}
+
+variable "environment_variables" {
+  description = "Environment variables to set on the container"
+  type        = map(string)
+  default     = {}
 }

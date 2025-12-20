@@ -9,10 +9,11 @@ class Alert(Base):
 
     id = Column(Integer, primary_key=True)
     sensor_id = Column(String(50), nullable=False)
-    alert_type = Column(String(50), nullable=False)  # 'temperature' or 'humidity'
+    alert_type = Column(String(50), nullable=False)
     message = Column(String, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     acknowledged = Column(Boolean, default=False)
+    feedback = Column(String(20), nullable=True)
 
     def __repr__(self):
         return f"<Alert {self.alert_type} sensor={self.sensor_id} message={self.message}>"

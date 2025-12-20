@@ -1,7 +1,6 @@
 import apiClient from '../client';
 import type { Alert, AlertThreshold } from '../../types';
 
-// Note: These endpoints will be implemented in the customer API
 export const alertService = {
   async getActiveAlerts(): Promise<Alert[]> {
     const response = await apiClient.get<Alert[]>('/api/v1/alerts/active');
@@ -22,6 +21,13 @@ export const alertService = {
 
   async acknowledgeAlert(alertId: number): Promise<Alert> {
     const response = await apiClient.post<Alert>(`/api/v1/alerts/${alertId}/acknowledge`);
+    return response.data;
+  },
+
+  async submitFeedback(alertId: number, feedbackType: 'false_positive' | 'true_positive'): Promise<Alert> {
+    const response = await apiClient.post<Alert>(`/api/v1/alerts/${alertId}/feedback`, {
+      feedback_type: feedbackType,
+    });
     return response.data;
   },
 

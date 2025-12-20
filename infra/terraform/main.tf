@@ -33,6 +33,16 @@ resource "google_project_service" "eventarc_api" {
   project = var.project_id
 }
 
+resource "google_project_service" "aiplatform_api" {
+  service = "aiplatform.googleapis.com"
+  project = var.project_id
+}
+
+resource "google_project_service" "cloudscheduler_api" {
+  service = "cloudscheduler.googleapis.com"
+  project = var.project_id
+}
+
 
 
 module "customers_service" {
@@ -107,6 +117,32 @@ resource "google_storage_bucket" "cloud_functions_bucket" {
   project  = var.project_id
 }
 
+resource "google_storage_bucket" "ml_models" {
+  name     = "${var.project_id}-ml-models"
+  location = var.region
+  project  = var.project_id
+
+  versioning {
+    enabled = true
+  }
+}
+
+module "ml_predict_service" {
+  source           = "./modules/cloud_run"
+  project_id       = var.project_id
+  region           = var.region
+  service_name     = "ml-predict"
+  image_url        = "gcr.io/${var.project_id}/ml-predict:latest"
+  port             = 8080
+
+  environment_variables = {
+    PROJECT_ID   = var.project_id
+    MODEL_BUCKET = google_storage_bucket.ml_models.name
+  }
+
+  depends_on = [google_storage_bucket.ml_models]
+}
+
 module "data_ingestion_function" {
   source              = "./modules/cloud_function"
   project_id          = var.project_id
@@ -148,6 +184,9 @@ module "alert_detection_function" {
     MAX_ALLOWED_TEMP     = "50.0"
     MAX_ALLOWED_HUMIDITY = "50.0"
     ALERT_TOPIC          = module.alerts_pubsub.topic_name
+    ML_PREDICT_URL       = module.ml_predict_service.service_url
+    DATASET_ID           = module.sensor_bigquery.dataset_id
+    TABLE_ID             = module.sensor_bigquery.table_id
   }
 
   depends_on = [
@@ -157,6 +196,59 @@ module "alert_detection_function" {
     module.sensor_data_pubsub,
     module.alerts_pubsub,
     google_storage_bucket.cloud_functions_bucket
+  ]
+}
+
+module "ml_training_pubsub" {
+  source        = "./modules/pubsub"
+  project_id    = var.project_id
+  topic_name    = "ml-training-trigger"
+  service_label = "ml-training"
+
+  publisher_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  subscriber_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  depends_on = [google_project_service.pubsub_api]
+}
+
+module "ml_deployment_pubsub" {
+  source        = "./modules/pubsub"
+  project_id    = var.project_id
+  topic_name    = "ml-deployment-trigger"
+  service_label = "ml-deployment"
+
+  publisher_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  subscriber_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  depends_on = [google_project_service.pubsub_api]
+}
+
+resource "google_cloud_scheduler_job" "ml_retraining" {
+  name        = "ml-model-retraining"
+  description = "Daily retraining of anomaly detection model"
+  schedule    = "0 2 * * *"
+  time_zone   = "UTC"
+  project     = var.project_id
+  region      = var.region
+
+  pubsub_target {
+    topic_name = module.ml_training_pubsub.topic_id
+    data       = base64encode("trigger")
+  }
+
+  depends_on = [
+    google_project_service.cloudscheduler_api,
+    module.ml_training_pubsub
   ]
 }
 

@@ -6,7 +6,6 @@ from typing import List, Dict
 from customers.api.schemas.data import SensorData, SensorStats
 
 data_router = APIRouter()
-
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ async def get_latest_reading(sensor_id: str):
             message_id=row.message_id,
             timestamp=row.timestamp,
             temperature=row.temperature,
-            humidity=row.humidity
+            humidity=row.humidity,
         )
     except Exception as e:
         logger.error(f"Error fetching latest reading: {e}")
@@ -55,9 +54,7 @@ async def get_latest_reading(sensor_id: str):
 
 @data_router.get("/historical/{sensor_id}", response_model=List[SensorData])
 async def get_historical_data(
-    sensor_id: str,
-    start_time: str = Query(...),
-    end_time: str = Query(...)
+    sensor_id: str, start_time: str = Query(...), end_time: str = Query(...)
 ):
     """Get historical sensor data for a time range"""
     query = f"""
@@ -85,7 +82,7 @@ async def get_historical_data(
                 message_id=row.message_id,
                 timestamp=row.timestamp,
                 temperature=row.temperature,
-                humidity=row.humidity
+                humidity=row.humidity,
             )
             for row in results
         ]
@@ -135,7 +132,7 @@ async def get_multi_sensor_data(sensor_ids: List[str]):
                 message_id=row.message_id,
                 timestamp=row.timestamp,
                 temperature=row.temperature,
-                humidity=row.humidity
+                humidity=row.humidity,
             )
 
         return data_map
@@ -146,8 +143,7 @@ async def get_multi_sensor_data(sensor_ids: List[str]):
 
 @data_router.get("/stats/{sensor_id}", response_model=SensorStats)
 async def get_sensor_stats(
-    sensor_id: str,
-    period: str = Query("24h", regex="^(1h|24h|7d|30d)$")
+    sensor_id: str, period: str = Query("24h", regex="^(1h|24h|7d|30d)$")
 ):
     """Get statistical summary for a sensor over a time period"""
     hours_map = {"1h": 1, "24h": 24, "7d": 168, "30d": 720}
@@ -180,7 +176,7 @@ async def get_sensor_stats(
             min_temperature=row.min_temperature,
             max_temperature=row.max_temperature,
             min_humidity=row.min_humidity,
-            max_humidity=row.max_humidity
+            max_humidity=row.max_humidity,
         )
     except Exception as e:
         logger.error(f"Error fetching sensor stats: {e}")

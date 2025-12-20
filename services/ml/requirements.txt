@@ -1,0 +1,13 @@
+google-cloud-bigquery
+google-cloud-storage
+google-cloud-aiplatform
+google-cloud-pubsub
+scikit-learn
+pandas
+numpy
+joblib
+psycopg2-binary
+sqlalchemy
+functions-framework
+fastapi
+pydantic

@@ -1,13 +1,13 @@
 from __future__ import annotations
+
 import logging
 
+from customers.api.schemas import customer as customer_schema
 from customers.api.utils import auth, hashing
+from customers.database.models.customer import Customer
 from customers.database.session import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
-from customers.database.models.customer import Customer
-from customers.api.schemas import customer as customer_schema
 
 customer_router = APIRouter()
 
