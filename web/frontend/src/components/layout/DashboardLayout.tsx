@@ -33,7 +33,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'ML Analytics', href: '/ml', icon: Brain },
     { name: 'Assistant', href: '/assistant', icon: MessageSquare },
   ];
 

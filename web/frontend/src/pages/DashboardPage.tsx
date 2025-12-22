@@ -2,30 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRooms } from '../hooks/useRooms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Server, Activity, AlertTriangle, TrendingUp, Thermometer, Droplets, Plus } from 'lucide-react';
+import { Server, Activity, AlertTriangle, Thermometer, ThumbsUp, ThumbsDown } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { sensorService } from '../api/services/sensor.service';
 import { alertService } from '../api/services/alert.service';
-import { dataService } from '../api/services/data.service';
 import Button from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
+import apiClient from '../api/client';
+
+interface SensorReading {
+  node_id: string;
+  temperature: number;
+  humidity: number;
+  timestamp: string;
+  prediction?: number;
+}
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { rooms, isLoading } = useRooms(user?.id || null);
+  const { rooms } = useRooms(user?.id || null);
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalRooms: 0,
     activeSensors: 0,
     activeAlerts: 0,
-    avgTemperature: 0,
-    avgHumidity: 0,
   });
-  const [sensorReadings, setSensorReadings] = useState<Array<{name: string, temperature: number, humidity: number}>>([]);
-  const [historicalData, setHistoricalData] = useState<Array<{time: string, temperature: number, humidity: number}>>([]);
   const [recentAlerts, setRecentAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [liveData, setLiveData] = useState<SensorReading[]>([]);
+  const [selectedSensor, setSelectedSensor] = useState<string>('20e7c89f14ec');
+  const [availableSensors, setAvailableSensors] = useState<string[]>([]);
+  const [predictedAnomaly, setPredictedAnomaly] = useState<boolean>(false);
+  const [predictionData, setPredictionData] = useState<any>(null);
+  const [feedback, setFeedback] = useState<{ [key: string]: 'correct' | 'incorrect' | null }>({});
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -33,8 +43,6 @@ const DashboardPage: React.FC = () => {
 
       try {
         setLoading(true);
-
-        // Fetch sensors for all rooms
         const allSensors = [];
         for (const room of rooms) {
           try {
@@ -45,7 +53,6 @@ const DashboardPage: React.FC = () => {
           }
         }
 
-        // Fetch alerts
         let alertCount = 0;
         try {
           const [activeAlerts, alertHistory] = await Promise.all([
@@ -58,67 +65,10 @@ const DashboardPage: React.FC = () => {
           console.error('Error fetching alerts:', err);
         }
 
-        // Fetch latest data for all sensors
-        const readings = [];
-        let totalTemp = 0;
-        let totalHumidity = 0;
-        let validReadings = 0;
-
-        for (const sensor of allSensors) {
-          try {
-            const data = await dataService.getLatestReading(sensor.id.toString());
-            readings.push({
-              name: sensor.name,
-              temperature: data.temperature,
-              humidity: data.humidity,
-            });
-            totalTemp += data.temperature;
-            totalHumidity += data.humidity;
-            validReadings++;
-          } catch (err) {
-            console.error(`Error fetching data for sensor ${sensor.id}:`, err);
-          }
-        }
-
-        setSensorReadings(readings);
-
-        // Fetch historical data for trend chart (last 24 hours for first sensor)
-        if (allSensors.length > 0) {
-          try {
-            const endTime = new Date().toISOString();
-            const startTime = new Date();
-            startTime.setDate(startTime.getDate() - 30); // Get last 30 days
-
-            const historical = await dataService.getHistoricalData(
-              allSensors[0].id.toString(),
-              startTime.toISOString(),
-              endTime
-            );
-
-            // Take last 50 points and format for chart
-            const trendData = historical.slice(-50).map(d => ({
-              time: new Date(d.timestamp).toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              }),
-              temperature: d.temperature,
-              humidity: d.humidity,
-            }));
-
-            setHistoricalData(trendData);
-          } catch (err) {
-            console.error('Error fetching historical data:', err);
-          }
-        }
-
         setStats({
           totalRooms: rooms.length,
           activeSensors: allSensors.length,
           activeAlerts: alertCount,
-          avgTemperature: validReadings > 0 ? totalTemp / validReadings : 0,
-          avgHumidity: validReadings > 0 ? totalHumidity / validReadings : 0,
         });
       } catch (err) {
         console.error('Error fetching dashboard stats:', err);
@@ -130,217 +80,360 @@ const DashboardPage: React.FC = () => {
     fetchStats();
   }, [rooms]);
 
+  useEffect(() => {
+    fetchLiveData();
+    const interval = setInterval(fetchLiveData, 3000);
+    return () => clearInterval(interval);
+  }, [selectedSensor]);
+
+  const fetchLiveData = async () => {
+    try {
+      const response = await apiClient.get('/api/v1/data/recent', {
+        params: { limit: 50 }
+      });
+
+      const readings = response.data.filter((r: SensorReading) => r.node_id === selectedSensor);
+      setLiveData(readings);
+
+      const sensors = [...new Set(response.data.map((r: SensorReading) => r.node_id))];
+      setAvailableSensors(sensors);
+
+      if (selectedSensor) {
+        try {
+          const predictionResponse = await apiClient.get(`/api/v1/data/predict-anomaly/${selectedSensor}`);
+          setPredictedAnomaly(predictionResponse.data.anomaly_predicted);
+          setPredictionData(predictionResponse.data);
+        } catch (err) {
+          console.error('Error fetching prediction:', err);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching live data:', err);
+    }
+  };
+
+  const handleFeedback = async (timestamp: string, isCorrect: boolean) => {
+    try {
+      await apiClient.post('/api/v1/feedback', {
+        timestamp,
+        feedback: isCorrect ? 'correct' : 'incorrect'
+      });
+      setFeedback(prev => ({ ...prev, [timestamp]: isCorrect ? 'correct' : 'incorrect' }));
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+    }
+  };
+
+  // Live data chart
+  const liveChartData = liveData
+    .slice(-20) // Last 20 readings
+    .map(reading => ({
+      time: new Date(reading.timestamp).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }),
+      temperature: reading.temperature,
+      humidity: reading.humidity,
+      isAnomaly: reading.prediction === -1,
+    }));
+
+  // Prediction chart data
+  const predictionChartData = [];
+  if (predictionData && liveData.length > 0) {
+    const lastReading = liveData[liveData.length - 1];
+    const tempDelta = predictionData.trend.temp_delta_per_reading;
+    const humDelta = predictionData.trend.humidity_delta_per_reading;
+
+    // Current point
+    predictionChartData.push({
+      time: 'Now',
+      temperature: lastReading.temperature,
+      humidity: lastReading.humidity,
+      isNow: true,
+    });
+
+    // Future predictions (10 steps = ~10 seconds)
+    for (let i = 1; i <= 10; i++) {
+      predictionChartData.push({
+        time: `+${i}s`,
+        temperature: lastReading.temperature + (tempDelta * i),
+        humidity: lastReading.humidity + (humDelta * i),
+        isNow: false,
+      });
+    }
+  }
+
+  const anomalies = liveData.filter(r => r.prediction === -1);
+
+  const LiveTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
+          <p className="text-sm font-semibold mb-1">{data.time}</p>
+          <p className="text-sm" style={{ color: '#f97316' }}>
+            Temperature: {data.temperature.toFixed(1)}°C
+          </p>
+          <p className="text-sm" style={{ color: '#3b82f6' }}>
+            Humidity: {data.humidity.toFixed(1)}%
+          </p>
+          {data.isAnomaly && (
+            <p className="text-sm text-red-600 font-bold mt-1">⚠ ANOMALY</p>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const PredictionTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
+          <p className="text-sm font-semibold mb-1">{data.time}</p>
+          <p className="text-sm" style={{ color: '#f97316' }}>
+            Temperature: {data.temperature.toFixed(1)}°C
+          </p>
+          <p className="text-sm" style={{ color: '#3b82f6' }}>
+            Humidity: {data.humidity.toFixed(1)}%
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <DashboardLayout>
       <div>
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Real-time monitoring of your server rooms</p>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Live Sensor Monitoring</h1>
+          <p className="text-gray-600">Real-time data with ML-powered anomaly detection</p>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Total Rooms</p>
-                <p className="text-3xl font-bold text-gray-900">{loading ? '...' : stats.totalRooms}</p>
+                <p className="text-xs text-gray-600 mb-1">Total Rooms</p>
+                <p className="text-2xl font-bold text-gray-900">{loading ? '...' : stats.totalRooms}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Server className="w-6 h-6 text-blue-600" />
-              </div>
+              <Server className="w-8 h-8 text-blue-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Active Sensors</p>
-                <p className="text-3xl font-bold text-gray-900">{loading ? '...' : stats.activeSensors}</p>
+                <p className="text-xs text-gray-600 mb-1">Active Sensors</p>
+                <p className="text-2xl font-bold text-gray-900">{loading ? '...' : stats.activeSensors}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <Activity className="w-6 h-6 text-green-600" />
-              </div>
+              <Activity className="w-8 h-8 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Active Alerts</p>
-                <p className="text-3xl font-bold text-gray-900">{loading ? '...' : stats.activeAlerts}</p>
+                <p className="text-xs text-gray-600 mb-1">Active Alerts</p>
+                <p className="text-2xl font-bold text-gray-900">{loading ? '...' : stats.activeAlerts}</p>
               </div>
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Avg Temperature</p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {loading || sensorReadings.length === 0 ? '--' : `${stats.avgTemperature.toFixed(1)}°C`}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <Thermometer className="w-6 h-6 text-orange-600" />
-              </div>
+              <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
           </div>
         </div>
 
-        {/* Charts */}
-        {sensorReadings.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Temperature & Humidity Combined */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Temperature & Humidity</CardTitle>
-                <CardDescription>Current readings across all sensors</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={sensorReadings} barGap={8}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="temperature" fill="#ea580c" name="Temperature (°C)" radius={[8, 8, 0, 0]} />
-                    <Bar dataKey="humidity" fill="#2563eb" name="Humidity (%)" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Historical Trend Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Historical Trends</CardTitle>
-                <CardDescription>Temperature and humidity over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {historicalData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={400}>
-                    <LineChart data={historicalData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis
-                        dataKey="time"
-                        tick={{ fontSize: 10 }}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#fff',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                        }}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="temperature"
-                        stroke="#ea580c"
-                        strokeWidth={2}
-                        name="Temperature (°C)"
-                        dot={false}
-                        activeDot={{ r: 5 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="humidity"
-                        stroke="#2563eb"
-                        strokeWidth={2}
-                        name="Humidity (%)"
-                        dot={false}
-                        activeDot={{ r: 5 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[400px] flex items-center justify-center text-gray-500">
-                    Loading historical data...
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-700">Sensor:</label>
+            <select
+              value={selectedSensor}
+              onChange={(e) => setSelectedSensor(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {availableSensors.map(sensor => (
+                <option key={sensor} value={sensor}>{sensor}</option>
+              ))}
+            </select>
           </div>
-        ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Sensor Data</h3>
-              <p className="text-gray-600 mb-4">Register sensors to start monitoring</p>
-              <Button onClick={() => navigate('/sensors')}>Go to Sensors</Button>
-            </CardContent>
-          </Card>
-        )}
+          {predictedAnomaly && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-red-100 border border-red-500 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-red-700" />
+              <span className="text-sm font-bold text-red-900">ANOMALY PREDICTED</span>
+            </div>
+          )}
+        </div>
 
-        {/* Recent Alerts */}
-        <div className="mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Live Data Chart */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                  <span>Recent Alerts</span>
-                </CardTitle>
-                <Button variant="outline" size="sm" onClick={() => navigate('/alerts')}>
-                  View All
-                </Button>
-              </div>
+              <CardTitle className="text-lg">Live Stream</CardTitle>
+              <CardDescription>Real-time sensor readings (last 20)</CardDescription>
             </CardHeader>
             <CardContent>
-              {recentAlerts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recentAlerts.map((alert) => (
-                    <div
-                      key={alert.id}
-                      className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                      onClick={() => navigate('/alerts')}
-                    >
-                      <div className={`p-2 rounded-lg ${
-                        alert.alert_type === 'temperature' ? 'bg-orange-100' : 'bg-blue-100'
-                      }`}>
-                        {alert.alert_type === 'temperature' ? (
-                          <Thermometer className="w-4 h-4 text-orange-600" />
-                        ) : (
-                          <Droplets className="w-4 h-4 text-blue-600" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{alert.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(alert.timestamp).toLocaleString()}
-                        </p>
-                      </div>
-                      {alert.acknowledged && (
-                        <div className="text-green-600 text-xs">
-                          ✓
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              {liveChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart data={liveChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 10, fill: '#666' }}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis tick={{ fontSize: 11, fill: '#666' }} />
+                    <Tooltip content={<LiveTooltip />} />
+                    <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} />
+                    <Line
+                      type="monotone"
+                      dataKey="temperature"
+                      stroke="#f97316"
+                      strokeWidth={2}
+                      dot={(props) => {
+                        const { cx, cy, payload } = props;
+                        if (payload.isAnomaly) {
+                          return <circle cx={cx} cy={cy} r={5} fill="#dc2626" stroke="#991b1b" strokeWidth={2} />;
+                        }
+                        return <circle cx={cx} cy={cy} r={2} fill="#f97316" />;
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="humidity"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={(props) => {
+                        const { cx, cy, payload } = props;
+                        if (payload.isAnomaly) {
+                          return <circle cx={cx} cy={cy} r={5} fill="#dc2626" stroke="#991b1b" strokeWidth={2} />;
+                        }
+                        return <circle cx={cx} cy={cy} r={2} fill="#3b82f6" />;
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm">No recent alerts</p>
+                <div className="h-[320px] flex items-center justify-center text-gray-400">
+                  <div className="text-center">
+                    <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Loading...</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Prediction Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">ML Prediction</CardTitle>
+              <CardDescription>10-second trajectory forecast</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {predictionChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart data={predictionChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 10, fill: '#666' }}
+                    />
+                    <YAxis tick={{ fontSize: 11, fill: '#666' }} />
+                    <Tooltip content={<PredictionTooltip />} />
+                    <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} />
+                    <Line
+                      type="monotone"
+                      dataKey="temperature"
+                      stroke="#f97316"
+                      strokeWidth={2.5}
+                      dot={(props) => {
+                        const { cx, cy, payload } = props;
+                        if (payload.isNow) {
+                          return <circle cx={cx} cy={cy} r={5} fill="#f97316" stroke="#ea580c" strokeWidth={2} />;
+                        }
+                        return <circle cx={cx} cy={cy} r={3} fill="#f97316" fillOpacity={0.6} />;
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="humidity"
+                      stroke="#3b82f6"
+                      strokeWidth={2.5}
+                      dot={(props) => {
+                        const { cx, cy, payload } = props;
+                        if (payload.isNow) {
+                          return <circle cx={cx} cy={cy} r={5} fill="#3b82f6" stroke="#2563eb" strokeWidth={2} />;
+                        }
+                        return <circle cx={cx} cy={cy} r={3} fill="#3b82f6" fillOpacity={0.6} />;
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[320px] flex items-center justify-center text-gray-400">
+                  <div className="text-center">
+                    <Thermometer className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No prediction data</p>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
+
+        {anomalies.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                Anomalies Detected - Provide Feedback
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {anomalies.slice(0, 5).map((reading, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-red-50 border-2 border-red-300 rounded-lg hover:bg-red-100 transition">
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-red-900 mb-1">⚠ ANOMALY</p>
+                      <p className="text-xs text-gray-700">
+                        <span className="font-semibold">Sensor:</span> {reading.node_id} |
+                        <span className="font-semibold"> Temp:</span> {reading.temperature.toFixed(1)}°C |
+                        <span className="font-semibold"> Humidity:</span> {reading.humidity.toFixed(1)}% |
+                        <span className="font-semibold"> Time:</span> {new Date(reading.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      {feedback[reading.timestamp] === 'correct' ? (
+                        <span className="text-xs text-green-700 font-bold px-3 py-1 bg-green-100 rounded">✓ Correct</span>
+                      ) : feedback[reading.timestamp] === 'incorrect' ? (
+                        <span className="text-xs text-orange-700 font-bold px-3 py-1 bg-orange-100 rounded">✓ Wrong</span>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleFeedback(reading.timestamp, true)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold"
+                          >
+                            <ThumbsUp className="w-3 h-3" />
+                            Correct
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(reading.timestamp, false)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-xs font-semibold"
+                          >
+                            <ThumbsDown className="w-3 h-3" />
+                            Wrong
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );

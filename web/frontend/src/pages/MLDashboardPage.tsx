@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Brain, TrendingUp, Activity, Zap } from 'lucide-react';
+import { Brain, AlertTriangle, Activity, ThumbsUp, ThumbsDown } from 'lucide-react';
 import apiClient from '../api/client';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Dot } from 'recharts';
 
 interface SensorReading {
   node_id: string;
@@ -19,6 +20,10 @@ interface MLStats {
   accuracy_rate: number;
 }
 
+interface FeedbackData {
+  [key: string]: 'correct' | 'incorrect' | null;
+}
+
 const MLDashboardPage: React.FC = () => {
   const [recentReadings, setRecentReadings] = useState<SensorReading[]>([]);
   const [mlStats, setMLStats] = useState<MLStats>({
@@ -28,17 +33,19 @@ const MLDashboardPage: React.FC = () => {
     accuracy_rate: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [feedback, setFeedback] = useState<FeedbackData>({});
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   useEffect(() => {
     fetchMLData();
-    const interval = setInterval(fetchMLData, 10000);
+    const interval = setInterval(fetchMLData, 5000);
     return () => clearInterval(interval);
   }, []);
 
   const fetchMLData = async () => {
     try {
       const response = await apiClient.get('/api/v1/data/recent', {
-        params: { limit: 50 }
+        params: { limit: 100 }
       });
 
       const readings = response.data;
@@ -60,6 +67,47 @@ const MLDashboardPage: React.FC = () => {
     }
   };
 
+  const handleFeedback = async (timestamp: string, isCorrect: boolean) => {
+    setFeedbackSubmitting(true);
+    try {
+      await apiClient.post('/api/v1/feedback', {
+        timestamp,
+        feedback: isCorrect ? 'correct' : 'incorrect'
+      });
+      setFeedback(prev => ({ ...prev, [timestamp]: isCorrect ? 'correct' : 'incorrect' }));
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
+
+  const chartData = recentReadings
+    .slice()
+    .reverse()
+    .map(reading => ({
+      time: new Date(reading.timestamp).toLocaleTimeString(),
+      timestamp: reading.timestamp,
+      temperature: reading.temperature,
+      humidity: reading.humidity,
+      isAnomaly: reading.prediction === -1,
+      prediction: reading.prediction
+    }));
+
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload } = props;
+    if (payload.isAnomaly) {
+      return (
+        <svg x={cx - 6} y={cy - 6} width={12} height={12} fill="red" viewBox="0 0 12 12">
+          <circle cx="6" cy="6" r="6" />
+        </svg>
+      );
+    }
+    return null;
+  };
+
+  const anomalies = recentReadings.filter(r => r.prediction === -1);
+
   return (
     <DashboardLayout>
       <div>
@@ -68,7 +116,7 @@ const MLDashboardPage: React.FC = () => {
           <p className="text-gray-600">Real-time machine learning predictions and analytics</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Total Predictions</CardTitle>
@@ -76,14 +124,14 @@ const MLDashboardPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{mlStats.total_predictions}</div>
-              <p className="text-xs text-gray-500">Last 50 readings</p>
+              <p className="text-xs text-gray-500">Last 100 readings</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Anomalies Detected</CardTitle>
-              <Zap className="w-4 h-4 text-red-600" />
+              <AlertTriangle className="w-4 h-4 text-red-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{mlStats.anomalies_detected}</div>
@@ -101,73 +149,140 @@ const MLDashboardPage: React.FC = () => {
               <p className="text-xs text-gray-500">Within normal range</p>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Normal Rate</CardTitle>
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{mlStats.accuracy_rate.toFixed(1)}%</div>
-              <p className="text-xs text-gray-500">Prediction ratio</p>
-            </CardContent>
-          </Card>
         </div>
 
-        <Card>
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Recent Predictions</CardTitle>
-            <CardDescription>Real-time ML model predictions on sensor data</CardDescription>
+            <CardTitle>Temperature Trend</CardTitle>
+            <CardDescription>Real-time temperature monitoring with anomaly detection</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-gray-500 text-center py-8">Loading predictions...</p>
-            ) : recentReadings.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Sensor</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Temperature</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Humidity</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Prediction</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Timestamp</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentReadings.map((reading, idx) => (
-                      <tr key={idx} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm">{reading.node_id}</td>
-                        <td className="py-3 px-4 text-sm">{reading.temperature}°C</td>
-                        <td className="py-3 px-4 text-sm">{reading.humidity}%</td>
-                        <td className="py-3 px-4">
-                          {reading.prediction === -1 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              Anomaly
-                            </span>
-                          ) : reading.prediction === 1 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Normal
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                              N/A
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-500">
-                          {new Date(reading.timestamp).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <p className="text-gray-500 text-center py-8">Loading data...</p>
+            ) : chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fontSize: 12 }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <ReferenceLine y={50} stroke="red" strokeDasharray="3 3" label="Threshold" />
+                  <Line
+                    type="monotone"
+                    dataKey="temperature"
+                    stroke="#8884d8"
+                    dot={<CustomDot />}
+                    strokeWidth={2}
+                    name="Temperature"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             ) : (
-              <p className="text-gray-500 text-center py-8">No predictions yet</p>
+              <p className="text-gray-500 text-center py-8">No data available</p>
             )}
           </CardContent>
         </Card>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Humidity Trend</CardTitle>
+            <CardDescription>Real-time humidity monitoring with anomaly detection</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-gray-500 text-center py-8">Loading data...</p>
+            ) : chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fontSize: 12 }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    label={{ value: 'Humidity (%)', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <ReferenceLine y={50} stroke="red" strokeDasharray="3 3" label="Threshold" />
+                  <Line
+                    type="monotone"
+                    dataKey="humidity"
+                    stroke="#82ca9d"
+                    dot={<CustomDot />}
+                    strokeWidth={2}
+                    name="Humidity"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-gray-500 text-center py-8">No data available</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {anomalies.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Detected Anomalies</CardTitle>
+              <CardDescription>Provide feedback to improve ML model accuracy</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {anomalies.slice(0, 10).map((reading, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <AlertTriangle className="w-4 h-4 text-red-600" />
+                        <span className="font-semibold text-red-900">Anomaly Detected</span>
+                      </div>
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">Sensor:</span> {reading.node_id} |
+                        <span className="font-medium"> Temp:</span> {reading.temperature}°C |
+                        <span className="font-medium"> Humidity:</span> {reading.humidity}% |
+                        <span className="font-medium"> Time:</span> {new Date(reading.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      {feedback[reading.timestamp] === 'correct' ? (
+                        <span className="text-xs text-green-600 font-medium">✓ Feedback sent</span>
+                      ) : feedback[reading.timestamp] === 'incorrect' ? (
+                        <span className="text-xs text-orange-600 font-medium">✓ Feedback sent</span>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleFeedback(reading.timestamp, true)}
+                            disabled={feedbackSubmitting}
+                            className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm"
+                          >
+                            <ThumbsUp className="w-3 h-3" />
+                            Correct
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(reading.timestamp, false)}
+                            disabled={feedbackSubmitting}
+                            className="flex items-center gap-1 px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 text-sm"
+                          >
+                            <ThumbsDown className="w-3 h-3" />
+                            Incorrect
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );

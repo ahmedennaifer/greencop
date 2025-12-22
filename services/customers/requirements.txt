@@ -3,6 +3,7 @@ bcrypt==4.0.1
 fastapi>=0.116.2
 google-cloud-bigquery>=3.25.0
 httpx>=0.28.1
+numpy>=1.24.0
 passlib>=1.7.4
 psycopg2-binary>=2.9.10
 pydantic[email]>=2.11.9
@@ -10,5 +11,6 @@ pytest>=8.4.2
 python-dotenv>=1.1.1
 python-jose>=3.5.0
 pyyaml>=6.0.2
+requests>=2.31.0
 sqlalchemy>=2.0.43
 uvicorn>=0.35.0

@@ -215,3 +215,94 @@ async def get_recent_data(limit: int = Query(50, le=500)):
     except Exception as e:
         logger.error(f"Error fetching recent data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@data_router.get("/predict-anomaly/{sensor_id}")
+async def predict_anomaly(sensor_id: str, lookback: int = Query(20, le=50)):
+    import numpy as np
+    import requests
+    
+    ML_PREDICT_URL = os.environ.get("ML_PREDICT_URL", "https://ml-predict-x6j3tvo2ca-ew.a.run.app")
+    
+    query = f"""
+    SELECT temperature, humidity, timestamp
+    FROM `{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}`
+    WHERE node_id = '{sensor_id}'
+    ORDER BY timestamp DESC
+    LIMIT {lookback}
+    """
+    
+    try:
+        query_job = client.query(query)
+        results = list(query_job.result())
+        
+        if len(results) < 5:
+            return {
+                "sensor_id": sensor_id,
+                "anomaly_predicted": False,
+                "confidence": 0.0,
+                "message": "Insufficient data"
+            }
+        
+        results = results[::-1]
+        temps = [r.temperature for r in results]
+        hums = [r.humidity for r in results]
+        
+        temp_deltas = [temps[i] - temps[i-1] for i in range(1, len(temps))]
+        hum_deltas = [hums[i] - hums[i-1] for i in range(1, len(hums))]
+        
+        avg_temp_delta = np.mean(temp_deltas) if temp_deltas else 0
+        avg_hum_delta = np.mean(hum_deltas) if hum_deltas else 0
+        
+        steps_ahead = 5
+        predicted_temp = temps[-1] + (avg_temp_delta * steps_ahead)
+        predicted_hum = hums[-1] + (avg_hum_delta * steps_ahead)
+        
+        from datetime import datetime
+        current_time = datetime.fromisoformat(str(results[-1].timestamp).replace('Z', '+00:00'))
+        hour_of_day = current_time.hour
+        day_of_week = current_time.weekday()
+        
+        temp_rolling_mean = np.mean(temps[-6:]) if len(temps) >= 6 else np.mean(temps)
+        hum_rolling_mean = np.mean(hums[-6:]) if len(hums) >= 6 else np.mean(hums)
+        
+        features = [
+            predicted_temp,
+            predicted_hum,
+            hour_of_day,
+            day_of_week,
+            avg_temp_delta,
+            avg_hum_delta,
+            temp_rolling_mean,
+            hum_rolling_mean
+        ]
+        
+        response = requests.post(
+            f"{ML_PREDICT_URL}/predict",
+            json={"instances": [features]},
+            timeout=5
+        )
+        
+        prediction = response.json()["predictions"][0]
+        
+        temp_change = abs(predicted_temp - temps[-1])
+        hum_change = abs(predicted_hum - hums[-1])
+        confidence = min(1.0, (temp_change + hum_change) / 10.0)
+        
+        return {
+            "sensor_id": sensor_id,
+            "anomaly_predicted": prediction == -1,
+            "confidence": round(confidence, 2),
+            "current_temp": round(temps[-1], 1),
+            "current_humidity": round(hums[-1], 1),
+            "predicted_temp": round(predicted_temp, 1),
+            "predicted_humidity": round(predicted_hum, 1),
+            "trend": {
+                "temp_delta_per_reading": round(avg_temp_delta, 2),
+                "humidity_delta_per_reading": round(avg_hum_delta, 2)
+            },
+            "message": "Anomaly predicted in next 5-10 seconds" if prediction == -1 else "Normal behavior expected"
+        }
+        
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
