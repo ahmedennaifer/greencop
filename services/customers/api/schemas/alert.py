@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Optional
 
 
 class AlertBase(BaseModel):
@@ -17,9 +17,20 @@ class Alert(AlertBase):
     id: int
     timestamp: datetime
     acknowledged: bool
+    feedback: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+
+class FeedbackSchema(BaseModel):
+    feedback_type: str
+
+    @validator('feedback_type')
+    def validate_feedback_type(cls, v):
+        if v not in ['false_positive', 'true_positive']:
+            raise ValueError('Must be false_positive or true_positive')
+        return v
 
 
 class AlertThreshold(BaseModel):

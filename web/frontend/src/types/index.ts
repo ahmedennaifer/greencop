@@ -39,6 +39,7 @@ export type Alert = {
   message: string;
   timestamp: string;
   acknowledged: boolean;
+  feedback?: string | null;
 }
 
 export type AlertThreshold = {

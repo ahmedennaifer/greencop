@@ -10,6 +10,8 @@ import (
 	"greencop.iot/sensors/internal/publisher"
 )
 
+
+
 func NewManager() (*core.Manager, error) {
 	log.Printf("Launching manager...")
 	projectID := os.Getenv("PROJECT_ID")

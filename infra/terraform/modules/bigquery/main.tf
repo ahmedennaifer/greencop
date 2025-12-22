@@ -49,6 +49,11 @@ resource "google_bigquery_table" "sensor_readings" {
       type = "FLOAT64"
       mode = "NULLABLE"
     },
+    {
+      name = "prediction"
+      type = "INT64"
+      mode = "NULLABLE"
+    },
   ])
 
 }

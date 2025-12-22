@@ -1,9 +1,13 @@
 import os
+import sys
 from logging.config import fileConfig
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from alembic import context
 from customers.database.session import Base
-from customers.database.models import customer, server_room, sensor, reading  # noqa - direct import
+from customers.database import models
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 

@@ -10,8 +10,9 @@ import {
   LogOut,
   Menu,
   X,
-  Leaf,
+  Shield,
   MessageSquare,
+  Brain,
 } from 'lucide-react';
 import Button from '../ui/Button';
 
@@ -54,8 +55,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {/* Logo */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <Leaf className="w-6 h-6 text-white" />
+              <div className="p-2 bg-green-600 rounded-lg">
+                <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">GreenCop</h1>
@@ -83,7 +84,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     to={item.href}
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                       isActive
-                        ? 'bg-blue-50 text-blue-600 font-medium'
+                        ? 'bg-green-50 text-green-600 font-medium'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -111,7 +112,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       to={item.href}
                       className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                         isActive
-                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          ? 'bg-green-50 text-green-600 font-medium'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -128,7 +129,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-bold text-white">
+                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center font-bold text-white">
                   {user?.username.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -167,7 +168,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 to="/dashboard"
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
                   location.pathname === '/dashboard'
-                    ? 'text-blue-600 bg-blue-50'
+                    ? 'text-green-600 bg-green-50'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -178,7 +179,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 to="/assistant"
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
                   location.pathname === '/assistant'
-                    ? 'text-blue-600 bg-blue-50'
+                    ? 'text-green-600 bg-green-50'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -189,7 +190,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 to="/rooms"
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
                   location.pathname === '/rooms'
-                    ? 'text-blue-600 bg-blue-50'
+                    ? 'text-green-600 bg-green-50'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -200,7 +201,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 to="/sensors"
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
                   location.pathname === '/sensors'
-                    ? 'text-blue-600 bg-blue-50'
+                    ? 'text-green-600 bg-green-50'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -211,7 +212,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 to="/alerts"
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
                   location.pathname === '/alerts'
-                    ? 'text-blue-600 bg-blue-50'
+                    ? 'text-green-600 bg-green-50'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >

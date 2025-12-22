@@ -131,10 +131,10 @@ const SettingsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="p-4 bg-green-50 border border-blue-200 rounded-lg">
                         <div className="flex items-center space-x-3 mb-4">
-                          <div className="p-3 bg-blue-100 rounded-lg">
-                            <Droplets className="w-6 h-6 text-blue-600" />
+                          <div className="p-3 bg-green-100 rounded-lg">
+                            <Droplets className="w-6 h-6 text-green-600" />
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900">Maximum Humidity</h3>
@@ -158,7 +158,7 @@ const SettingsPage: React.FC = () => {
                               disabled={saving}
                             />
                           </div>
-                          <div className="text-3xl font-bold text-blue-600 pt-6">
+                          <div className="text-3xl font-bold text-green-600 pt-6">
                             {thresholds.max_humidity}%
                           </div>
                         </div>
@@ -200,10 +200,10 @@ const SettingsPage: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className="bg-green-50 border-blue-200">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <SettingsIcon className="w-12 h-12 text-blue-600 mx-auto mb-3" />
+                  <SettingsIcon className="w-12 h-12 text-green-600 mx-auto mb-3" />
                   <h4 className="font-semibold text-gray-900 mb-2">Real-time Monitoring</h4>
                   <p className="text-sm text-gray-600">
                     Your sensors are monitored continuously. Changes to thresholds take effect immediately.

@@ -194,12 +194,12 @@ const SensorsPage: React.FC = () => {
                             {data.temperature.toFixed(1)}°C
                           </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                           <div className="flex items-center space-x-2">
-                            <Droplets className="w-5 h-5 text-blue-600" />
+                            <Droplets className="w-5 h-5 text-green-600" />
                             <span className="text-sm text-gray-600">Humidity</span>
                           </div>
-                          <span className="text-lg font-bold text-blue-600">
+                          <span className="text-lg font-bold text-green-600">
                             {data.humidity.toFixed(1)}%
                           </span>
                         </div>
@@ -294,7 +294,7 @@ const SensorsPage: React.FC = () => {
                       id="roomId"
                       value={formData.room_id}
                       onChange={(e) => setFormData({ ...formData, room_id: e.target.value })}
-                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
                       required
                       disabled={creating}
                     >

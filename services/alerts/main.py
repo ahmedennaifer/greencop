@@ -1,25 +1,91 @@
-"""
-every sent event
-check if temp/humidity is more than a threshhold
-"""
-
 import base64
 import json
 import os
 import logging
+from datetime import datetime, timedelta
+import numpy as np
 import functions_framework
-from google.cloud import pubsub_v1
+from google.cloud import pubsub_v1, aiplatform, bigquery
 from typing import Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 PROJECT_ID = os.environ.get("PROJECT_ID")
+MAX_ALLOWED_TEMP = float(os.environ.get("MAX_ALLOWED_TEMP", 50.0))
+MAX_ALLOWED_HUMIDITY = float(os.environ.get("MAX_ALLOWED_HUMIDITY", 40.0))
+ALERT_TOPIC = os.environ.get("ALERT_TOPIC", "alerts")
+ML_PREDICT_URL = os.environ.get("ML_PREDICT_URL")
 DATASET_ID = os.environ.get("DATASET_ID", "sensor_data")
 TABLE_ID = os.environ.get("TABLE_ID", "readings")
-MAX_ALLOWED_TEMP = 50.0
-MAX_ALLOWED_HUMIDITY = 40.0
-ALERT_TOPIC = os.environ.get("ALERT_TOPIC", "alerts")
+
+
+def fetch_recent_sensor_data(node_id, hours=6):
+    try:
+        client = bigquery.Client(project=PROJECT_ID)
+
+        cutoff_time = (datetime.utcnow() - timedelta(hours=hours)).isoformat()
+
+        query = f"""
+            SELECT temperature, humidity, timestamp
+            FROM `{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}`
+            WHERE node_id = @node_id
+            AND timestamp >= @cutoff_time
+            ORDER BY timestamp ASC
+        """
+
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("node_id", "STRING", node_id),
+                bigquery.ScalarQueryParameter("cutoff_time", "TIMESTAMP", cutoff_time)
+            ]
+        )
+
+        results = client.query(query, job_config=job_config).result()
+
+        data = []
+        for row in results:
+            data.append({
+                'temperature': row.temperature,
+                'humidity': row.humidity,
+                'timestamp': row.timestamp
+            })
+
+        return data
+    except Exception as e:
+        logger.error(f"Failed to fetch historical data: {e}")
+        return []
+
+
+def engineer_features(sensor_data, historical_data):
+    ts = datetime.fromisoformat(sensor_data['timestamp'].replace('Z', '+00:00'))
+
+    temp_delta = 0.0
+    humidity_delta = 0.0
+    if historical_data:
+        last = historical_data[-1]
+        temp_delta = sensor_data['temperature'] - last['temperature']
+        humidity_delta = sensor_data['humidity'] - last['humidity']
+
+    temp_rolling_mean = sensor_data['temperature']
+    humidity_rolling_mean = sensor_data['humidity']
+
+    if len(historical_data) >= 6:
+        recent_temps = [r['temperature'] for r in historical_data[-6:]]
+        recent_humidity = [r['humidity'] for r in historical_data[-6:]]
+        temp_rolling_mean = np.mean(recent_temps)
+        humidity_rolling_mean = np.mean(recent_humidity)
+
+    return [
+        sensor_data['temperature'],
+        sensor_data['humidity'],
+        ts.hour,
+        ts.weekday(),
+        temp_delta,
+        humidity_delta,
+        temp_rolling_mean,
+        humidity_rolling_mean
+    ]
 
 
 @functions_framework.cloud_event
@@ -33,15 +99,64 @@ def detect_excessive_metrics(cloud_event):
                 sensor_data = json.loads(message_data)
 
                 logger.info(f"Received sensor data: {sensor_data}")
-                if (
-                    float(sensor_data["temperature"]) > MAX_ALLOWED_TEMP
-                    or float(sensor_data["humidity"]) > MAX_ALLOWED_HUMIDITY
-                ):
+
+                threshold_exceeded = (
+                    sensor_data["temperature"] > MAX_ALLOWED_TEMP
+                    or sensor_data["humidity"] > MAX_ALLOWED_HUMIDITY
+                )
+
+                if threshold_exceeded:
                     logger.warning(
-                        f"Sensor data exceed max temp or humidity: temp{sensor_data['temperature']} humidity {sensor_data['humidity']}"
+                        f"Threshold exceeded: temp={sensor_data['temperature']} humidity={sensor_data['humidity']}"
                     )
-                    publish_alert(sensor_data)
-                logger.info("Successfully wrote data to BigQuery")
+                    publish_alert(sensor_data, "threshold")
+
+                prediction = None
+                if ML_PREDICT_URL:
+                    try:
+                        import requests
+
+                        historical_data = fetch_recent_sensor_data(sensor_data['node_id'], hours=6)
+
+                        features = engineer_features(sensor_data, historical_data)
+
+                        response = requests.post(
+                            f"{ML_PREDICT_URL}/predict",
+                            json={"instances": [features]},
+                            timeout=5
+                        )
+
+                        predictions = response.json()["predictions"]
+                        prediction = predictions[0]
+
+                        if prediction == -1:
+                            logger.warning(f"Anomaly detected by ML model")
+                            publish_alert(sensor_data, "ml_anomaly")
+
+                    except Exception as e:
+                        logger.error(f"ML prediction failed: {e}")
+
+                # Insert sensor data with prediction to BigQuery
+                try:
+                    from google.cloud import bigquery
+                    bq_client = bigquery.Client(project=PROJECT_ID)
+                    table_ref = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
+
+                    row = {
+                        "node_id": sensor_data['node_id'],
+                        "message_id": sensor_data.get('message_id', ''),
+                        "timestamp": sensor_data['timestamp'],
+                        "temperature": sensor_data['temperature'],
+                        "humidity": sensor_data['humidity'],
+                        "prediction": prediction
+                    }
+
+                    errors = bq_client.insert_rows_json(table_ref, [row])
+                    if errors:
+                        logger.error(f"Failed to insert to BigQuery: {errors}")
+                except Exception as e:
+                    logger.error(f"Failed to write to BigQuery: {e}")
+
                 return "OK"
             else:
                 logger.error("No data field in Pub/Sub message")
@@ -55,15 +170,18 @@ def detect_excessive_metrics(cloud_event):
         return f"ERROR: {str(e)}"
 
 
-def publish_alert(sensor_data: dict[str, Any]):
+def publish_alert(sensor_data: dict[str, Any], alert_source: str):
     publisher = pubsub_v1.PublisherClient()
     topic_name = "projects/{project_id}/topics/{topic}".format(
         project_id=PROJECT_ID, topic=ALERT_TOPIC
     )
+
+    sensor_data['alert_source'] = alert_source
+
     try:
-        message_bytes = json.dumps(sensor_data).encode("utf-8")
+        message_bytes = json.dumps(sensor_data).encode('utf-8')
         future = publisher.publish(topic_name, message_bytes)
         future.result()
-        logger.info(f"Published {sensor_data} to alerts topic with sucess")
+        logger.info(f"Published alert to topic: source={alert_source}")
     except Exception as e:
-        raise ValueError(f"Failed to publish {sensor_data} : {e}") from e
+        raise ValueError(f"Failed to publish alert: {e}") from e

@@ -3,6 +3,7 @@ from customers.api.routes.server_room import server_room_router
 from customers.api.routes.sensor import sensor_router
 from customers.api.routes.data import data_router
 from customers.api.routes.alert import alert_router
+from customers.api.routes.prediction_feedback import prediction_feedback_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -23,6 +24,7 @@ app.include_router(
 app.include_router(sensor_router, prefix="/api/v1/sensors", tags=["sensors"])
 app.include_router(data_router, prefix="/api/v1/data", tags=["data"])
 app.include_router(alert_router, prefix="/api/v1/alerts", tags=["alerts"])
+app.include_router(prediction_feedback_router, prefix="/api/v1/prediction-feedback", tags=["prediction-feedback"])
 
 
 @app.get("/health")
