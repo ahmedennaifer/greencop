@@ -38,6 +38,7 @@ COPY alembic/ ./customers/alembic/
 COPY alembic.ini ./customers/
 COPY __init__.py ./customers/
 COPY main.py .
+COPY run_migration.py .
 COPY .env .
 
 RUN chown -R app:app /app

@@ -102,6 +102,36 @@ const DashboardPage: React.FC = () => {
     fetchStats();
   }, [rooms]);
 
+  // Fetch latest prediction feedbacks from backend on mount and refresh
+  useEffect(() => {
+    const fetchPredictionFeedbacks = async () => {
+      try {
+        const response = await apiClient.get('/api/v1/prediction-feedback/all', {
+          params: { limit: 10 }
+        });
+
+        // Map backend data to frontend format
+        const feedbacks = response.data.map((fb: any) => ({
+          id: fb.id,
+          timestamp: fb.timestamp,
+          sensor_id: fb.sensor_id,
+          predicted_temp: fb.predicted_temp,
+          predicted_humidity: fb.predicted_humidity,
+          current_temp: fb.actual_temp,
+          current_humidity: fb.actual_humidity,
+          anomaly: fb.anomaly_predicted,
+          validated: fb.feedback,
+        }));
+
+        setPendingValidations(feedbacks);
+      } catch (err) {
+        console.error('Error fetching prediction feedbacks:', err);
+      }
+    };
+
+    fetchPredictionFeedbacks();
+  }, []);
+
   useEffect(() => {
     fetchLiveData();
     const interval = setInterval(fetchLiveData, 3000);
@@ -126,30 +156,44 @@ const DashboardPage: React.FC = () => {
           setPredictedAnomaly(predictionResponse.data.anomaly_predicted);
           setPredictionData(predictionResponse.data);
 
-          // ALWAYS store predictions for validation (not just anomalies)
-          const predictionId = `${selectedSensor}-${Date.now()}`;
-          setPendingValidations(prev => {
-            // Check if this exact prediction already exists (within 5 seconds)
-            const exists = prev.some(p =>
-              p.sensor_id === selectedSensor &&
-              Math.abs(new Date(p.timestamp).getTime() - Date.now()) < 5000
-            );
+          // ALWAYS store predictions in backend for validation
+          const currentReading = readings[readings.length - 1];
+          if (currentReading) {
+            try {
+              // Save prediction to backend
+              const feedbackResponse = await apiClient.post('/api/v1/prediction-feedback/', {
+                sensor_id: selectedSensor,
+                timestamp: new Date().toISOString(),
+                predicted_temp: predictionResponse.data.predicted_temp,
+                predicted_humidity: predictionResponse.data.predicted_humidity,
+                actual_temp: currentReading.temperature,
+                actual_humidity: currentReading.humidity,
+                anomaly_predicted: predictionResponse.data.anomaly_predicted,
+                feedback: null,
+              });
 
-            if (exists) return prev; // Don't add duplicate
+              // Refresh predictions from backend after saving
+              const refreshResponse = await apiClient.get('/api/v1/prediction-feedback/all', {
+                params: { limit: 10 }
+              });
 
-            const newPrediction = {
-              id: predictionId,
-              timestamp: new Date().toISOString(),
-              sensor_id: selectedSensor,
-              predicted_temp: predictionResponse.data.predicted_temp,
-              predicted_humidity: predictionResponse.data.predicted_humidity,
-              current_temp: readings[readings.length - 1]?.temperature || 0,
-              current_humidity: readings[readings.length - 1]?.humidity || 0,
-              anomaly: predictionResponse.data.anomaly_predicted,
-              validated: null,
-            };
-            return [newPrediction, ...prev].slice(0, 20); // Keep last 20
-          });
+              const feedbacks = refreshResponse.data.map((fb: any) => ({
+                id: fb.id,
+                timestamp: fb.timestamp,
+                sensor_id: fb.sensor_id,
+                predicted_temp: fb.predicted_temp,
+                predicted_humidity: fb.predicted_humidity,
+                current_temp: fb.actual_temp,
+                current_humidity: fb.actual_humidity,
+                anomaly: fb.anomaly_predicted,
+                validated: fb.feedback,
+              }));
+
+              setPendingValidations(feedbacks);
+            } catch (err) {
+              console.error('Error saving prediction feedback:', err);
+            }
+          }
 
           // Check threshold alerts
           const alerts: string[] = [];
@@ -990,13 +1034,31 @@ const DashboardPage: React.FC = () => {
                               ) : (
                                 <div className="flex gap-1 justify-center">
                                   <button
-                                    onClick={() => setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'ok'} : p))}
+                                    onClick={async () => {
+                                      try {
+                                        await apiClient.put(`/api/v1/prediction-feedback/${pred.id}`, {
+                                          feedback: 'ok'
+                                        });
+                                        setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'ok'} : p));
+                                      } catch (err) {
+                                        console.error('Error submitting feedback:', err);
+                                      }
+                                    }}
                                     className="px-1 py-0.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded"
                                   >
                                     OK
                                   </button>
                                   <button
-                                    onClick={() => setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'not_ok'} : p))}
+                                    onClick={async () => {
+                                      try {
+                                        await apiClient.put(`/api/v1/prediction-feedback/${pred.id}`, {
+                                          feedback: 'not_ok'
+                                        });
+                                        setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'not_ok'} : p));
+                                      } catch (err) {
+                                        console.error('Error submitting feedback:', err);
+                                      }
+                                    }}
                                     className="px-1 py-0.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
                                   >
                                     KO
