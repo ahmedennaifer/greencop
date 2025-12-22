@@ -1,12 +1,9 @@
 import os
 import json
-import base64
 import logging
 import pickle
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
-import numpy as np
-import joblib
 from google.cloud import bigquery, storage, pubsub_v1
 from sqlalchemy import create_engine
 from sklearn.ensemble import IsolationForest
@@ -52,6 +49,7 @@ def fetch_false_positives():
 
     engine = create_engine(DB_URL)
     from sqlalchemy import text
+
     query = text("""
         SELECT sensor_id, timestamp
         FROM alerts
@@ -70,7 +68,7 @@ def exclude_false_positives(df, fps):
     if not fps:
         return df
 
-    mask = df.apply(lambda row: (row['node_id'], row['timestamp']) not in fps, axis=1)
+    mask = df.apply(lambda row: (row["node_id"], row["timestamp"]) not in fps, axis=1)
     filtered_df = df[mask]
 
     logger.info(f"Excluded {len(df) - len(filtered_df)} false positive records")
@@ -78,18 +76,18 @@ def exclude_false_positives(df, fps):
 
 
 def engineer_features(df):
-    df = df.sort_values(['node_id', 'timestamp'])
+    df = df.sort_values(["node_id", "timestamp"])
 
-    df['hour_of_day'] = pd.to_datetime(df['timestamp']).dt.hour
-    df['day_of_week'] = pd.to_datetime(df['timestamp']).dt.dayofweek
+    df["hour_of_day"] = pd.to_datetime(df["timestamp"]).dt.hour
+    df["day_of_week"] = pd.to_datetime(df["timestamp"]).dt.dayofweek
 
-    df['temp_delta'] = df.groupby('node_id')['temperature'].diff().fillna(0)
-    df['humidity_delta'] = df.groupby('node_id')['humidity'].diff().fillna(0)
+    df["temp_delta"] = df.groupby("node_id")["temperature"].diff().fillna(0)
+    df["humidity_delta"] = df.groupby("node_id")["humidity"].diff().fillna(0)
 
-    df['temp_rolling_mean_6h'] = df.groupby('node_id')['temperature'].transform(
+    df["temp_rolling_mean_6h"] = df.groupby("node_id")["temperature"].transform(
         lambda x: x.rolling(window=6, min_periods=1).mean()
     )
-    df['humidity_rolling_mean_6h'] = df.groupby('node_id')['humidity'].transform(
+    df["humidity_rolling_mean_6h"] = df.groupby("node_id")["humidity"].transform(
         lambda x: x.rolling(window=6, min_periods=1).mean()
     )
 
@@ -98,23 +96,19 @@ def engineer_features(df):
 
 def train_model(df):
     features = [
-        'temperature',
-        'humidity',
-        'hour_of_day',
-        'day_of_week',
-        'temp_delta',
-        'humidity_delta',
-        'temp_rolling_mean_6h',
-        'humidity_rolling_mean_6h'
+        "temperature",
+        "humidity",
+        "hour_of_day",
+        "day_of_week",
+        "temp_delta",
+        "humidity_delta",
+        "temp_rolling_mean_6h",
+        "humidity_rolling_mean_6h",
     ]
 
     X = df[features]
 
-    model = IsolationForest(
-        contamination=0.01,
-        random_state=42,
-        n_estimators=100
-    )
+    model = IsolationForest(contamination=0.01, random_state=42, n_estimators=100)
 
     model.fit(X)
 
@@ -130,7 +124,7 @@ def save_model(model, features, num_samples):
     model_filename = f"model_v{timestamp}.joblib"
 
     local_path = f"/tmp/{model_filename}"
-    with open(local_path, 'wb') as f:
+    with open(local_path, "wb") as f:
         pickle.dump(model, f, protocol=4)
 
     blob = bucket.blob(f"models/{model_filename}")
@@ -140,7 +134,7 @@ def save_model(model, features, num_samples):
         "timestamp": timestamp,
         "num_samples": num_samples,
         "features": features,
-        "contamination": 0.01
+        "contamination": 0.01,
     }
 
     metadata_blob = bucket.blob(f"models/metadata_{timestamp}.json")

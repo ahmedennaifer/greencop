@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRooms } from '../hooks/useRooms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Server, Activity, AlertTriangle, Thermometer, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Server, Activity, AlertTriangle, Thermometer, ThumbsUp, ThumbsDown, TrendingUp, TrendingDown, Settings, Info, CheckCircle, XCircle, Shield } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { sensorService } from '../api/services/sensor.service';
 import { alertService } from '../api/services/alert.service';
 import Button from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import apiClient from '../api/client';
 
 interface SensorReading {
@@ -36,6 +36,28 @@ const DashboardPage: React.FC = () => {
   const [predictedAnomaly, setPredictedAnomaly] = useState<boolean>(false);
   const [predictionData, setPredictionData] = useState<any>(null);
   const [feedback, setFeedback] = useState<{ [key: string]: 'correct' | 'incorrect' | null }>({});
+  const [thresholds, setThresholds] = useState({
+    maxTemp: 50,
+    minTemp: 10,
+    maxHumidity: 80,
+    minHumidity: 20,
+  });
+  const [thresholdAlerts, setThresholdAlerts] = useState<string[]>([]);
+  const [showThresholdSettings, setShowThresholdSettings] = useState(false);
+  const [predictionAccuracy, setPredictionAccuracy] = useState<{
+    totalPredictions: number;
+    accuratePredictions: number;
+    avgError: number;
+  }>({ totalPredictions: 0, accuratePredictions: 0, avgError: 0 });
+  const [predictionHistory, setPredictionHistory] = useState<any[]>([]);
+  const [pendingValidations, setPendingValidations] = useState<any[]>([]);
+  const [filterTempMin, setFilterTempMin] = useState<number>(-50);
+  const [filterTempMax, setFilterTempMax] = useState<number>(100);
+  const [filterHumMin, setFilterHumMin] = useState<number>(0);
+  const [filterHumMax, setFilterHumMax] = useState<number>(100);
+  const [filterDate, setFilterDate] = useState<string>('');
+  const [filterStartHour, setFilterStartHour] = useState<string>('');
+  const [filterEndHour, setFilterEndHour] = useState<string>('');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -103,6 +125,51 @@ const DashboardPage: React.FC = () => {
           const predictionResponse = await apiClient.get(`/api/v1/data/predict-anomaly/${selectedSensor}`);
           setPredictedAnomaly(predictionResponse.data.anomaly_predicted);
           setPredictionData(predictionResponse.data);
+
+          // ALWAYS store predictions for validation (not just anomalies)
+          const predictionId = `${selectedSensor}-${Date.now()}`;
+          setPendingValidations(prev => {
+            // Check if this exact prediction already exists (within 5 seconds)
+            const exists = prev.some(p =>
+              p.sensor_id === selectedSensor &&
+              Math.abs(new Date(p.timestamp).getTime() - Date.now()) < 5000
+            );
+
+            if (exists) return prev; // Don't add duplicate
+
+            const newPrediction = {
+              id: predictionId,
+              timestamp: new Date().toISOString(),
+              sensor_id: selectedSensor,
+              predicted_temp: predictionResponse.data.predicted_temp,
+              predicted_humidity: predictionResponse.data.predicted_humidity,
+              current_temp: readings[readings.length - 1]?.temperature || 0,
+              current_humidity: readings[readings.length - 1]?.humidity || 0,
+              anomaly: predictionResponse.data.anomaly_predicted,
+              validated: null,
+            };
+            return [newPrediction, ...prev].slice(0, 20); // Keep last 20
+          });
+
+          // Check threshold alerts
+          const alerts: string[] = [];
+          const predTemp = predictionResponse.data.predicted_temp;
+          const predHum = predictionResponse.data.predicted_humidity;
+
+          if (predTemp > thresholds.maxTemp) {
+            alerts.push(`Temperature will exceed maximum (${predTemp.toFixed(1)}°C > ${thresholds.maxTemp}°C)`);
+          }
+          if (predTemp < thresholds.minTemp) {
+            alerts.push(`Temperature will fall below minimum (${predTemp.toFixed(1)}°C < ${thresholds.minTemp}°C)`);
+          }
+          if (predHum > thresholds.maxHumidity) {
+            alerts.push(`Humidity will exceed maximum (${predHum.toFixed(1)}% > ${thresholds.maxHumidity}%)`);
+          }
+          if (predHum < thresholds.minHumidity) {
+            alerts.push(`Humidity will fall below minimum (${predHum.toFixed(1)}% < ${thresholds.minHumidity}%)`);
+          }
+
+          setThresholdAlerts(alerts);
         } catch (err) {
           console.error('Error fetching prediction:', err);
         }
@@ -124,81 +191,139 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  // Live data chart
-  const liveChartData = liveData
-    .slice(-20) // Last 20 readings
-    .map(reading => ({
+  // Unified chart data - combines live data and predictions
+  const chartData = [];
+
+  // Add last 20 live readings - they're already in correct order from BigQuery
+  const recentReadings = liveData.slice(-20);
+
+  // Sort by timestamp to ensure correct order (oldest to newest)
+  const sortedReadings = recentReadings.sort((a, b) =>
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+
+  sortedReadings.forEach((reading, idx) => {
+    chartData.push({
       time: new Date(reading.timestamp).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
       }),
-      temperature: reading.temperature,
-      humidity: reading.humidity,
-      isAnomaly: reading.prediction === -1,
-    }));
+      timestamp: reading.timestamp,
+      temp_actual: reading.temperature,
+      hum_actual: reading.humidity,
+      temp_predicted: null,
+      hum_predicted: null,
+      isCurrentAnomaly: reading.prediction === -1,
+      isPrediction: false,
+      index: idx,
+    });
+  });
 
-  // Prediction chart data
-  const predictionChartData = [];
-  if (predictionData && liveData.length > 0) {
-    const lastReading = liveData[liveData.length - 1];
-    const tempDelta = predictionData.trend.temp_delta_per_reading;
-    const humDelta = predictionData.trend.humidity_delta_per_reading;
+  // Add prediction points for chart using backend's short_predictions (5-20 seconds)
+  if (predictionData && predictionData.short_predictions && sortedReadings.length > 0) {
+    const lastReading = sortedReadings[sortedReadings.length - 1];
+    const isPredictedAnomaly = predictionData.anomaly_predicted;
+    const lastTimestamp = new Date(lastReading.timestamp);
 
-    // Current point
-    predictionChartData.push({
+    // Add connecting point
+    chartData.push({
       time: 'Now',
-      temperature: lastReading.temperature,
-      humidity: lastReading.humidity,
-      isNow: true,
+      timestamp: lastReading.timestamp,
+      temp_actual: null,
+      hum_actual: null,
+      temp_predicted: lastReading.temperature,
+      hum_predicted: lastReading.humidity,
+      isCurrentAnomaly: false,
+      isPredictiveAnomaly: false,
+      isPrediction: true,
+      index: chartData.length,
     });
 
-    // Future predictions (10 steps = ~10 seconds)
-    for (let i = 1; i <= 10; i++) {
-      predictionChartData.push({
-        time: `+${i}s`,
-        temperature: lastReading.temperature + (tempDelta * i),
-        humidity: lastReading.humidity + (humDelta * i),
-        isNow: false,
+    // Add prediction points from backend (5, 10, 15, 20 seconds ahead)
+    predictionData.short_predictions.forEach((pred: any) => {
+      // Calculate future timestamp (seconds ahead)
+      const futureTime = new Date(lastTimestamp.getTime() + pred.timeframe_seconds * 1000);
+
+      chartData.push({
+        time: futureTime.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }),
+        timestamp: futureTime.toISOString(),
+        temp_actual: null,
+        hum_actual: null,
+        temp_predicted: pred.predicted_temp,
+        hum_predicted: pred.predicted_humidity,
+        isCurrentAnomaly: false,
+        isPredictiveAnomaly: isPredictedAnomaly,
+        isPrediction: true,
+        index: chartData.length,
       });
-    }
+    });
   }
+
+  // Calculate stable Y-axis domain with fixed padding
+  const allTemps = chartData
+    .map(d => d.temp_actual || d.temp_predicted)
+    .filter(t => t !== null) as number[];
+  const allHums = chartData
+    .map(d => d.hum_actual || d.hum_predicted)
+    .filter(h => h !== null) as number[];
+
+  // Round to nearest 5 for stability
+  const minTemp = Math.floor(Math.min(...allTemps) / 5) * 5 - 5;
+  const maxTemp = Math.ceil(Math.max(...allTemps) / 5) * 5 + 5;
+  const minHum = Math.floor(Math.min(...allHums) / 5) * 5 - 5;
+  const maxHum = Math.ceil(Math.max(...allHums) / 5) * 5 + 5;
+  const yMin = Math.min(minTemp, minHum, 0);
+  const yMax = Math.max(maxTemp, maxHum, 100);
 
   const anomalies = liveData.filter(r => r.prediction === -1);
 
-  const LiveTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      return (
-        <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-          <p className="text-sm font-semibold mb-1">{data.time}</p>
-          <p className="text-sm" style={{ color: '#f97316' }}>
-            Temperature: {data.temperature.toFixed(1)}°C
-          </p>
-          <p className="text-sm" style={{ color: '#3b82f6' }}>
-            Humidity: {data.humidity.toFixed(1)}%
-          </p>
-          {data.isAnomaly && (
-            <p className="text-sm text-red-600 font-bold mt-1">⚠ ANOMALY</p>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
+      const temp = data.temp_actual || data.temp_predicted;
+      const hum = data.hum_actual || data.hum_predicted;
+      const isActual = data.temp_actual !== null;
 
-  const PredictionTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
       return (
-        <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-          <p className="text-sm font-semibold mb-1">{data.time}</p>
-          <p className="text-sm" style={{ color: '#f97316' }}>
-            Temperature: {data.temperature.toFixed(1)}°C
-          </p>
-          <p className="text-sm" style={{ color: '#3b82f6' }}>
-            Humidity: {data.humidity.toFixed(1)}%
-          </p>
+        <div className="bg-white/95 backdrop-blur p-4 rounded-lg shadow-xl border border-green-200">
+          <p className="font-bold text-gray-900 mb-2">{data.time}</p>
+
+          {/* Show "Actual" or "Forecast" badge */}
+          <div className="mb-2">
+            <span className={`text-xs px-2 py-1 rounded ${
+              isActual
+                ? 'bg-gray-100 text-gray-700'
+                : 'bg-green-100 text-green-700'
+            }`}>
+              {isActual ? 'ACTUAL DATA' : 'FORECAST'}
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-xs font-medium text-gray-600">Temperature:</span>
+              <span className="text-sm font-bold text-orange-600">{temp?.toFixed(1)}°C</span>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-xs font-medium text-gray-600">Humidity:</span>
+              <span className="text-sm font-bold text-blue-600">{hum?.toFixed(1)}%</span>
+            </div>
+          </div>
+          {data.isCurrentAnomaly && (
+            <div className="mt-3 pt-2 border-t bg-red-50 -m-4 mb-0 p-3 rounded-b-lg">
+              <p className="text-xs font-bold text-red-700">ANOMALY DETECTED</p>
+            </div>
+          )}
+          {data.isPredictiveAnomaly && (
+            <div className="mt-3 pt-2 border-t bg-orange-50 -m-4 mb-0 p-3 rounded-b-lg">
+              <p className="text-xs font-bold text-orange-700">ANOMALY FORECAST</p>
+            </div>
+          )}
         </div>
       );
     }
@@ -213,14 +338,14 @@ const DashboardPage: React.FC = () => {
           <p className="text-gray-600">Real-time data with ML-powered anomaly detection</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Total Rooms</p>
                 <p className="text-2xl font-bold text-gray-900">{loading ? '...' : stats.totalRooms}</p>
               </div>
-              <Server className="w-8 h-8 text-blue-600" />
+              <Server className="w-8 h-8 text-green-600" />
             </div>
           </div>
 
@@ -243,197 +368,652 @@ const DashboardPage: React.FC = () => {
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
           </div>
+
+          {/* Trend Analysis - Compact Version Next to Metrics */}
+          {predictionData && sortedReadings.length > 1 && (
+            <div className="bg-white rounded-lg shadow p-4 border border-green-200 lg:col-span-1">
+              <div className="mb-2">
+                <div className="flex items-center gap-1 mb-2">
+                  <TrendingUp className="w-4 h-4 text-green-600" />
+                  <p className="text-xs text-gray-600 font-semibold">Trend Analysis</p>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Temp Δ/s:</span>
+                    <span className={`font-bold ${predictionData.trend.temp_delta_per_second > 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                      {predictionData.trend.temp_delta_per_second > 0 ? '+' : ''}
+                      {predictionData.trend.temp_delta_per_second.toFixed(4)}°C
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Hum Δ/s:</span>
+                    <span className={`font-bold ${predictionData.trend.humidity_delta_per_second > 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                      {predictionData.trend.humidity_delta_per_second > 0 ? '+' : ''}
+                      {predictionData.trend.humidity_delta_per_second.toFixed(4)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={80}>
+                <LineChart
+                  data={sortedReadings.slice(-10).map((reading, idx, arr) => {
+                    const tempDelta = idx > 0 ? reading.temperature - arr[idx - 1].temperature : 0;
+                    const humDelta = idx > 0 ? reading.humidity - arr[idx - 1].humidity : 0;
+                    return {
+                      tempDelta: tempDelta,
+                      humDelta: humDelta,
+                    };
+                  })}
+                  margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                >
+                  <ReferenceLine y={0} stroke="#9ca3af" strokeWidth={1} />
+                  <Line
+                    type="monotone"
+                    dataKey="tempDelta"
+                    stroke="#f97316"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="humDelta"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-gray-700">Sensor:</label>
             <select
               value={selectedSensor}
               onChange={(e) => setSelectedSensor(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               {availableSensors.map(sensor => (
                 <option key={sensor} value={sensor}>{sensor}</option>
               ))}
             </select>
           </div>
-          {predictedAnomaly && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-red-100 border border-red-500 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-red-700" />
-              <span className="text-sm font-bold text-red-900">ANOMALY PREDICTED</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowThresholdSettings(!showThresholdSettings)}
+              className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm font-medium transition"
+            >
+              <Settings className="w-4 h-4" />
+              Threshold Settings
+            </button>
+            {predictedAnomaly && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-red-100 border border-red-500 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-700" />
+                <span className="text-sm font-bold text-red-900">ANOMALY PREDICTED</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Live Data Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Live Stream</CardTitle>
-              <CardDescription>Real-time sensor readings (last 20)</CardDescription>
+        {showThresholdSettings && (
+          <Card className="mb-6 border-2 border-blue-500">
+            <CardHeader className="bg-blue-50">
+              <CardTitle className="text-lg">Threshold Settings</CardTitle>
+              <CardDescription>Set limits for temperature and humidity predictions</CardDescription>
             </CardHeader>
-            <CardContent>
-              {liveChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={320}>
-                  <LineChart data={liveChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="time"
-                      tick={{ fontSize: 10, fill: '#666' }}
-                      interval="preserveStartEnd"
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="font-bold text-sm text-gray-700 mb-3">Temperature Thresholds (°C)</h3>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Maximum Temperature</label>
+                    <input
+                      type="number"
+                      value={thresholds.maxTemp}
+                      onChange={(e) => setThresholds({ ...thresholds, maxTemp: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
                     />
-                    <YAxis tick={{ fontSize: 11, fill: '#666' }} />
-                    <Tooltip content={<LiveTooltip />} />
-                    <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} />
-                    <Line
-                      type="monotone"
-                      dataKey="temperature"
-                      stroke="#f97316"
-                      strokeWidth={2}
-                      dot={(props) => {
-                        const { cx, cy, payload } = props;
-                        if (payload.isAnomaly) {
-                          return <circle cx={cx} cy={cy} r={5} fill="#dc2626" stroke="#991b1b" strokeWidth={2} />;
-                        }
-                        return <circle cx={cx} cy={cy} r={2} fill="#f97316" />;
-                      }}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Minimum Temperature</label>
+                    <input
+                      type="number"
+                      value={thresholds.minTemp}
+                      onChange={(e) => setThresholds({ ...thresholds, minTemp: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="humidity"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={(props) => {
-                        const { cx, cy, payload } = props;
-                        if (payload.isAnomaly) {
-                          return <circle cx={cx} cy={cy} r={5} fill="#dc2626" stroke="#991b1b" strokeWidth={2} />;
-                        }
-                        return <circle cx={cx} cy={cy} r={2} fill="#3b82f6" />;
-                      }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[320px] flex items-center justify-center text-gray-400">
-                  <div className="text-center">
-                    <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Loading...</p>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Prediction Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">ML Prediction</CardTitle>
-              <CardDescription>10-second trajectory forecast</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {predictionChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={320}>
-                  <LineChart data={predictionChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="time"
-                      tick={{ fontSize: 10, fill: '#666' }}
+                <div className="space-y-4">
+                  <h3 className="font-bold text-sm text-gray-700 mb-3">Humidity Thresholds (%)</h3>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Maximum Humidity</label>
+                    <input
+                      type="number"
+                      value={thresholds.maxHumidity}
+                      onChange={(e) => setThresholds({ ...thresholds, maxHumidity: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
                     />
-                    <YAxis tick={{ fontSize: 11, fill: '#666' }} />
-                    <Tooltip content={<PredictionTooltip />} />
-                    <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} />
-                    <Line
-                      type="monotone"
-                      dataKey="temperature"
-                      stroke="#f97316"
-                      strokeWidth={2.5}
-                      dot={(props) => {
-                        const { cx, cy, payload } = props;
-                        if (payload.isNow) {
-                          return <circle cx={cx} cy={cy} r={5} fill="#f97316" stroke="#ea580c" strokeWidth={2} />;
-                        }
-                        return <circle cx={cx} cy={cy} r={3} fill="#f97316" fillOpacity={0.6} />;
-                      }}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Minimum Humidity</label>
+                    <input
+                      type="number"
+                      value={thresholds.minHumidity}
+                      onChange={(e) => setThresholds({ ...thresholds, minHumidity: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="humidity"
-                      stroke="#3b82f6"
-                      strokeWidth={2.5}
-                      dot={(props) => {
-                        const { cx, cy, payload } = props;
-                        if (payload.isNow) {
-                          return <circle cx={cx} cy={cy} r={5} fill="#3b82f6" stroke="#2563eb" strokeWidth={2} />;
-                        }
-                        return <circle cx={cx} cy={cy} r={3} fill="#3b82f6" fillOpacity={0.6} />;
-                      }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[320px] flex items-center justify-center text-gray-400">
-                  <div className="text-center">
-                    <Thermometer className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No prediction data</p>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {anomalies.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-                Anomalies Detected - Provide Feedback
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {anomalies.slice(0, 5).map((reading, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-red-50 border-2 border-red-300 rounded-lg hover:bg-red-100 transition">
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-red-900 mb-1">⚠ ANOMALY</p>
-                      <p className="text-xs text-gray-700">
-                        <span className="font-semibold">Sensor:</span> {reading.node_id} |
-                        <span className="font-semibold"> Temp:</span> {reading.temperature.toFixed(1)}°C |
-                        <span className="font-semibold"> Humidity:</span> {reading.humidity.toFixed(1)}% |
-                        <span className="font-semibold"> Time:</span> {new Date(reading.timestamp).toLocaleTimeString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      {feedback[reading.timestamp] === 'correct' ? (
-                        <span className="text-xs text-green-700 font-bold px-3 py-1 bg-green-100 rounded">✓ Correct</span>
-                      ) : feedback[reading.timestamp] === 'incorrect' ? (
-                        <span className="text-xs text-orange-700 font-bold px-3 py-1 bg-orange-100 rounded">✓ Wrong</span>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleFeedback(reading.timestamp, true)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold"
-                          >
-                            <ThumbsUp className="w-3 h-3" />
-                            Correct
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(reading.timestamp, false)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-xs font-semibold"
-                          >
-                            <ThumbsDown className="w-3 h-3" />
-                            Wrong
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>
         )}
+
+        {thresholdAlerts.length > 0 && (
+          <div className="mb-6 space-y-2">
+            {thresholdAlerts.map((alert, idx) => (
+              <div key={idx} className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-300 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-gray-900">Threshold Violation Forecast</div>
+                  <p className="text-sm text-gray-700 mt-1">{alert}</p>
+                  <p className="text-xs text-gray-500 mt-1">Forecasted within next hour</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Card className="mb-6 border border-green-200 shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 border-b border-green-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-bold text-gray-900">Environmental Monitoring</CardTitle>
+                <CardDescription className="text-gray-600 mt-1">Real-time data with 5-20 second ML forecast</CardDescription>
+              </div>
+              {predictionData?.anomaly_predicted && (
+                <div className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-lg border border-red-200">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span className="font-semibold text-sm">Anomaly Forecast</span>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6 bg-gray-50">
+            {chartData.length > 0 ? (
+              <div>
+                {predictionData && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">ML Model Metrics</h3>
+                      <button
+                        className="text-gray-400 hover:text-gray-600"
+                        title="Confidence is calculated based on the magnitude of predicted changes. Higher changes indicate higher confidence in anomaly detection."
+                      >
+                        <Info className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <div className="text-xs uppercase tracking-wide text-gray-500 font-semibold">Trend Analysis</div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            {predictionData.trend.temp_delta_per_reading > 0 ? (
+                              <TrendingUp className="w-4 h-4 text-red-500" />
+                            ) : (
+                              <TrendingDown className="w-4 h-4 text-blue-500" />
+                            )}
+                            <span className="text-sm text-gray-700">
+                              Temperature: <span className="font-semibold">{predictionData.trend.temp_delta_per_reading > 0 ? '+' : ''}{predictionData.trend.temp_delta_per_reading.toFixed(3)}°C/reading</span>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {predictionData.trend.humidity_delta_per_reading > 0 ? (
+                              <TrendingUp className="w-4 h-4 text-red-500" />
+                            ) : (
+                              <TrendingDown className="w-4 h-4 text-blue-500" />
+                            )}
+                            <span className="text-sm text-gray-700">
+                              Humidity: <span className="font-semibold">{predictionData.trend.humidity_delta_per_reading > 0 ? '+' : ''}{predictionData.trend.humidity_delta_per_reading.toFixed(3)}%/reading</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-xs uppercase tracking-wide text-gray-500 font-semibold">Prediction Confidence</div>
+                        <div className="space-y-2">
+                          <div className="w-full bg-gray-200 rounded-full h-3">
+                            <div
+                              className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                              style={{ width: `${(predictionData.confidence || 0) * 100}%` }}
+                            />
+                          </div>
+                          <div className="text-sm text-gray-700">
+                            <span className="font-bold text-lg">{((predictionData.confidence || 0) * 100).toFixed(1)}%</span>
+                            <span className="text-xs text-gray-500 ml-2">Based on change magnitude</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-xs uppercase tracking-wide text-gray-500 font-semibold">Anomaly Status</div>
+                        <div className="flex items-center gap-2">
+                          {predictionData.anomaly_predicted ? (
+                            <>
+                              <XCircle className="w-5 h-5 text-red-600" />
+                              <span className="text-sm font-semibold text-red-600">Anomaly Predicted</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                              <span className="text-sm font-semibold text-green-600">Normal Behavior</span>
+                            </>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {predictionData.message}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-white p-4 rounded-lg shadow">
+                  <ResponsiveContainer width="100%" height={600}>
+                    <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+                      <defs>
+                        <linearGradient id="tempActual" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="humActual" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="tempPredicted" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#a855f7" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#a855f7" stopOpacity={0.1}/>
+                        </linearGradient>
+                        <linearGradient id="humPredicted" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ec4899" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis
+                        dataKey="time"
+                        tick={{ fontSize: 11, fill: '#4b5563', fontWeight: 600 }}
+                        angle={-35}
+                        textAnchor="end"
+                        height={80}
+                        stroke="#9ca3af"
+                      />
+                      <YAxis
+                        domain={[yMin, yMax]}
+                        tick={{ fontSize: 12, fill: '#4b5563', fontWeight: 600 }}
+                        stroke="#9ca3af"
+                        label={{ value: 'Temperature (°C) / Humidity (%)', angle: -90, position: 'insideLeft', fill: '#374151', fontSize: 13, fontWeight: 600 }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+
+                      {/* Threshold lines */}
+                      <ReferenceLine
+                        y={thresholds.maxTemp}
+                        stroke="#f97316"
+                        strokeDasharray="5 5"
+                        strokeWidth={2}
+                        opacity={0.6}
+                        label={{ value: `Max Temp: ${thresholds.maxTemp}°C`, position: 'right', fill: '#f97316', fontSize: 10, fontWeight: 'bold' }}
+                      />
+                      <ReferenceLine
+                        y={thresholds.minTemp}
+                        stroke="#f97316"
+                        strokeDasharray="5 5"
+                        strokeWidth={2}
+                        opacity={0.6}
+                        label={{ value: `Min Temp: ${thresholds.minTemp}°C`, position: 'right', fill: '#f97316', fontSize: 10, fontWeight: 'bold' }}
+                      />
+                      <ReferenceLine
+                        y={thresholds.maxHumidity}
+                        stroke="#3b82f6"
+                        strokeDasharray="5 5"
+                        strokeWidth={2}
+                        opacity={0.6}
+                        label={{ value: `Max Hum: ${thresholds.maxHumidity}%`, position: 'left', fill: '#3b82f6', fontSize: 10, fontWeight: 'bold' }}
+                      />
+                      <ReferenceLine
+                        y={thresholds.minHumidity}
+                        stroke="#3b82f6"
+                        strokeDasharray="5 5"
+                        strokeWidth={2}
+                        opacity={0.6}
+                        label={{ value: `Min Hum: ${thresholds.minHumidity}%`, position: 'left', fill: '#3b82f6', fontSize: 10, fontWeight: 'bold' }}
+                      />
+
+                      {/* Actual data */}
+                      <Area
+                        type="monotone"
+                        dataKey="temp_actual"
+                        stroke="#f97316"
+                        strokeWidth={4}
+                        fill="url(#tempActual)"
+                        dot={{ r: 5, fill: '#f97316', strokeWidth: 2, stroke: '#fff' }}
+                        activeDot={{ r: 8 }}
+                        connectNulls={false}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="hum_actual"
+                        stroke="#3b82f6"
+                        strokeWidth={4}
+                        fill="url(#humActual)"
+                        dot={{ r: 5, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
+                        activeDot={{ r: 8 }}
+                        connectNulls={false}
+                      />
+
+                      {/* Predicted data - using lines instead of areas */}
+                      <Line
+                        type="monotone"
+                        dataKey="temp_predicted"
+                        stroke="#a855f7"
+                        strokeWidth={4}
+                        strokeDasharray="8 4"
+                        dot={(props) => {
+                          const { cx, cy, payload } = props;
+                          if (!payload.isPrediction) return null;
+                          if (payload.isPredictiveAnomaly) {
+                            return <circle cx={cx} cy={cy} r={8} fill="#ef4444" stroke="#fff" strokeWidth={3} />;
+                          }
+                          return <circle cx={cx} cy={cy} r={6} fill="#a855f7" stroke="#fff" strokeWidth={2} />;
+                        }}
+                        activeDot={{ r: 8 }}
+                        connectNulls={false}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="hum_predicted"
+                        stroke="#ec4899"
+                        strokeWidth={4}
+                        strokeDasharray="8 4"
+                        dot={(props) => {
+                          const { cx, cy, payload } = props;
+                          if (!payload.isPrediction) return null;
+                          if (payload.isPredictiveAnomaly) {
+                            return <circle cx={cx} cy={cy} r={8} fill="#ef4444" stroke="#fff" strokeWidth={3} />;
+                          }
+                          return <circle cx={cx} cy={cy} r={6} fill="#ec4899" stroke="#fff" strokeWidth={2} />;
+                        }}
+                        activeDot={{ r: 8 }}
+                        connectNulls={false}
+                      />
+
+                      {/* Vertical line marking current time */}
+                      <ReferenceLine
+                        x="Now"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        label={{ value: 'Current Time', position: 'top', fill: '#10b981', fontSize: 12, fontWeight: 'bold' }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            ) : (
+              <div className="h-[500px] flex items-center justify-center text-gray-400 bg-white rounded-lg">
+                <div className="text-center">
+                  <Activity className="w-20 h-20 mx-auto mb-4 opacity-30 animate-pulse" />
+                  <p className="text-lg font-medium">Loading sensor data...</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* PREDICTION VALIDATION - ONE TABLE + TWO CHARTS */}
+        {pendingValidations.length > 0 && (() => {
+          const filteredData = pendingValidations.filter(pred => {
+            const predDate = new Date(pred.timestamp);
+            const matchesTemp = pred.predicted_temp >= filterTempMin && pred.predicted_temp <= filterTempMax;
+            const matchesHum = pred.predicted_humidity >= filterHumMin && pred.predicted_humidity <= filterHumMax;
+
+            let matchesDate = true;
+            if (filterDate) {
+              const filterDateObj = new Date(filterDate);
+              matchesDate = predDate.toDateString() === filterDateObj.toDateString();
+            }
+
+            let matchesTime = true;
+            if (filterStartHour || filterEndHour) {
+              const timeStr = predDate.toTimeString().substring(0, 8);
+              if (filterStartHour && filterEndHour) {
+                matchesTime = timeStr >= filterStartHour && timeStr <= filterEndHour;
+              } else if (filterStartHour) {
+                matchesTime = timeStr >= filterStartHour;
+              } else if (filterEndHour) {
+                matchesTime = timeStr <= filterEndHour;
+              }
+            }
+
+            return matchesTemp && matchesHum && matchesDate && matchesTime;
+          }).slice(0, 10);
+
+          return (
+            <Card className="mb-6 border border-gray-200 shadow">
+              <CardHeader className="bg-gray-50 border-b border-gray-200">
+                <CardTitle className="text-lg font-bold text-gray-900">Prediction Validation</CardTitle>
+                <CardDescription className="text-gray-600">Last 10 predictions updating live</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {/* Filters */}
+                <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                  <h4 className="text-sm font-bold text-gray-900 mb-3">Filters</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Temp Range (°C)</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="number"
+                          value={filterTempMin}
+                          onChange={(e) => setFilterTempMin(Number(e.target.value))}
+                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="Min"
+                        />
+                        <input
+                          type="number"
+                          value={filterTempMax}
+                          onChange={(e) => setFilterTempMax(Number(e.target.value))}
+                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="Max"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Humidity Range (%)</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="number"
+                          value={filterHumMin}
+                          onChange={(e) => setFilterHumMin(Number(e.target.value))}
+                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="Min"
+                        />
+                        <input
+                          type="number"
+                          value={filterHumMax}
+                          onChange={(e) => setFilterHumMax(Number(e.target.value))}
+                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="Max"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Date</label>
+                      <input
+                        type="date"
+                        value={filterDate}
+                        onChange={(e) => setFilterDate(e.target.value)}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Time Range (HH:MM:SS)</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="time"
+                          step="1"
+                          value={filterStartHour}
+                          onChange={(e) => setFilterStartHour(e.target.value)}
+                          className="flex-1 px-1 py-1 border border-gray-300 rounded text-xs"
+                        />
+                        <input
+                          type="time"
+                          step="1"
+                          value={filterEndHour}
+                          onChange={(e) => setFilterEndHour(e.target.value)}
+                          className="flex-1 px-1 py-1 border border-gray-300 rounded text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setFilterTempMin(-50);
+                      setFilterTempMax(100);
+                      setFilterHumMin(0);
+                      setFilterHumMax(100);
+                      setFilterDate('');
+                      setFilterStartHour('');
+                      setFilterEndHour('');
+                    }}
+                    className="mt-3 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium rounded"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+
+                {/* TWO CHARTS - Temperature and Humidity */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {/* Temperature Chart */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <h5 className="text-xs font-bold text-gray-900 mb-2">Temperature (°C)</h5>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart
+                        data={filteredData.slice().reverse().map(pred => ({
+                          time: new Date(pred.timestamp).toLocaleTimeString(),
+                          predicted: pred.predicted_temp,
+                          actual: pred.current_temp,
+                        }))}
+                        margin={{ top: 5, right: 5, left: 0, bottom: 30 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="time" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                        <YAxis tick={{ fontSize: 9 }} />
+                        <Tooltip />
+                        <Legend wrapperStyle={{ fontSize: '10px' }} />
+                        <Line type="monotone" dataKey="predicted" stroke="#ef4444" strokeWidth={3} strokeDasharray="5 5" name="Predicted" dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={3} name="Actual" dot={{ r: 4 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Humidity Chart */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <h5 className="text-xs font-bold text-gray-900 mb-2">Humidity (%)</h5>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart
+                        data={filteredData.slice().reverse().map(pred => ({
+                          time: new Date(pred.timestamp).toLocaleTimeString(),
+                          predicted: pred.predicted_humidity,
+                          actual: pred.current_humidity,
+                        }))}
+                        margin={{ top: 5, right: 5, left: 0, bottom: 30 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="time" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                        <YAxis tick={{ fontSize: 9 }} />
+                        <Tooltip />
+                        <Legend wrapperStyle={{ fontSize: '10px' }} />
+                        <Line type="monotone" dataKey="predicted" stroke="#ef4444" strokeWidth={3} strokeDasharray="5 5" name="Predicted" dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={3} name="Actual" dot={{ r: 4 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Table */}
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-gray-100 border-b border-gray-200">
+                        <th className="text-left py-2 px-2 font-semibold text-gray-800">Time</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Pred Temp</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Act Temp</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Diff</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Pred Hum</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Act Hum</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Diff</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Anom</th>
+                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Valid</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredData.map((pred, idx) => {
+                        const tempDiff = Math.abs(pred.current_temp - pred.predicted_temp);
+                        const humDiff = Math.abs(pred.current_humidity - pred.predicted_humidity);
+
+                        return (
+                          <tr key={pred.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                            <td className="py-2 px-2 text-gray-900">{new Date(pred.timestamp).toLocaleTimeString()}</td>
+                            <td className="py-2 px-2 text-center text-gray-900">{pred.predicted_temp.toFixed(1)}</td>
+                            <td className="py-2 px-2 text-center text-gray-900">{pred.current_temp.toFixed(1)}</td>
+                            <td className="py-2 px-2 text-center text-gray-900">{tempDiff.toFixed(2)}</td>
+                            <td className="py-2 px-2 text-center text-gray-900">{pred.predicted_humidity.toFixed(1)}</td>
+                            <td className="py-2 px-2 text-center text-gray-900">{pred.current_humidity.toFixed(1)}</td>
+                            <td className="py-2 px-2 text-center text-gray-900">{humDiff.toFixed(2)}</td>
+                            <td className="py-2 px-2 text-center">
+                              {pred.anomaly ? (
+                                <span className="px-1 py-0.5 bg-red-100 text-red-700 text-xs rounded">Y</span>
+                              ) : (
+                                <span className="px-1 py-0.5 bg-gray-200 text-gray-600 text-xs rounded">N</span>
+                              )}
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              {pred.validated ? (
+                                <span className={`px-1 py-0.5 text-xs rounded ${pred.validated === 'ok' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                  {pred.validated === 'ok' ? 'OK' : 'KO'}
+                                </span>
+                              ) : (
+                                <div className="flex gap-1 justify-center">
+                                  <button
+                                    onClick={() => setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'ok'} : p))}
+                                    className="px-1 py-0.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded"
+                                  >
+                                    OK
+                                  </button>
+                                  <button
+                                    onClick={() => setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'not_ok'} : p))}
+                                    className="px-1 py-0.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
+                                  >
+                                    KO
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
       </div>
     </DashboardLayout>
   );

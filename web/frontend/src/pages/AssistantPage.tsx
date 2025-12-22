@@ -83,7 +83,7 @@ const AssistantPage: React.FC = () => {
         <Card className="h-[calc(100vh-250px)] flex flex-col">
           <CardHeader className="border-b">
             <CardTitle className="flex items-center space-x-2">
-              <Bot className="w-6 h-6 text-blue-600" />
+              <Bot className="w-6 h-6 text-green-600" />
               <span>GreenCop Assistant</span>
             </CardTitle>
           </CardHeader>
@@ -101,8 +101,8 @@ const AssistantPage: React.FC = () => {
                   <div
                     className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                       message.role === 'user'
-                        ? 'bg-blue-600'
-                        : 'bg-gradient-to-br from-purple-500 to-blue-500'
+                        ? 'bg-green-600'
+                        : 'bg-gradient-to-br from-purple-500 to-green-500'
                     }`}
                   >
                     {message.role === 'user' ? (
@@ -121,14 +121,14 @@ const AssistantPage: React.FC = () => {
                     <div
                       className={`rounded-2xl px-4 py-3 ${
                         message.role === 'user'
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-green-600 text-white'
                           : 'bg-gray-100 text-gray-900'
                       }`}
                     >
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       <p
                         className={`text-xs mt-2 ${
-                          message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
+                          message.role === 'user' ? 'text-green-100' : 'text-gray-500'
                         }`}
                       >
                         {message.timestamp.toLocaleTimeString()}
@@ -141,7 +141,7 @@ const AssistantPage: React.FC = () => {
               {/* Loading Indicator */}
               {isLoading && (
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-green-500 flex items-center justify-center">
                     <Bot className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 max-w-2xl">
@@ -163,7 +163,7 @@ const AssistantPage: React.FC = () => {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me to query data, manage sensors/rooms, or answer questions..."
-                  className="flex-1 min-h-[60px] max-h-[200px] px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 min-h-[60px] max-h-[200px] px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   disabled={isLoading}
                 />
                 <Button

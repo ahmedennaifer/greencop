@@ -148,15 +148,15 @@ const SensorDetailPage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-l-4 border-l-blue-500">
+              <Card className="border-l-4 border-l-green-500">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 text-lg">
-                    <Droplets className="w-5 h-5 text-blue-600" />
+                    <Droplets className="w-5 h-5 text-green-600" />
                     <span>Current Humidity</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold text-blue-600">
+                  <div className="text-4xl font-bold text-green-600">
                     {latestData ? `${latestData.humidity.toFixed(1)}%` : 'N/A'}
                   </div>
                   {latestData && (

@@ -11,8 +11,10 @@ MODEL_BUCKET = os.environ.get("MODEL_BUCKET")
 
 model = None
 
+
 class PredictRequest(BaseModel):
     instances: list
+
 
 def load_model():
     global model
@@ -26,10 +28,11 @@ def load_model():
     model_path = f"/tmp/{model_filename}"
     model_blob.download_to_filename(model_path)
 
-    with open(model_path, 'rb') as f:
+    with open(model_path, "rb") as f:
         model = pickle.load(f)
 
     return model
+
 
 @app.post("/predict")
 async def predict(request: PredictRequest):
@@ -40,6 +43,7 @@ async def predict(request: PredictRequest):
     predictions = model.predict(request.instances).tolist()
 
     return {"predictions": predictions}
+
 
 @app.get("/health")
 async def health():

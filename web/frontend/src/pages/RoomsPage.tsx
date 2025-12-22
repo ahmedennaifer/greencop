@@ -75,8 +75,8 @@ const RoomsPage: React.FC = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <Server className="w-6 h-6 text-blue-600" />
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <Server className="w-6 h-6 text-green-600" />
                       </div>
                       <div>
                         <CardTitle className="text-xl">{room.name}</CardTitle>

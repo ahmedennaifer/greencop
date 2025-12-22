@@ -1,5 +1,4 @@
 import os
-import base64
 import logging
 from datetime import datetime
 from google.cloud import storage, aiplatform
@@ -32,7 +31,7 @@ def upload_to_vertex_ai(model_filename):
     storage_client = storage.Client()
     bucket = storage_client.bucket(MODEL_BUCKET)
 
-    model_version = model_filename.replace('.joblib', '')
+    model_version = model_filename.replace(".joblib", "")
     dest_path = f"vertex_models/{model_version}/model.joblib"
 
     source_blob = bucket.blob(f"models/{model_filename}")
@@ -45,7 +44,7 @@ def upload_to_vertex_ai(model_filename):
         artifact_uri=f"gs://{MODEL_BUCKET}/vertex_models/{model_version}/",
         serving_container_image_uri="us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-0:latest",
         serving_container_predict_route="/predict",
-        serving_container_health_route="/health"
+        serving_container_health_route="/health",
     )
 
     logger.info(f"Model uploaded to Vertex AI: {model.resource_name}")
@@ -77,7 +76,7 @@ def deploy_to_endpoint(model):
         machine_type="n1-standard-2",
         min_replica_count=1,
         max_replica_count=3,
-        traffic_percentage=100
+        traffic_percentage=100,
     )
 
     logger.info(f"Model deployed to endpoint: {endpoint.resource_name}")
