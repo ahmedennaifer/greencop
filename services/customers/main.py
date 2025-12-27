@@ -10,7 +10,11 @@ import os
 
 app = FastAPI()
 
-allowed_origins = ["http://localhost:5173", "http://localhost:3000"]
+allowed_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://greencop.netlify.app"
+]
 frontend_url = os.environ.get("FRONTEND_URL")
 if frontend_url:
     allowed_origins.append(frontend_url)
