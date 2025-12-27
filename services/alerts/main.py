@@ -125,16 +125,28 @@ def detect_excessive_metrics(cloud_event):
                             json={"instances": [features]},
                             timeout=5
                         )
+                        response.raise_for_status()
 
-                        predictions = response.json()["predictions"]
-                        prediction = predictions[0]
+                        data = response.json()
+                        if "predictions" in data and data["predictions"]:
+                            prediction = data["predictions"][0]
 
-                        if prediction == -1:
-                            logger.warning(f"Anomaly detected by ML model")
-                            publish_alert(sensor_data, "ml_anomaly")
+                            if prediction == -1:
+                                logger.warning(f"Anomaly detected by ML model")
+                                publish_alert(sensor_data, "ml_anomaly")
+                        else:
+                            logger.error(f"ML service response missing predictions")
+                            prediction = 1
 
+                    except requests.exceptions.RequestException as e:
+                        logger.error(f"ML prediction request failed: {e}")
+                        prediction = 1
+                    except ValueError as e:
+                        logger.error(f"ML prediction JSON parse failed: {e}")
+                        prediction = 1
                     except Exception as e:
                         logger.error(f"ML prediction failed: {e}")
+                        prediction = 1
 
                 # Insert sensor data with prediction to BigQuery
                 try:

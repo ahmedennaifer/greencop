@@ -106,21 +106,49 @@ def train_model(df):
         "humidity_rolling_mean_6h",
     ]
 
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+
     X = df[features]
+    y = df['label'] if 'label' in df.columns else None
 
-    model = IsolationForest(contamination=0.01, random_state=42, n_estimators=100)
+    if y is not None:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    else:
+        X_train = X
+        X_test = None
+        y_test = None
 
-    model.fit(X)
+    model = IsolationForest(contamination=0.05, random_state=42, n_estimators=100)
+    model.fit(X_train)
+
+    metrics = {}
+    if X_test is not None and y_test is not None:
+        y_pred = model.predict(X_test)
+
+        precision = precision_score(y_test, y_pred, pos_label=-1, zero_division=0)
+        recall = recall_score(y_test, y_pred, pos_label=-1, zero_division=0)
+        f1 = f1_score(y_test, y_pred, pos_label=-1, zero_division=0)
+        accuracy = accuracy_score(y_test, y_pred)
+
+        metrics = {
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'accuracy': accuracy
+        }
+
+        logger.info(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}, Accuracy: {accuracy:.4f}")
 
     logger.info("Model training completed")
-    return model, features
+    return model, features, metrics
 
 
-def save_model(model, features, num_samples):
+def save_model(model, features, num_samples, metrics=None):
     storage_client = storage.Client()
     bucket = storage_client.bucket(MODEL_BUCKET)
 
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_filename = f"model_v{timestamp}.joblib"
 
     local_path = f"/tmp/{model_filename}"
@@ -134,7 +162,8 @@ def save_model(model, features, num_samples):
         "timestamp": timestamp,
         "num_samples": num_samples,
         "features": features,
-        "contamination": 0.01,
+        "contamination": 0.05,
+        "metrics": metrics or {}
     }
 
     metadata_blob = bucket.blob(f"models/metadata_{timestamp}.json")
@@ -174,20 +203,30 @@ def trigger_deployment():
 @functions_framework.cloud_event
 def train_model_handler(cloud_event):
     try:
-        df = fetch_training_data()
+        use_synthetic = os.environ.get("USE_SYNTHETIC_DATA", "true").lower() == "true"
 
-        fps = fetch_false_positives()
-        df = exclude_false_positives(df, fps)
+        if use_synthetic:
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(MODEL_BUCKET)
+            blob = bucket.blob('training_data/sensor_data_7days.csv')
+            blob.download_to_filename('/tmp/training_data.csv')
 
-        df = engineer_features(df)
+            df = pd.read_csv('/tmp/training_data.csv')
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df = df.rename(columns={'temp_rolling_mean': 'temp_rolling_mean_6h', 'humidity_rolling_mean': 'humidity_rolling_mean_6h'})
+        else:
+            df = fetch_training_data()
+            fps = fetch_false_positives()
+            df = exclude_false_positives(df, fps)
+            df = engineer_features(df)
 
-        model, features = train_model(df)
+        model, features, metrics = train_model(df)
 
-        model_filename = save_model(model, features, len(df))
+        model_filename = save_model(model, features, len(df), metrics)
 
         trigger_deployment()
 
-        return {"status": "success", "model": model_filename}
+        return {"status": "success", "model": model_filename, "metrics": metrics}
 
     except Exception as e:
         logger.error(f"Training failed: {str(e)}")

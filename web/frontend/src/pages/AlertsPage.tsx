@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { AlertTriangle, CheckCircle, Clock, ThermometerSun, Droplets } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, ThermometerSun, Droplets, Filter } from 'lucide-react';
 import { alertService } from '../api/services/alert.service';
 import apiClient from '../api/client';
 import type { Alert } from '../types';
@@ -13,6 +13,10 @@ const AlertsPage: React.FC = () => {
   const [alertHistory, setAlertHistory] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [sensorNames, setSensorNames] = useState<Record<string, string>>({});
+  const [filterType, setFilterType] = useState<'all' | 'temperature' | 'humidity' | 'anomaly'>('all');
+  const [filterSensor, setFilterSensor] = useState<string>('all');
+  const [filterDateFrom, setFilterDateFrom] = useState<string>('');
+  const [filterDateTo, setFilterDateTo] = useState<string>('');
 
   useEffect(() => {
     fetchAlerts();
@@ -77,7 +81,35 @@ const AlertsPage: React.FC = () => {
   };
 
   const getAlertColor = (type: string) => {
-    return type === 'temperature' ? 'orange' : 'blue';
+    if (type === 'temperature') return 'orange';
+    if (type === 'anomaly') return 'red';
+    return 'blue';
+  };
+
+  const filterAlerts = (alerts: Alert[]) => {
+    return alerts.filter(alert => {
+      const typeMatch = filterType === 'all' || alert.alert_type === filterType;
+      const sensorMatch = filterSensor === 'all' || alert.sensor_id === filterSensor;
+
+      const alertDate = new Date(alert.timestamp);
+      const dateFromMatch = !filterDateFrom || alertDate >= new Date(filterDateFrom);
+      const dateToMatch = !filterDateTo || alertDate <= new Date(filterDateTo);
+
+      return typeMatch && sensorMatch && dateFromMatch && dateToMatch;
+    });
+  };
+
+  const uniqueSensorIds = [...new Set([...activeAlerts, ...alertHistory].map(a => a.sensor_id))];
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
   return (
@@ -87,6 +119,86 @@ const AlertsPage: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Alerts</h1>
           <p className="text-gray-600">Monitor and manage environmental alerts</p>
         </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Filter className="w-5 h-5" />
+              <span>Filters</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Alert Type</label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={filterType === 'all' ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterType('all')}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    variant={filterType === 'temperature' ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterType('temperature')}
+                  >
+                    Temperature
+                  </Button>
+                  <Button
+                    variant={filterType === 'humidity' ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterType('humidity')}
+                  >
+                    Humidity
+                  </Button>
+                  <Button
+                    variant={filterType === 'anomaly' ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterType('anomaly')}
+                  >
+                    Anomaly
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sensor</label>
+                <select
+                  value={filterSensor}
+                  onChange={(e) => setFilterSensor(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="all">All Sensors</option>
+                  {uniqueSensorIds.map(id => (
+                    <option key={id} value={id}>
+                      {sensorNames[id] || `Sensor ${id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date-Time From</label>
+                <input
+                  type="datetime-local"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date-Time To</label>
+                <input
+                  type="datetime-local"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Active Alerts */}
         <Card className="mb-6">
@@ -99,15 +211,15 @@ const AlertsPage: React.FC = () => {
                 </CardTitle>
                 <CardDescription>Alerts requiring immediate attention</CardDescription>
               </div>
-              <div className="text-2xl font-bold text-red-600">{activeAlerts.length}</div>
+              <div className="text-2xl font-bold text-red-600">{filterAlerts(activeAlerts).length}</div>
             </div>
           </CardHeader>
           <CardContent>
             {loading ? (
               <p className="text-gray-500 text-center py-8">Loading alerts...</p>
-            ) : activeAlerts.length > 0 ? (
+            ) : filterAlerts(activeAlerts).length > 0 ? (
               <div className="space-y-3">
-                {activeAlerts.map((alert) => {
+                {filterAlerts(activeAlerts).map((alert) => {
                   const color = getAlertColor(alert.alert_type);
                   return (
                     <div
@@ -125,7 +237,7 @@ const AlertsPage: React.FC = () => {
                           <p className="text-sm text-gray-600">{alert.message}</p>
                           <p className="text-xs text-gray-500 mt-1">
                             <Clock className="w-3 h-3 inline mr-1" />
-                            {new Date(alert.timestamp).toLocaleString()}
+                            {formatTimestamp(alert.timestamp)}
                           </p>
                           {alert.feedback && (
                             <p className="text-xs mt-1 text-gray-500">
@@ -186,9 +298,9 @@ const AlertsPage: React.FC = () => {
           <CardContent>
             {loading ? (
               <p className="text-gray-500 text-center py-8">Loading history...</p>
-            ) : alertHistory.length > 0 ? (
+            ) : filterAlerts(alertHistory).length > 0 ? (
               <div className="space-y-2">
-                {alertHistory.map((alert) => {
+                {filterAlerts(alertHistory).map((alert) => {
                   const color = getAlertColor(alert.alert_type);
                   return (
                     <div
@@ -204,7 +316,7 @@ const AlertsPage: React.FC = () => {
                             {sensorNames[alert.sensor_id] || `Sensor ${alert.sensor_id}`} - {alert.message}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {new Date(alert.timestamp).toLocaleString()}
+                            {formatTimestamp(alert.timestamp)}
                           </p>
                         </div>
                       </div>

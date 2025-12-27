@@ -52,6 +52,22 @@ async def get_alert_history(limit: int = 50, db: Session = Depends(get_db)):
         logger.error(f"Error fetching alert history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@alert_router.get("/anomalies", response_model=List[Alert])
+async def get_anomalies(limit: int = 100, db: Session = Depends(get_db)):
+    """Get anomaly alerts"""
+    try:
+        alerts = (
+            db.query(AlertModel)
+            .filter(AlertModel.alert_type == "anomaly")
+            .order_by(AlertModel.timestamp.desc())
+            .limit(limit)
+            .all()
+        )
+        return alerts
+    except Exception as e:
+        logger.error(f"Error fetching anomalies: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @alert_router.get("/sensor/{sensor_id}", response_model=List[Alert])
 async def get_sensor_alerts(sensor_id: int, db: Session = Depends(get_db)):

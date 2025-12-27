@@ -1,5 +1,6 @@
 import os
 import pickle
+import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
 from google.cloud import storage
@@ -7,43 +8,65 @@ from google.cloud import storage
 app = FastAPI()
 
 PROJECT_ID = os.environ.get("PROJECT_ID")
-MODEL_BUCKET = os.environ.get("MODEL_BUCKET")
+MODEL_BUCKET = os.environ.get("MODEL_BUCKET", "atomic-climate-482314-q7-ml-models")
 
-model = None
-
+forecasting_model = None
+anomaly_model = None
+features = None
 
 class PredictRequest(BaseModel):
     instances: list
 
+def load_models():
+    global forecasting_model, anomaly_model, features
 
-def load_model():
-    global model
-    storage_client = storage.Client()
+    storage_client = storage.Client(project=PROJECT_ID)
     bucket = storage_client.bucket(MODEL_BUCKET)
 
+    forecast_blob = bucket.blob("models/forecasting_model.pkl")
+    forecast_path = "/tmp/forecasting_model.pkl"
+    forecast_blob.download_to_filename(forecast_path)
+
+    with open(forecast_path, "rb") as f:
+        forecast_data = pickle.load(f)
+        forecasting_model = forecast_data['model']
+        features = forecast_data['features']
+
     latest_blob = bucket.blob("models/latest_model.txt")
-    model_filename = latest_blob.download_as_text().strip()
+    anomaly_filename = latest_blob.download_as_text().strip()
 
-    model_blob = bucket.blob(f"models/{model_filename}")
-    model_path = f"/tmp/{model_filename}"
-    model_blob.download_to_filename(model_path)
+    anomaly_blob = bucket.blob(f"models/{anomaly_filename}")
+    anomaly_path = f"/tmp/{anomaly_filename}"
+    anomaly_blob.download_to_filename(anomaly_path)
 
-    with open(model_path, "rb") as f:
-        model = pickle.load(f)
-
-    return model
-
+    with open(anomaly_path, "rb") as f:
+        anomaly_model = pickle.load(f)
 
 @app.post("/predict")
 async def predict(request: PredictRequest):
-    global model
-    if model is None:
-        model = load_model()
+    global forecasting_model, anomaly_model
 
-    predictions = model.predict(request.instances).tolist()
+    if forecasting_model is None or anomaly_model is None:
+        load_models()
 
-    return {"predictions": predictions}
+    current_features = np.array(request.instances)
 
+    forecast = forecasting_model.predict(current_features)
+
+    forecast_with_features = []
+    for predicted_values in forecast:
+        temp_pred, hum_pred = predicted_values
+
+        forecast_features = current_features[0].copy()
+        forecast_features[0] = temp_pred
+        forecast_features[1] = hum_pred
+
+        forecast_with_features.append(forecast_features)
+
+    forecast_array = np.array(forecast_with_features)
+    anomaly_predictions = anomaly_model.predict(forecast_array)
+
+    return {"predictions": anomaly_predictions.tolist()}
 
 @app.get("/health")
 async def health():
