@@ -5,7 +5,7 @@ services:
     command:
       - "--address"
       - "0.0.0.0"
-      - "greencop-473112:europe-west1:customers-db-instance"
+      - "atomic-climate-482314-q7:europe-west1:customers-db-instance"
     volumes:
       - ~/.config/gcloud:/config
     environment:

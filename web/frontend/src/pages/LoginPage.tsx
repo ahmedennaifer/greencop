@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Label from '../components/ui/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { extractErrorMessage } from '../utils/errorHandler';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ const LoginPage: React.FC = () => {
       await login({ email, password });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      setError(extractErrorMessage(err) || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

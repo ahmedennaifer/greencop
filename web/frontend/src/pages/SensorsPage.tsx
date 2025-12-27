@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Label from '../components/ui/Label';
 import { Activity, Trash2, Plus, X, Thermometer, Droplets } from 'lucide-react';
+import { extractErrorMessage } from '../utils/errorHandler';
 import { sensorService } from '../api/services/sensor.service';
 import { dataService } from '../api/services/data.service';
 import type { Sensor, SensorData } from '../types';
@@ -86,7 +87,7 @@ const SensorsPage: React.FC = () => {
     setError('');
     try {
       await sensorService.createSensor({
-        id: parseInt(formData.id),
+        id: formData.id,
         name: formData.name,
         type: formData.type,
         room_id: parseInt(formData.room_id),
@@ -95,7 +96,12 @@ const SensorsPage: React.FC = () => {
       setShowCreateModal(false);
       fetchAllSensors();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create sensor');
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        setError(detail.map((e: any) => e.msg).join(', '));
+      } else {
+        setError(detail || 'Failed to create sensor');
+      }
     } finally {
       setCreating(false);
     }
@@ -110,7 +116,7 @@ const SensorsPage: React.FC = () => {
       await sensorService.deleteSensor(sensorId);
       fetchAllSensors();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to delete sensor');
+      alert(extractErrorMessage(err) || 'Failed to delete sensor');
     }
   };
 

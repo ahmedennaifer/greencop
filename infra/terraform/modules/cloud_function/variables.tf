@@ -38,3 +38,15 @@ variable "bucket_name" {
   type    = string
   default = ""
 }
+
+variable "cloudsql_instances" {
+  description = "Cloud SQL instances to connect"
+  type        = list(string)
+  default     = []
+}
+
+variable "service_account_email" {
+  description = "Service account email"
+  type        = string
+  default     = null
+}

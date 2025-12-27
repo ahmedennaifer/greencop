@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Label from '../components/ui/Label';
 import { Server, Trash2, Plus, X } from 'lucide-react';
+import { extractErrorMessage } from '../utils/errorHandler';
 
 const RoomsPage: React.FC = () => {
   const { user } = useAuth();
@@ -31,7 +32,7 @@ const RoomsPage: React.FC = () => {
       setShowCreateModal(false);
       refetch();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create room');
+      setError(extractErrorMessage(err) || 'Failed to create room');
     } finally {
       setCreating(false);
     }
@@ -46,7 +47,7 @@ const RoomsPage: React.FC = () => {
       await deleteRoom(roomId);
       refetch();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to delete room');
+      alert(extractErrorMessage(err) || 'Failed to delete room');
     }
   };
 

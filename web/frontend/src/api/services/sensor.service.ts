@@ -2,12 +2,12 @@ import apiClient from '../client';
 import type { Sensor } from '../../types';
 
 export const sensorService = {
-  async createSensor(data: { id: number; name: string; type?: string; room_id: number }): Promise<Sensor> {
+  async createSensor(data: { id: string; name: string; type?: string; room_id: number }): Promise<Sensor> {
     const response = await apiClient.post<Sensor>('/api/v1/sensors/new_sensor', data);
     return response.data;
   },
 
-  async getSensor(sensorId: number): Promise<Sensor> {
+  async getSensor(sensorId: string): Promise<Sensor> {
     const response = await apiClient.get<Sensor>(`/api/v1/sensors/sensor/${sensorId}`);
     return response.data;
   },
@@ -22,7 +22,7 @@ export const sensorService = {
     return response.data;
   },
 
-  async updateSensor(sensorId: number, data: { id: number; name: string; type?: string; room_id: number }): Promise<Sensor> {
+  async updateSensor(sensorId: string, data: { id: string; name: string; type?: string; room_id: number }): Promise<Sensor> {
     const response = await apiClient.put<Sensor>(`/api/v1/sensors/update_sensor/${sensorId}`, data);
     return response.data;
   },

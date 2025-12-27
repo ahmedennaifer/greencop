@@ -1,0 +1,15 @@
+project_id  = "your-gcp-project-id"
+region      = "europe-west1"
+credentials = "sa.json"
+
+service_name = "customers-service"
+image_url    = "gcr.io/your-gcp-project-id/customers-service:latest"
+port         = 8080
+
+db_name          = "customers-db"
+db_user          = "your-db-user"
+db_user_password = "your-secure-password"
+db_tier          = "db-f1-micro"
+db_version       = "POSTGRES_15"
+
+service_account_email = "terraform@your-gcp-project-id.iam.gserviceaccount.com"

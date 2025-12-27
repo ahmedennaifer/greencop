@@ -7,8 +7,11 @@ import uuid
 from datetime import datetime
 from google.cloud import pubsub_v1
 
-PROJECT_ID = os.environ.get("PROJECT_ID", "greencop-473112")
+PROJECT_ID = os.environ.get("PROJECT_ID")
 TOPIC_NAME = os.environ.get("TOPIC_NAME", "data")
+
+if not PROJECT_ID:
+    raise ValueError("PROJECT_ID environment variable must be set")
 
 publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path(PROJECT_ID, TOPIC_NAME)

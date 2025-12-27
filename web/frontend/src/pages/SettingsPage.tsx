@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Label from '../components/ui/Label';
+import { extractErrorMessage } from '../utils/errorHandler';
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
@@ -54,7 +55,7 @@ const SettingsPage: React.FC = () => {
       setSuccess('Alert thresholds updated successfully!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to update thresholds');
+      setError(extractErrorMessage(err) || 'Failed to update thresholds');
     } finally {
       setSaving(false);
     }

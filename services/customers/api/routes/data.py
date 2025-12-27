@@ -282,11 +282,27 @@ async def predict_anomaly(sensor_id: str, lookback: int = Query(100, le=500)):
             hum_rolling_mean,
         ]
 
-        response = requests.post(
-            f"{ML_PREDICT_URL}/predict", json={"instances": [features]}, timeout=5
-        )
-
-        prediction = response.json()["predictions"][0]
+        try:
+            response = requests.post(
+                f"{ML_PREDICT_URL}/predict",
+                json={"instances": [features]},
+                timeout=5
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logger.warning(f"ML service unavailable: {e}")
+            prediction = 1
+        else:
+            try:
+                data = response.json()
+                if "predictions" not in data or not data["predictions"]:
+                    logger.error(f"ML service response missing predictions")
+                    prediction = 1
+                else:
+                    prediction = data["predictions"][0]
+            except ValueError as e:
+                logger.error(f"ML service returned invalid JSON: {response.text[:200]}")
+                prediction = 1
 
         temp_change = abs(predicted_temp_short - temps[-1])
         hum_change = abs(predicted_hum_short - hums[-1])

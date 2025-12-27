@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 class Sensor(Base):
     __tablename__ = "sensors"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String(50), primary_key=True)
     name = Column(String(80), nullable=False)
     type = Column(String(50))
 

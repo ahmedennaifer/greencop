@@ -383,33 +383,33 @@ const DashboardPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
+          <div className="bg-white rounded-lg shadow p-3 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Total Rooms</p>
-                <p className="text-2xl font-bold text-gray-900">{loading ? '...' : stats.totalRooms}</p>
+                <p className="text-xl font-bold text-gray-900">{loading ? '...' : stats.totalRooms}</p>
               </div>
-              <Server className="w-8 h-8 text-green-600" />
+              <Server className="w-6 h-6 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
+          <div className="bg-white rounded-lg shadow p-3 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Active Sensors</p>
-                <p className="text-2xl font-bold text-gray-900">{loading ? '...' : stats.activeSensors}</p>
+                <p className="text-xl font-bold text-gray-900">{loading ? '...' : stats.activeSensors}</p>
               </div>
-              <Activity className="w-8 h-8 text-green-600" />
+              <Activity className="w-6 h-6 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
+          <div className="bg-white rounded-lg shadow p-3 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-600 mb-1">Active Alerts</p>
-                <p className="text-2xl font-bold text-gray-900">{loading ? '...' : stats.activeAlerts}</p>
+                <p className="text-xl font-bold text-gray-900">{loading ? '...' : stats.activeAlerts}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+              <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
           </div>
 
@@ -820,125 +820,15 @@ const DashboardPage: React.FC = () => {
 
         {/* PREDICTION VALIDATION - ONE TABLE + TWO CHARTS */}
         {pendingValidations.length > 0 && (() => {
-          const filteredData = pendingValidations.filter(pred => {
-            const predDate = new Date(pred.timestamp);
-            const matchesTemp = pred.predicted_temp >= filterTempMin && pred.predicted_temp <= filterTempMax;
-            const matchesHum = pred.predicted_humidity >= filterHumMin && pred.predicted_humidity <= filterHumMax;
-
-            let matchesDate = true;
-            if (filterDate) {
-              const filterDateObj = new Date(filterDate);
-              matchesDate = predDate.toDateString() === filterDateObj.toDateString();
-            }
-
-            let matchesTime = true;
-            if (filterStartHour || filterEndHour) {
-              const timeStr = predDate.toTimeString().substring(0, 8);
-              if (filterStartHour && filterEndHour) {
-                matchesTime = timeStr >= filterStartHour && timeStr <= filterEndHour;
-              } else if (filterStartHour) {
-                matchesTime = timeStr >= filterStartHour;
-              } else if (filterEndHour) {
-                matchesTime = timeStr <= filterEndHour;
-              }
-            }
-
-            return matchesTemp && matchesHum && matchesDate && matchesTime;
-          }).slice(0, 10);
+          const filteredData = pendingValidations.slice(0, 5);
 
           return (
             <Card className="mb-6 border border-gray-200 shadow">
               <CardHeader className="bg-gray-50 border-b border-gray-200">
-                <CardTitle className="text-lg font-bold text-gray-900">Prediction Validation</CardTitle>
-                <CardDescription className="text-gray-600">Last 10 predictions updating live</CardDescription>
+                <CardTitle className="text-lg font-bold text-gray-900">Latest Predictions</CardTitle>
+                <CardDescription className="text-gray-600">Last 5 predictions updating live</CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
-                {/* Filters */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-                  <h4 className="text-sm font-bold text-gray-900 mb-3">Filters</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Temp Range (°C)</label>
-                      <div className="flex gap-1">
-                        <input
-                          type="number"
-                          value={filterTempMin}
-                          onChange={(e) => setFilterTempMin(Number(e.target.value))}
-                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
-                          placeholder="Min"
-                        />
-                        <input
-                          type="number"
-                          value={filterTempMax}
-                          onChange={(e) => setFilterTempMax(Number(e.target.value))}
-                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
-                          placeholder="Max"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Humidity Range (%)</label>
-                      <div className="flex gap-1">
-                        <input
-                          type="number"
-                          value={filterHumMin}
-                          onChange={(e) => setFilterHumMin(Number(e.target.value))}
-                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
-                          placeholder="Min"
-                        />
-                        <input
-                          type="number"
-                          value={filterHumMax}
-                          onChange={(e) => setFilterHumMax(Number(e.target.value))}
-                          className="w-16 px-1 py-1 border border-gray-300 rounded text-xs"
-                          placeholder="Max"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Date</label>
-                      <input
-                        type="date"
-                        value={filterDate}
-                        onChange={(e) => setFilterDate(e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Time Range (HH:MM:SS)</label>
-                      <div className="flex gap-1">
-                        <input
-                          type="time"
-                          step="1"
-                          value={filterStartHour}
-                          onChange={(e) => setFilterStartHour(e.target.value)}
-                          className="flex-1 px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                        <input
-                          type="time"
-                          step="1"
-                          value={filterEndHour}
-                          onChange={(e) => setFilterEndHour(e.target.value)}
-                          className="flex-1 px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setFilterTempMin(-50);
-                      setFilterTempMax(100);
-                      setFilterHumMin(0);
-                      setFilterHumMax(100);
-                      setFilterDate('');
-                      setFilterStartHour('');
-                      setFilterEndHour('');
-                    }}
-                    className="mt-3 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium rounded"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
 
                 {/* TWO CHARTS - Temperature and Humidity */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -1002,7 +892,6 @@ const DashboardPage: React.FC = () => {
                         <th className="text-center py-2 px-2 font-semibold text-gray-800">Act Hum</th>
                         <th className="text-center py-2 px-2 font-semibold text-gray-800">Diff</th>
                         <th className="text-center py-2 px-2 font-semibold text-gray-800">Anom</th>
-                        <th className="text-center py-2 px-2 font-semibold text-gray-800">Valid</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1024,46 +913,6 @@ const DashboardPage: React.FC = () => {
                                 <span className="px-1 py-0.5 bg-red-100 text-red-700 text-xs rounded">Y</span>
                               ) : (
                                 <span className="px-1 py-0.5 bg-gray-200 text-gray-600 text-xs rounded">N</span>
-                              )}
-                            </td>
-                            <td className="py-2 px-2 text-center">
-                              {pred.validated ? (
-                                <span className={`px-1 py-0.5 text-xs rounded ${pred.validated === 'ok' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                  {pred.validated === 'ok' ? 'OK' : 'KO'}
-                                </span>
-                              ) : (
-                                <div className="flex gap-1 justify-center">
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        await apiClient.put(`/api/v1/prediction-feedback/${pred.id}`, {
-                                          feedback: 'ok'
-                                        });
-                                        setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'ok'} : p));
-                                      } catch (err) {
-                                        console.error('Error submitting feedback:', err);
-                                      }
-                                    }}
-                                    className="px-1 py-0.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded"
-                                  >
-                                    OK
-                                  </button>
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        await apiClient.put(`/api/v1/prediction-feedback/${pred.id}`, {
-                                          feedback: 'not_ok'
-                                        });
-                                        setPendingValidations(prev => prev.map(p => p.id === pred.id ? {...p, validated: 'not_ok'} : p));
-                                      } catch (err) {
-                                        console.error('Error submitting feedback:', err);
-                                      }
-                                    }}
-                                    className="px-1 py-0.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
-                                  >
-                                    KO
-                                  </button>
-                                </div>
                               )}
                             </td>
                           </tr>
