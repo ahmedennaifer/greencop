@@ -1,10 +1,17 @@
 # Sensor Monitoring
 
-Real-time monitoring of temperature and humidity sensors deployed across your infrastructure.
+## Why Real-Time Monitoring Matters
 
-## Overview
+By the time you notice a server room is hot, hardware is already throttling. By the time an alarm sounds, damage may be done. Real-time monitoring gives you visibility before problems escalate.
+
+**Business Value**: Sub-second telemetry means you can react to environmental drift in minutes, not hours. One prevented hardware failure pays for years of monitoring.
+
+## Sensor Monitoring Overview
 
 GreenCop's sensor monitoring provides continuous tracking of environmental conditions through ESP32-based IoT sensor nodes. Each sensor autonomously collects and transmits temperature and humidity data to the cloud for processing and visualization.
+
+!!! tip "Sensor Placement Strategy"
+    Place sensors at the top of racks where heat accumulates, not at floor level. One sensor per 4-6 racks is typically sufficient. Start small (2-3 sensors) to validate ROI before deploying fleet-wide.
 
 ## Sensor Types
 

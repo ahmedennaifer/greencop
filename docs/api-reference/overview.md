@@ -1,5 +1,20 @@
 # API Reference Overview
 
+## Why API-First Matters
+
+GreenCop's REST API lets you integrate monitoring data into your existing workflow. Trigger automated cooling, send custom notifications, or build compliance reports.
+
+**Real-World Examples**:
+- Route alerts to different Teams channels based on sensor location
+- Trigger automated HVAC adjustments when temperature rises
+- Export data to compliance reporting systems
+- Build custom dashboards in Grafana
+
+!!! tip
+    Use API keys (generated in dashboard settings) for service-to-service integrations instead of JWT tokens. Keys don't expire and can be scoped to specific permissions.
+
+## API Overview
+
 Complete guide to the GreenCop REST API.
 
 ## Base URL
