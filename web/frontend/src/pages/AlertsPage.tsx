@@ -73,6 +73,26 @@ const AlertsPage: React.FC = () => {
     }
   };
 
+  const handleAcknowledgeAll = async () => {
+    try {
+      const result = await alertService.acknowledgeAll();
+      alert(`Acknowledged ${result.acknowledged} alerts`);
+      fetchAlerts();
+    } catch (err: any) {
+      alert(extractErrorMessage(err) || 'Failed to acknowledge all alerts');
+    }
+  };
+
+  const handleConfirmAll = async () => {
+    try {
+      const result = await alertService.confirmAll();
+      alert(`Confirmed ${result.confirmed} alerts`);
+      fetchAlerts();
+    } catch (err: any) {
+      alert(extractErrorMessage(err) || 'Failed to confirm all alerts');
+    }
+  };
+
   const getAlertIcon = (type: string) => {
     if (type === 'temperature') {
       return <ThermometerSun className="w-5 h-5" />;
@@ -211,7 +231,35 @@ const AlertsPage: React.FC = () => {
                 </CardTitle>
                 <CardDescription>Alerts requiring immediate attention</CardDescription>
               </div>
-              <div className="text-2xl font-bold text-red-600">{filterAlerts(activeAlerts).length}</div>
+              <div className="flex items-center space-x-4">
+                <div className="text-2xl font-bold text-red-600">{filterAlerts(activeAlerts).length}</div>
+                {filterAlerts(activeAlerts).length > 0 && (
+                  <div className="flex space-x-2">
+                    {filterAlerts(activeAlerts).filter(a => !a.acknowledged).length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAcknowledgeAll}
+                        className="flex items-center space-x-1"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Acknowledge All</span>
+                      </Button>
+                    )}
+                    {filterAlerts(activeAlerts).filter(a => !a.feedback).length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleConfirmAll}
+                        className="flex items-center space-x-1"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Confirm All</span>
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>

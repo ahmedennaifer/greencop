@@ -256,3 +256,51 @@ async def get_anomalies(limit: int = 100, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching anomalies: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@alert_router.post("/acknowledge-all")
+async def acknowledge_all_alerts(db: Session = Depends(get_db)):
+    try:
+        updated = (
+            db.query(AlertModel)
+            .filter(AlertModel.acknowledged == False)
+            .update({"acknowledged": True})
+        )
+        db.commit()
+        return {"acknowledged": updated}
+    except Exception as e:
+        logger.error(f"Error acknowledging all alerts: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@alert_router.post("/confirm-all")
+async def confirm_all_alerts(db: Session = Depends(get_db)):
+    try:
+        updated = (
+            db.query(AlertModel)
+            .filter(AlertModel.feedback == None)
+            .update({"feedback": "true_positive"})
+        )
+        db.commit()
+        return {"confirmed": updated}
+    except Exception as e:
+        logger.error(f"Error confirming all alerts: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@alert_router.post("/anomalies/clear-all")
+async def clear_all_anomalies(db: Session = Depends(get_db)):
+    try:
+        updated = (
+            db.query(AlertModel)
+            .filter(AlertModel.alert_type == "anomaly", AlertModel.acknowledged == False)
+            .update({"acknowledged": True})
+        )
+        db.commit()
+        return {"cleared": updated}
+    except Exception as e:
+        logger.error(f"Error clearing all anomalies: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

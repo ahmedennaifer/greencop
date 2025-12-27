@@ -40,4 +40,19 @@ export const alertService = {
     const response = await apiClient.post<AlertThreshold>(`/api/v1/alerts/thresholds/${customerId}`, data);
     return response.data;
   },
+
+  async acknowledgeAll(): Promise<{ acknowledged: number }> {
+    const response = await apiClient.post<{ acknowledged: number }>('/api/v1/alerts/acknowledge-all');
+    return response.data;
+  },
+
+  async confirmAll(): Promise<{ confirmed: number }> {
+    const response = await apiClient.post<{ confirmed: number }>('/api/v1/alerts/confirm-all');
+    return response.data;
+  },
+
+  async clearAllAnomalies(): Promise<{ cleared: number }> {
+    const response = await apiClient.post<{ cleared: number }>('/api/v1/alerts/anomalies/clear-all');
+    return response.data;
+  },
 };
