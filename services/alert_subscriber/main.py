@@ -43,7 +43,7 @@ def store_alert(cloud_event):
 
                 if alert_type and message:
                     alert_data = {
-                        "sensor_id": int(sensor_data["node_id"]) if str(sensor_data["node_id"]).isdigit() else 0,
+                        "sensor_id": str(sensor_data["node_id"]),
                         "alert_type": alert_type,
                         "message": message,
                         "timestamp": sensor_data.get("timestamp", datetime.utcnow().isoformat()),
