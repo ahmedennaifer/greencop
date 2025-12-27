@@ -263,5 +263,5 @@ From the dashboard, you can quickly navigate to:
 
 - [Manage Server Rooms](../user-guide/managing-rooms.md)
 - [Register Sensors](../user-guide/managing-sensors.md)
-- [Configure Alerts](../user-guide/../user-guide/configuring-alerts.md)
+- [Configure Alerts](../user-guide/configuring-alerts.md)
 - [View Sensor Details](../user-guide/viewing-data.md)

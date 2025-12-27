@@ -222,6 +222,6 @@ CREATE TABLE alerts (
 
 ## Next Steps
 
-- [Configure Alert Thresholds](../user-guide/../user-guide/configuring-alerts.md)
+- [Configure Alert Thresholds](../user-guide/configuring-alerts.md)
 - [Understand Data Analytics](data-analytics.md)
 - [API Reference: Alerts](../api-reference/alerts.md)
