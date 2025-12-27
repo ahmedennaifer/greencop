@@ -13,7 +13,7 @@ app = FastAPI()
 allowed_origins = [
     "http://localhost:5173",
     "http://localhost:3000",
-    "https://greencop.netlify.app"
+    "https://greencop.up.railway.app"
 ]
 frontend_url = os.environ.get("FRONTEND_URL")
 if frontend_url:
