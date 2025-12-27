@@ -523,14 +523,14 @@ const LandingPage: React.FC = () => {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
                <Link to="/register">
-                  <Button className="bg-white text-emerald-800 hover:bg-emerald-50 w-full sm:w-auto px-10 py-4 h-auto text-lg font-bold shadow-xl">
+                  <button className="inline-flex items-center justify-center bg-white text-emerald-800 hover:bg-emerald-50 w-full sm:w-auto px-10 py-4 text-lg font-bold shadow-xl rounded-lg transition-all duration-200">
                      Start Free Trial
-                  </Button>
+                  </button>
                </Link>
                <Link to="/contact">
-                  <Button variant="outline" className="bg-transparent border-emerald-400 text-white hover:bg-emerald-700 hover:border-emerald-700 w-full sm:w-auto px-10 py-4 h-auto text-lg">
+                  <button className="inline-flex items-center justify-center bg-transparent border-2 border-emerald-400 text-white hover:bg-emerald-700 hover:border-emerald-700 w-full sm:w-auto px-10 py-4 text-lg rounded-lg transition-all duration-200">
                      Contact Sales
-                  </Button>
+                  </button>
                </Link>
             </div>
          </div>

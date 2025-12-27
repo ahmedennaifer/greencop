@@ -1,0 +1,10 @@
+fastapi==0.115.12
+uvicorn[standard]==0.32.1
+langgraph
+langchain-google-vertexai
+langchain-core
+google-cloud-aiplatform
+google-cloud-bigquery
+pydantic
+requests
+python-dotenv
