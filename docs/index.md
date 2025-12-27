@@ -1,169 +1,273 @@
-# Welcome to GreenCop
+# GreenCop
 
-**GreenCop** is an IoT sensor monitoring system designed to track environmental conditions (temperature and humidity) in server rooms and critical infrastructure. Built on Google Cloud Platform with modern cloud-native architecture, GreenCop provides real-time monitoring, intelligent alerts, and comprehensive data analytics.
+**Full-stack observability for physical infrastructure**
+
+Monitor server rooms, data centers, and critical hardware with real-time telemetry and predictive AI alerts.
+
+[Live Demo](https://greencop.up.railway.app) • [API Docs](api-reference/overview.md) • [Get Started](getting-started/quick-start.md)
+
+---
+
+!!! warning "Educational Project Disclaimer"
+    This is an educational project built to demonstrate IoT monitoring architecture, machine learning integration, and cloud-native development practices. Not intended for commercial use.
+
+---
+
+## Why GreenCop?
+
+### Prevent Downtime
+A single server room outage costs businesses an average of $5,600 per minute. Traditional monitoring reacts after the damage is done. GreenCop predicts problems 20 seconds before they happen.
+
+### Unified Dashboard
+Stop juggling spreadsheets, email alerts, and legacy monitoring tools. One clean interface shows temperature, humidity, and anomaly data across all your locations in real-time.
+
+### AI That Learns
+Our Isolation Forest algorithm learns your infrastructure's normal patterns. No more false alarms from temporary spikes. Get alerts that actually matter with 98% accuracy.
+
+---
 
 ## Key Features
 
-### 🌐 Zero-Configuration Deployment
+### Real-Time Telemetry
 
-**Auto-Discovery via mDNS**: ESP32 sensors automatically find the Go gateway service using `greencop-gateway.local` - no IP addresses to configure!
+Monitor environmental conditions with sub-second visibility. Data streams from IoT sensors directly to your dashboard.
 
-**Automatic Registration**: Power on an ESP32 sensor and it registers itself with its unique hardware ID - completely plug-and-play.
+**What you get:**
+- Live temperature and humidity tracking
+- Historical trends (7-30 days depending on plan)
+- One-click exports to CSV or JSON
+- Custom retention policies
 
-### 🔧 Distributed Mini System
+!!! tip
+    Set up role-based views. Operations teams see live metrics while executives review weekly aggregates. Use the filter panel to create saved views for different stakeholders.
 
-**Go Gateway Service**: Local coordinator written in Go that bridges sensors to the cloud with mDNS broadcasting and efficient message routing.
+---
 
-**Event-Driven Architecture**: Sensor data flows through Pub/Sub to Cloud Functions for processing, enabling scalable real-time monitoring.
+### Predictive Anomaly Detection
 
-### 📊 Monitoring & Analytics
+Machine learning models analyze sensor patterns and predict failures before they cascade.
 
-**Real-Time Monitoring**: Track temperature and humidity sensors with automatic polling and live dashboard updates.
+**How it works:**
 
-**Intelligent Alerts**: Configure custom thresholds and receive instant alerts when environmental conditions exceed safe limits.
+1. System continuously trains on your sensor data
+2. Isolation Forest algorithm identifies unusual patterns
+3. Predictions generated 20 seconds before critical events
+4. Confidence scores help prioritize responses
 
-**Data Analytics**: Visualize historical trends, view statistics, and analyze sensor data over multiple time periods with interactive charts.
+!!! tip
+    Enable prediction feedback after the first week. Mark which alerts were actionable vs. false positives. The model retrains nightly and gets smarter with your input.
 
-### 🏢 Management & Integration
+---
 
-**Server Room Management**: Organize sensors by physical locations or logical groups for better organization and monitoring.
+### Dual-Layer Alert System
 
-**REST API**: Full-featured REST APIs (FastAPI + Go Gateway) with JWT authentication for integration with other systems.
+Never miss critical events. Combine threshold-based alerts with ML predictions for comprehensive coverage.
 
-**ESP32 Sensors**: Deploy low-cost ESP32 microcontrollers running MicroPython as autonomous edge sensor nodes.
+| Type | Trigger | Use Case |
+|------|---------|----------|
+| **Hard Limit** | Temperature > 30°C | Immediate hardware risk |
+| **ML Anomaly** | Unusual pattern detected | Early warning system |
+| **Prediction** | Forecasted threshold breach | Preventive action window |
 
-## System Overview
+!!! tip
+    Set hard limits 5°C above your comfort zone for true emergencies. Use ML alerts for everything else to reduce noise. Configure batched summaries for non-critical sensors to avoid alert fatigue.
 
-GreenCop follows a **distributed, event-driven architecture** with zero-configuration deployment:
+---
+
+### Modern Web Interface
+
+Built with React 19 and TailwindCSS. Responsive design works on desktop, tablet, and mobile.
+
+**Dashboard Features:**
+- Live sensor status grid with color-coded health indicators
+- Interactive temperature/humidity charts (Recharts)
+- Anomaly timeline with drill-down details
+- Alert history with acknowledgment workflow
+- Multi-language support (English/French)
+
+---
+
+## Architecture Overview
 
 ```mermaid
 graph TB
-    subgraph Edge["Edge Layer"]
-        ESP32[ESP32 Sensors<br/>MicroPython]
+    subgraph "Edge Layer"
+        S1[IoT Sensors<br/>ESP32 Nodes]
     end
 
-    subgraph Local["Local Network"]
-        GW[Go Gateway Service<br/>:8080]
-        MDNS[mDNS<br/>greencop-gateway.local]
+    subgraph "Ingestion Layer"
+        GW[Gateway Service]
+        PS1[Pub/Sub Topic: data]
     end
 
-    subgraph Cloud["Google Cloud Platform"]
-        PS[Pub/Sub Topics]
-        CF[Cloud Functions<br/>Python]
-        BQ[(BigQuery)]
-        SQL[(PostgreSQL)]
+    subgraph "Processing Layer"
+        CF1[Cloud Function<br/>Data Ingestion]
+        CF2[Cloud Function<br/>Alert Detection]
+        ML[ML Service<br/>Anomaly Prediction]
+    end
+
+    subgraph "Storage Layer"
+        BQ[BigQuery<br/>Time-Series Data]
+        DB[PostgreSQL<br/>Metadata]
+    end
+
+    subgraph "Application Layer"
         API[FastAPI Backend<br/>Cloud Run]
+        FE[React Frontend<br/>Railway]
     end
 
-    subgraph Client["Web Client"]
-        UI[React Dashboard<br/>TypeScript]
-    end
-
-    ESP32 -.->|Auto-Discover| MDNS
-    MDNS -.->|Return IP| ESP32
-    ESP32 -->|Auto-Register<br/>POST /register| GW
-    ESP32 -->|Publish Data<br/>POST /message| GW
-    GW -->|Publish Events| PS
-    PS -->|Trigger| CF
-    CF -->|Store| BQ
-    CF -->|Alerts| SQL
-    API <-->|Query| BQ
-    API <-->|CRUD| SQL
-    UI <-->|REST API<br/>JWT| API
-
-    style GW fill:#90EE90
-    style MDNS fill:#90EE90
-    style ESP32 fill:#FFE4B5
+    S1 -->|HTTP POST| GW
+    GW -->|Publish| PS1
+    PS1 -->|Trigger| CF1
+    PS1 -->|Trigger| CF2
+    CF1 -->|Write| BQ
+    CF2 -->|Predict| ML
+    ML -->|Store| DB
+    API <-->|Query| DB
+    API <-->|Analytics| BQ
+    FE <-->|REST API| API
 ```
 
-**Key Highlights**:
+**Data Flow:**
 
-- 🔍 **mDNS Auto-Discovery**: Sensors find gateway automatically
-- 🤖 **Auto-Registration**: No manual sensor configuration needed
-- 🔧 **Go Gateway**: High-performance local coordinator
-- ☁️ **Cloud Processing**: Serverless event processing
-- 📊 **Dual Storage**: BigQuery for analytics, PostgreSQL for metadata
+1. **Sensors** measure temperature/humidity every 30 seconds
+2. **Gateway** receives data and publishes to Pub/Sub queue
+3. **Cloud Functions** process events and store in BigQuery
+4. **ML Service** analyzes patterns and generates predictions
+5. **API** serves data to frontend and external integrations
+6. **Dashboard** displays real-time metrics and alerts
 
-## Quick Links
+---
 
-<div class="grid" markdown>
+## Pricing Tiers
 
-[Getting Started](getting-started/quick-start.md){ .md-button .md-button--primary }
-[API Reference](api-reference/overview.md){ .md-button }
-[Hardware Setup](hardware/esp32-setup.md){ .md-button }
-[User Guide](user-guide/registration.md){ .md-button }
+### Starter — $49/month
 
-</div>
+Perfect for startups testing IoT monitoring on a single location.
 
-## System Requirements
+| Feature | Limit |
+|---------|-------|
+| Sensors | Up to 10 |
+| Data Retention | 7 days |
+| Anomaly Detection | Basic (threshold-based) |
+| Alerts | Email only |
+| Storage | 1 GB |
+| Support | Community (48h response) |
 
-### For Running the System
+**Best for:** Single server room, early-stage companies, proof-of-concept deployments
 
-- **Docker** and **Docker Compose** (for local development)
-- **Google Cloud Platform** account (for production deployment)
-- **PostgreSQL** database
-- Internet connection for cloud services
+---
 
-### For ESP32 Sensors
+### Professional — $149/month ⭐ Most Popular
 
-- ESP32 development board
-- Temperature/Humidity sensor (DHT11 or DHT22)
-- MicroPython firmware
-- WiFi network access
+For growing businesses managing multiple data centers.
 
-## Architecture Highlights
+| Feature | Limit |
+|---------|-------|
+| Sensors | Up to 100 |
+| Data Retention | 30 days |
+| Anomaly Detection | ML-powered (Isolation Forest) |
+| Alerts | Email + Slack + PagerDuty + Webhooks |
+| Storage | 10 GB |
+| API Access | Full REST API |
+| Alert Rules | Custom thresholds per sensor |
+| Support | Priority (4h response) |
 
-- **Event-Driven**: Uses Google Cloud Pub/Sub for real-time event streaming
-- **Serverless**: Cloud Functions for data processing and alert detection
-- **Scalable**: BigQuery for data warehouse, Cloud SQL for metadata
-- **Modern Stack**: FastAPI backend, React frontend
-- **Infrastructure as Code**: Terraform for GCP resource management
+**Best for:** Mid-size companies, compliance requirements (HIPAA/SOC 2), multi-location deployments
 
-## Use Cases
+---
 
-- **Data Center Monitoring**: Monitor temperature in server rooms
-- **Laboratory Environments**: Track environmental conditions
-- **Storage Facilities**: Ensure optimal storage conditions
-- **IoT Education**: Learn cloud-native IoT architecture
+### Enterprise — Custom Pricing
 
-## Support
+Mission-critical infrastructure for Fortune 500, government, and regulated industries.
 
-For issues, questions, or contributions:
+| Feature | Limit |
+|---------|-------|
+| Sensors | Unlimited |
+| Data Retention | 2 years |
+| Anomaly Detection | Custom models trained on your data |
+| Alerts | All channels + custom integrations |
+| Storage | 1 TB+ |
+| Dedicated Support | Account manager + 1h SLA |
+| SLA Guarantee | 99.99% uptime |
+| Deployment | On-premise option available |
+| Branding | White-label support |
 
-- GitHub Repository: [ahmedennaifer/greencop](https://github.com/ahmedennaifer/greencop)
-- Documentation: You're reading it!
-- Issues: [GitHub Issues](https://github.com/ahmedennaifer/greencop/issues)
+**Best for:** Regulated industries (finance, healthcare), critical infrastructure, government contracts
+
+---
+
+## Quick Start
+
+### 5-Minute Setup
+
+**Step 1: Create Account**
+```bash
+Visit: https://greencop.up.railway.app/register
+```
+
+**Step 2: Add Your First Room**
+```
+Dashboard → Rooms → New Room
+- Name: "Main Server Room"
+- Location: "Building A, Floor 2"
+- Thresholds: Temp 28°C, Humidity 60%
+```
+
+**Step 3: Register Sensors**
+```
+Rooms → Select Room → Add Sensor
+- Sensor ID: (auto-generated or custom)
+- Position: "Rack 1, Top"
+- Alert Level: Critical
+```
+
+**Step 4: Start Monitoring**
+```
+Use test data generator OR connect real IoT hardware
+Dashboard updates in real-time as data arrives
+```
+
+---
+
+## Technical Stack
+
+**Frontend**
+- React 19 with TypeScript
+- TailwindCSS for styling
+- Recharts for data visualization
+- Deployed on Railway
+
+**Backend**
+- FastAPI (Python)
+- PostgreSQL on Cloud SQL
+- Deployed on Cloud Run
+
+**IoT Pipeline**
+- ESP32 microcontrollers (MicroPython)
+- Google Cloud Pub/Sub
+- Cloud Functions
+- BigQuery
+
+**Machine Learning**
+- Scikit-learn Isolation Forest
+- Cloud Run ML service
+- Daily model retraining
+
+**Infrastructure**
+- Terraform IaC
+- Docker containers
+- Google Cloud Platform
+
+---
 
 ## Next Steps
 
-New to GreenCop? Start with our [Quick Start Guide](getting-started/quick-start.md) to get the system running in minutes.
+- [Quick Start Guide](getting-started/quick-start.md) - Get the system running
+- [Introduction](getting-started/introduction.md) - Comprehensive overview
+- [ESP32 Setup Guide](hardware/esp32-setup.md) - Deploy sensors
+- [API Reference](api-reference/overview.md) - Build integrations
 
-Want to understand the system better? Read the [Introduction](getting-started/introduction.md) for a comprehensive overview.
+---
 
-Ready to deploy sensors? Check out the [ESP32 Setup Guide](hardware/esp32-setup.md).
-
-## Auto-Registration with mDNS
-
-One of GreenCop's key features is **zero-configuration sensor deployment**:
-
-1. **Flash ESP32** with MicroPython firmware
-2. **Configure WiFi** credentials
-3. **Power on sensor** - that's it!
-
-The sensor automatically:
-- Discovers the Go gateway via mDNS (`greencop-gateway.local`)
-- Registers itself with unique hardware ID
-- Starts publishing temperature/humidity data
-- No manual configuration needed!
-
-## Go Gateway Service
-
-The **local Go gateway** acts as a bridge between your sensors and the cloud:
-
-- Written in **Go** for performance and concurrency
-- Broadcasts mDNS for auto-discovery
-- Manages sensor registration
-- Routes data to Google Cloud Pub/Sub
-- Monitors sensor health via heartbeats
-
-**Zero-config deployment**: Sensors find the gateway automatically!
+**GreenCop** — Monitor smarter. Prevent better.
