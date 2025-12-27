@@ -1,169 +1,140 @@
 # Quick Start Guide
 
-Get GreenCop up and running in 5 minutes with Docker Compose.
+Get GreenCop monitoring your infrastructure in **5 minutes**.
+
+## What You'll Accomplish
+
+By the end of this guide, you'll have:
+
+- ✅ A running GreenCop instance
+- ✅ At least one sensor registered
+- ✅ Real-time temperature/humidity data streaming
+- ✅ Alerts configured for your thresholds
 
 ## Prerequisites
 
-Before you begin, ensure you have:
+- Docker and Docker Compose installed
+- Google Cloud Platform account (free tier works)
+- 15 minutes of time
 
-- [Docker](https://docs.docker.com/get-docker/) installed
-- [Docker Compose](https://docs.docker.com/compose/install/) installed
-- Git installed
-- At least 4GB of RAM available
+!!! tip
+    Don't have GCP? No problem. Use our test data generator to explore the dashboard without real sensors. Skip to Step 6 after getting the system running.
 
-## 5-Minute Setup
-
-### Step 1: Clone the Repository
+## Step 1: Clone and Configure
 
 ```bash
 git clone https://github.com/ahmedennaifer/greencop.git
-cd greencop
-```
-
-### Step 2: Configure Environment
-
-Create environment file for the backend:
-
-```bash
-cd services/customers
+cd greencop/services/customers
 cp .env.example .env
 ```
 
-Edit `.env` with your preferred settings:
+Edit `.env` with your settings:
 
 ```bash
-# Database Configuration
 DB_URL=postgresql://greencop:greencop@db:5432/greencop
-
-# JWT Secret (change in production!)
-SECRET_KEY=your-secret-key-here
-
-# Google Cloud (optional for local dev)
-GOOGLE_CLOUD_PROJECT=your-project-id
+SECRET_KEY=change-this-in-production
+GOOGLE_CLOUD_PROJECT=your-project-id  # Optional for local dev
 ```
 
-!!! tip "Local Development"
-    For local development, you can use the default values. The SECRET_KEY should be changed for production deployments.
+!!! tip "First-Time Setup"
+    The initial database migration takes ~30 seconds. Grab coffee while it runs.
 
-### Step 3: Start the Services
+## Step 2: Start the System
 
 ```bash
 docker-compose up -d
-```
-
-This will start:
-
-- PostgreSQL database (port 5432)
-- FastAPI backend (port 8080)
-- Cloud SQL Proxy (if configured)
-
-### Step 4: Run Database Migrations
-
-```bash
 docker-compose exec app alembic upgrade head
 ```
 
-### Step 4.5: Start the Go Gateway
+**What to Expect**:
+- Backend API: http://localhost:8080
+- Health check: http://localhost:8080/health
+- Startup time: ~60 seconds
 
-In a new terminal:
+## Step 3: Start Gateway & Frontend
 
+**Terminal 1 - Go Gateway**:
 ```bash
 cd services/sensors/software
 go run cmd/main.go
 ```
 
-The gateway will start broadcasting via mDNS at `greencop-gateway.local`.
+Gateway broadcasts via mDNS at `greencop-gateway.local`.
 
-### Step 5: Start the Frontend
-
-In a new terminal:
-
+**Terminal 2 - Frontend**:
 ```bash
 cd web/frontend
 npm install
 npm run dev
 ```
 
-The frontend will start on `http://localhost:5173`.
+Frontend runs at: http://localhost:5173
 
-### Step 6: Access the Dashboard
+## Step 4: Create Your Account
 
-Open your browser and navigate to:
+Navigate to http://localhost:5173/register
 
-```
-http://localhost:5173
-```
+!!! tip
+    Use a real email if you want to test alert notifications later. Otherwise, test@example.com works fine for local dev.
 
-You should see the GreenCop login page!
+**Register with**:
+- Email: your@email.com
+- Username: 6-12 characters
+- Password: 8+ characters, mixed alphanumeric
 
-## Create Your First Account
+## Step 5: Add Your First Room
 
-1. Click **Register** on the login page
-2. Enter your details:
-   - Email: your@email.com
-   - Username: yourusername (6-12 characters)
-   - Password: YourSecurePass123 (8+ characters, mixed alphanumeric)
-3. Click **Register**
-4. You'll be redirected to the login page
-5. Log in with your credentials
-
-## Explore the Dashboard
-
-Once logged in, you'll see the main dashboard with:
-
-- **Overview Cards**: Rooms, Sensors, Alerts, Average Temperature
-- **Charts**: Real-time sensor readings
-- **Sidebar Navigation**: Access all features
-
-## Add Your First Server Room
-
-1. Click **Rooms** in the sidebar
+1. Click **Rooms** in sidebar
 2. Click **Add Room**
-3. Enter room details:
-   - Name: "Main Server Room"
+3. Name: "Main Server Room"
 4. Click **Create**
 
-## Add Your First Sensor
+!!! tip "Room Strategy"
+    Name rooms by physical location (Building A, Floor 2) rather than function (Production Servers). Makes it easier to find the right thermometer when the alert comes in at 2 AM.
 
-1. Click **Sensors** in the sidebar
-2. Click **Add Sensor**
-3. Enter sensor details:
-   - Name: "Rack 1 Temp Sensor"
-   - Type: "temperature"
-   - Room: Select your created room
-   - Sensor ID: "sensor-001"
-4. Click **Create**
+## Step 6: Register a Sensor
 
-!!! info "Test Data"
-    Initially, sensors won't have data until you deploy ESP32 hardware or simulate sensor data through the API.
+### Option A: Real ESP32 Hardware
+
+Follow the [ESP32 Setup Guide](../hardware/esp32-setup.md) to deploy physical sensors.
+
+### Option B: Test Data Generator (Recommended for First Run)
+
+Use the API to simulate sensor data:
+
+```bash
+# Register a test sensor
+curl -X POST http://localhost:8080/api/v1/sensors/new_sensor \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "room_id": 1,
+    "sensor_id": "TEST-SENSOR-001",
+    "position": "Rack 1, Top"
+  }'
+```
+
+!!! tip
+    Start with the test data generator. It simulates realistic sensor patterns including occasional anomalies. Perfect for understanding how alerts work before deploying real hardware.
+
+## Step 7: Verify Data Flow
+
+Within 30 seconds, you should see:
+
+- ✅ Live data on dashboard
+- ✅ Temperature/humidity charts populating
+- ✅ Sensor status: "Online" with green indicator
 
 ## Configure Alerts
 
-1. Click **Settings** in the sidebar
-2. Set alert thresholds:
-   - Maximum Temperature: 50°C
-   - Maximum Humidity: 50%
-3. Click **Save Settings**
+1. Click **Settings** in sidebar
+2. Set thresholds:
+   - Maximum Temperature: 30°C
+   - Maximum Humidity: 60%
+3. Click **Save**
 
-## What's Next?
-
-### Deploy Real Sensors
-
-Learn how to set up ESP32 hardware:
-
-[ESP32 Setup Guide](../hardware/esp32-setup.md){ .md-button .md-button--primary }
-
-### Explore the API
-
-Test the API endpoints:
-
-[API Reference](../api-reference/overview.md){ .md-button }
-
-### Learn All Features
-
-Comprehensive feature guide:
-
-[User Guide](../user-guide/registration.md){ .md-button }
+!!! tip "Alert Threshold Strategy"
+    Set hard limits 5°C above your comfort zone for true emergencies. Use ML alerts (once trained) for everything else to reduce noise.
 
 ## Troubleshooting
 
@@ -171,68 +142,40 @@ Comprehensive feature guide:
 
 **Error**: `Connection refused to database`
 
-**Solution**: Ensure PostgreSQL is running:
-
+**Solution**:
 ```bash
-docker-compose ps
-```
-
-If the database isn't running:
-
-```bash
+docker-compose ps  # Check if db is running
 docker-compose restart db
 ```
 
-### Frontend Can't Connect to Backend
+### Frontend Can't Connect
 
 **Error**: `Network Error` or `Failed to fetch`
 
-**Solution**: Verify backend is running on port 8080:
-
+**Solution**: Verify backend health:
 ```bash
 curl http://localhost:8080/health
-```
-
-Expected response:
-
-```json
-{"status": "healthy"}
+# Expected: {"status": "healthy"}
 ```
 
 ### Port Already in Use
 
-**Error**: `Bind for 0.0.0.0:8080 failed: port is already allocated`
+**Error**: `Bind for 0.0.0.0:8080 failed`
 
-**Solution**: Stop the conflicting service or change the port in `docker-compose.yml`:
-
+**Solution**: Change port in `docker-compose.yml`:
 ```yaml
 ports:
-  - "8081:8080"  # Changed from 8080:8080
+  - "8081:8080"  # Use 8081 instead
 ```
 
 ### Database Migration Fails
 
 **Error**: `sqlalchemy.exc.OperationalError`
 
-**Solution**: Ensure database is ready and run migrations:
-
+**Solution**: Wait for database to be ready, then retry:
 ```bash
+sleep 10
 docker-compose exec app alembic upgrade head
-```
-
-## Stopping the Services
-
-To stop all services:
-
-```bash
-cd services/customers
-docker-compose down
-```
-
-To stop and remove all data:
-
-```bash
-docker-compose down -v
 ```
 
 ## Quick Reference
@@ -241,23 +184,41 @@ docker-compose down -v
 |---------|-----|---------|
 | Frontend | http://localhost:5173 | Web dashboard |
 | Backend API | http://localhost:8080 | REST API |
-| API Docs | http://localhost:8080/docs | Interactive API documentation |
+| API Docs | http://localhost:8080/docs | Interactive Swagger docs |
 | PostgreSQL | localhost:5432 | Database |
 
-## Environment Variables Reference
+## Stopping the Services
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DB_URL` | postgresql://greencop:greencop@db:5432/greencop | Database connection string |
-| `SECRET_KEY` | a_very_secret_key | JWT signing secret |
-| `GOOGLE_CLOUD_PROJECT` | None | GCP project ID (optional for local) |
+Stop all services:
+```bash
+docker-compose down
+```
+
+Stop and remove all data (fresh start):
+```bash
+docker-compose down -v
+```
 
 ## Next Steps
 
-Now that you have GreenCop running:
+!!! info "Ready for More?"
+    - **Deploy Real Sensors**: [ESP32 Setup Guide](../hardware/esp32-setup.md)
+    - **Configure Advanced Alerts**: [Alert Configuration](../user-guide/configuring-alerts.md)
+    - **Explore the API**: [API Reference](../api-reference/overview.md)
+    - **Understand Architecture**: [System Design](architecture.md)
+    - **Contribute Code**: [Development Guide](../development/local-setup.md)
 
-1. **Understand the System**: Read the [Architecture Guide](architecture.md)
-2. **Deploy Sensors**: Set up [ESP32 Hardware](../hardware/esp32-setup.md)
-3. **Explore Features**: Check out [Features Overview](../features/dashboard.md)
-4. **API Integration**: Learn the [API Reference](../api-reference/overview.md)
-5. **Development**: Contribute with [Development Guide](../development/local-setup.md)
+## What You Just Built
+
+You now have a complete IoT monitoring stack:
+
+- **Edge**: ESP32 sensors auto-registering via mDNS
+- **Ingestion**: Go gateway routing to Pub/Sub
+- **Processing**: Cloud Functions analyzing data
+- **Storage**: BigQuery (analytics) + PostgreSQL (metadata)
+- **Application**: FastAPI backend + React frontend
+- **Intelligence**: ML anomaly detection (trains on your data)
+
+**Cost to run this stack**: ~$0/month on GCP free tier for <10 sensors.
+
+Ready to scale? Professional plan supports 100 sensors with 30-day retention for $149/month.

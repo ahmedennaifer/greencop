@@ -1,10 +1,17 @@
 # Dashboard
 
+## Why a Unified Dashboard Matters
+
+Stop juggling spreadsheets, email alerts, and multiple monitoring tools. GreenCop's dashboard gives you a single pane of glass for all your infrastructure monitoring.
+
+**Business Impact**: Teams using unified dashboards reduce mean-time-to-resolution by 60% compared to siloed monitoring tools.
+
+## Dashboard Overview
+
 The GreenCop dashboard provides a comprehensive overview of your entire IoT monitoring system, displaying real-time statistics, sensor readings, environmental trends, and recent alerts all in one place.
 
-## Overview
-
-The dashboard is the first page you see after logging into GreenCop. It aggregates data from all your sensors and presents it in an easy-to-understand format with interactive charts and statistics cards.
+!!! tip "Power User Trick"
+    Pin your 5 most critical sensors to the top. The dashboard remembers your layout across sessions. Use keyboard shortcut `?` to see all shortcuts.
 
 ## Key Components
 

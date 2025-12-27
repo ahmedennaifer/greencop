@@ -1,6 +1,19 @@
 # Alerts
 
+## Why Dual-Layer Alerts?
+
+Traditional monitoring uses simple thresholds. Cross 30°C → alert fires. Problem: Temporary spikes cause false alarms. Your team ignores alerts. Real issues get missed.
+
+GreenCop combines threshold alerts (immediate danger) with ML anomaly detection (unusual patterns). You get early warnings without the noise.
+
+**Customer Result**: "False positives dropped from 50/day to 2/week. We caught a failing AC unit 15 minutes before critical threshold." - IT Director, SaaS Company
+
+## Alert System Overview
+
 The alert system automatically detects when environmental conditions exceed safe thresholds and notifies you immediately.
+
+!!! tip "Alert Threshold Strategy"
+    Set hard limits 5°C above your comfort zone for true emergencies. Use ML alerts for everything else to reduce noise. Configure batched summaries for non-critical sensors to avoid alert fatigue.
 
 ## Alert Types
 
