@@ -5,7 +5,7 @@ from typing import Literal, Optional
 
 class AlertBase(BaseModel):
     sensor_id: str
-    alert_type: Literal["temperature", "humidity"]
+    alert_type: Literal["temperature", "humidity", "anomaly"]
     message: str
 
 

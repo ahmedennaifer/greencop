@@ -92,8 +92,9 @@ async def get_historical_data(
 
 
 @data_router.post("/multi-sensor", response_model=Dict[str, SensorData])
-async def get_multi_sensor_data(sensor_ids: List[str]):
+async def get_multi_sensor_data(request: dict):
     """Get latest readings for multiple sensors"""
+    sensor_ids = request.get("sensor_ids", [])
     if not sensor_ids:
         return {}
 

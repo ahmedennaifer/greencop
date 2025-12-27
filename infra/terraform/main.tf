@@ -59,7 +59,12 @@ module "customers_service" {
   db_name          = var.db_name
   image_url        = var.image_url
   port             = var.port
-  depends_on       = [module.customers_service_db]
+
+  environment_variables = {
+    FRONTEND_URL = module.frontend_service.service_url
+  }
+
+  depends_on = [module.customers_service_db, module.frontend_service]
 }
 
 module "customers_service_db" {
@@ -278,5 +283,14 @@ resource "google_cloud_scheduler_job" "ml_retraining" {
     google_project_service.cloudscheduler_api,
     module.ml_training_pubsub
   ]
+}
+
+module "frontend_service" {
+  source       = "./modules/cloud_run"
+  project_id   = var.project_id
+  region       = var.region
+  service_name = "frontend"
+  image_url    = "gcr.io/${var.project_id}/frontend:latest"
+  port         = 80
 }
 
