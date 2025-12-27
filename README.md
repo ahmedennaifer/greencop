@@ -1,5 +1,7 @@
 # GreenCop
 
+![GreenCop Hero](images/hero.png)
+
 IoT monitoring system for temperature and humidity sensors. Event-driven architecture on GCP with ESP32 hardware nodes.
 
 ## Architecture
