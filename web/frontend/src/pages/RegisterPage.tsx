@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Label from '../components/ui/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { extractErrorMessage } from '../utils/errorHandler';
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -41,7 +42,7 @@ const RegisterPage: React.FC = () => {
       await register({ email, username, password });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      setError(extractErrorMessage(err) || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

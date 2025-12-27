@@ -9,6 +9,8 @@ import RoomsPage from './pages/RoomsPage';
 import SensorsPage from './pages/SensorsPage';
 import SensorDetailPage from './pages/SensorDetailPage';
 import AlertsPage from './pages/AlertsPage';
+import AnomaliesPage from './pages/AnomaliesPage';
+import PredictionsPage from './pages/PredictionsPage';
 import SettingsPage from './pages/SettingsPage';
 import AssistantPage from './pages/AssistantPage';
 
@@ -56,6 +58,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <AlertsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/anomalies"
+            element={
+              <ProtectedRoute>
+                <AnomaliesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/predictions"
+            element={
+              <ProtectedRoute>
+                <PredictionsPage />
               </ProtectedRoute>
             }
           />

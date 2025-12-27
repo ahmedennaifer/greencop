@@ -6,6 +6,7 @@ import { alertService } from '../api/services/alert.service';
 import apiClient from '../api/client';
 import type { Alert } from '../types';
 import Button from '../components/ui/Button';
+import { extractErrorMessage } from '../utils/errorHandler';
 
 const AlertsPage: React.FC = () => {
   const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
@@ -55,7 +56,7 @@ const AlertsPage: React.FC = () => {
       await alertService.acknowledgeAlert(alertId);
       fetchAlerts();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to acknowledge alert');
+      alert(extractErrorMessage(err) || 'Failed to acknowledge alert');
     }
   };
 
@@ -64,7 +65,7 @@ const AlertsPage: React.FC = () => {
       await alertService.submitFeedback(alertId, feedbackType);
       fetchAlerts();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to submit feedback');
+      alert(extractErrorMessage(err) || 'Failed to submit feedback');
     }
   };
 

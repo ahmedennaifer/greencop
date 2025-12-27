@@ -13,6 +13,7 @@ import {
   Shield,
   MessageSquare,
   Brain,
+  TrendingUp,
 } from 'lucide-react';
 import Button from '../ui/Button';
 
@@ -40,6 +41,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Server Rooms', href: '/rooms', icon: Server },
     { name: 'Sensors', href: '/sensors', icon: Activity },
     { name: 'Alerts', href: '/alerts', icon: AlertTriangle },
+    { name: 'Anomalies', href: '/anomalies', icon: Brain },
+    { name: 'Predictions', href: '/predictions', icon: TrendingUp },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

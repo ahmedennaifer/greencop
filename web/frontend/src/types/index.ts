@@ -11,7 +11,7 @@ export type ServerRoom = {
 }
 
 export type Sensor = {
-  id: number;
+  id: string;
   name: string;
   type: string | null;
   room_id: number;
@@ -21,7 +21,7 @@ export type SensorReading = {
   id: number;
   reading: number;
   timestamp: string;
-  sensor_id: number;
+  sensor_id: string;
 }
 
 export type SensorData = {

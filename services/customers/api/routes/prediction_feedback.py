@@ -153,3 +153,63 @@ async def get_feedback_stats(db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching feedback stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@prediction_feedback_router.get("/search", response_model=List[PredictionFeedback])
+async def search_predictions(
+    sensor_id: str = None,
+    start_date: str = None,
+    end_date: str = None,
+    limit: int = 100,
+    offset: int = 0,
+    order_by: str = 'timestamp',
+    order_dir: str = 'desc',
+    db: Session = Depends(get_db)
+):
+    """Search predictions with filters"""
+    try:
+        from datetime import datetime
+
+        query = db.query(PredictionFeedbackModel)
+
+        if sensor_id:
+            query = query.filter(PredictionFeedbackModel.sensor_id == sensor_id)
+
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            query = query.filter(PredictionFeedbackModel.timestamp >= start_dt)
+
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            query = query.filter(PredictionFeedbackModel.timestamp <= end_dt)
+
+        if order_by == 'timestamp':
+            order_col = PredictionFeedbackModel.timestamp
+        else:
+            order_col = PredictionFeedbackModel.id
+
+        if order_dir == 'desc':
+            query = query.order_by(order_col.desc())
+        else:
+            query = query.order_by(order_col.asc())
+
+        predictions = query.offset(offset).limit(limit).all()
+        return predictions
+    except Exception as e:
+        logger.error(f"Error searching predictions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@prediction_feedback_router.get("/{feedback_id}", response_model=PredictionFeedback)
+async def get_prediction_by_id(feedback_id: int, db: Session = Depends(get_db)):
+    """Get prediction by ID"""
+    try:
+        prediction = db.query(PredictionFeedbackModel).filter(PredictionFeedbackModel.id == feedback_id).first()
+        if not prediction:
+            raise HTTPException(status_code=404, detail="Prediction not found")
+        return prediction
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching prediction: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

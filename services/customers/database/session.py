@@ -16,8 +16,6 @@ Base = declarative_base()
 
 from customers.database.models import customer, server_room, sensor, reading  # noqa
 
-Base.metadata.create_all(bind=engine)
-
 
 def get_db():
     db = SessionLocal()
