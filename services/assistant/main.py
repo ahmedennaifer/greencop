@@ -1,13 +1,15 @@
 import os
 from typing import Annotated, TypedDict, List
 from datetime import datetime
+import re
+from io import StringIO
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from langchain_google_vertexai import ChatVertexAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_core.tools import tool
 from langgraph.graph import StateGraph, MessagesState, START, END
@@ -15,6 +17,7 @@ from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import MemorySaver
 from google.cloud import bigquery
 import requests
+from tabulate import tabulate
 
 load_dotenv()
 
@@ -111,14 +114,12 @@ def get_sensor_readings(sensor_id: str, hours: int = 24, limit: int = 100) -> di
 
         data = []
         for row in results:
-            data.append(
-                {
-                    "sensor_id": row.node_id,
-                    "timestamp": row.timestamp.isoformat(),
-                    "temperature": float(row.temperature),
-                    "humidity": float(row.humidity),
-                }
-            )
+            data.append({
+                "sensor_id": row.node_id,
+                "timestamp": row.timestamp.isoformat(),
+                "temperature": float(row.temperature),
+                "humidity": float(row.humidity)
+            })
 
         return {"data": data, "count": len(data)}
     except Exception as e:
@@ -485,8 +486,8 @@ tools = [
     estimate_carbon_footprint,
 ]
 
-llm = ChatVertexAI(
-    model="gemini-3.0-flash", project=PROJECT_ID, location=LOCATION, temperature=0.3
+llm = ChatGoogleGenerativeAI(
+    model="gemini-3-flash-preview", project=PROJECT_ID, temperature=1.0
 )
 
 llm_with_tools = llm.bind_tools(tools)
@@ -504,30 +505,15 @@ def call_model(state: MessagesState):
     system_prompt = SystemMessage(
         content="""You are a direct, helpful AI assistant for GreenCop IoT monitoring.
 
-Communication style:
-- Direct and conversational, not formal or constrained
-- When showing data, format it clearly in tables or lists using markdown.
-- Don't say "would you like" - just do it or show it
-- Don't ask permission - be proactive
-- Use natural language, not corporate speak
+CRITICAL: When tools return JSON data, format sensor readings as HTML tables.
 
-When showing sensor readings:
-- Format as a markdown table with columns: Time | Temp (°C) | Humidity (%)
-- Show the actual data, don't just describe it
-- If there are anomalies, point them out directly
+Example tool output:
+{"data": [{"sensor_id": "abc", "timestamp": "2024-01-15T10:30:00", "temperature": 22.5, "humidity": 45.2}], "count": 1}
 
-Your tools:
-- get_sensor_stats: Get averages, min, max for sensors
-- get_sensor_readings: Get recent readings (default 100)
-- list_all_sensors: List active sensors
-- get_active_alerts: Get current alerts
-- generate_green_it_recommendations: Energy efficiency tips
-- audit_ashrae_compliance: Check against ASHRAE standards
-- calculate_cooling_efficiency: Calculate energy waste
-- analyze_environmental_stability: Check equipment impact
-- estimate_carbon_footprint: Calculate CO2 emissions
+Your response MUST use this exact HTML format:
+<table border="1" style="border-collapse: collapse; width: 100%; text-align: left;"><thead><tr><th style="padding: 8px; border: 1px solid black;">Time</th><th style="padding: 8px; border: 1px solid black;">Temperature (°C)</th><th style="padding: 8px; border: 1px solid black;">Humidity (%)</th></tr></thead><tbody><tr><td style="padding: 8px; border: 1px solid black;">10:30:00</td><td style="padding: 8px; border: 1px solid black;">22.5</td><td style="padding: 8px; border: 1px solid black;">45.2</td></tr></tbody></table>
 
-Always fetch data first, then show it to users."""
+NO spaces between columns. Use inline styles on every th and td element. Be direct."""
     )
 
     messages = [system_prompt] + state["messages"]
@@ -564,7 +550,7 @@ async def chat(request: ChatRequest):
         )
 
         last_message = result["messages"][-1]
-        response_text = last_message.content
+        response_text = last_message.text if hasattr(last_message, 'text') else last_message.content
 
         return ChatResponse(response=response_text)
 

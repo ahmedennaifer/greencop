@@ -1,9 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { marked } from 'marked';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Send, Bot, User, Loader } from 'lucide-react';
+
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
 
 interface Message {
   id: string;
@@ -21,6 +26,26 @@ const AssistantPage: React.FC = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    document.title = 'GreenCop | Assistant';
+
+    const warmUpAssistant = async () => {
+      try {
+        await fetch('https://assistant-804862180664.us-central1.run.app/api/v1/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: 'hello' }),
+        });
+      } catch (error) {
+        console.log('Warming up assistant');
+      }
+    };
+
+    warmUpAssistant();
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -55,10 +80,14 @@ const AssistantPage: React.FC = () => {
 
       const data = await response.json();
 
+      const cleanContent = data.response.includes('|') && !data.response.startsWith('|')
+        ? data.response.replace(/\n\n/g, '\n').trim()
+        : data.response;
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response,
+        content: cleanContent,
         timestamp: new Date(),
       };
 
@@ -136,9 +165,10 @@ const AssistantPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-900 max-w-full'
                       }`}
                     >
-                      <div className={`text-sm prose prose-sm max-w-none ${message.role === 'user' ? 'text-white prose-invert' : 'text-gray-900'}`}>
-                        <ReactMarkdown>{message.content}</ReactMarkdown>
-                      </div>
+                      <div
+                        className={`text-sm prose prose-sm max-w-none ${message.role === 'user' ? 'text-white prose-invert' : 'text-gray-900'}`}
+                        dangerouslySetInnerHTML={{ __html: marked(message.content) }}
+                      />
                       <p
                         className={`text-xs mt-2 ${
                           message.role === 'user' ? 'text-green-100' : 'text-gray-500'
