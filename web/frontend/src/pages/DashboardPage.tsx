@@ -382,46 +382,45 @@ const DashboardPage: React.FC = () => {
           <p className="text-gray-600">Real-time data with ML-powered anomaly detection</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-3 border border-gray-200">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-6">
+          <div className="bg-white rounded-lg shadow p-2.5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 mb-1">Total Rooms</p>
-                <p className="text-xl font-bold text-gray-900">{loading ? '...' : stats.totalRooms}</p>
+                <p className="text-xs text-gray-600 mb-0.5">Total Rooms</p>
+                <p className="text-lg font-bold text-gray-900">{loading ? '...' : stats.totalRooms}</p>
               </div>
-              <Server className="w-6 h-6 text-green-600" />
+              <Server className="w-5 h-5 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-3 border border-gray-200">
+          <div className="bg-white rounded-lg shadow p-2.5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 mb-1">Active Sensors</p>
-                <p className="text-xl font-bold text-gray-900">{loading ? '...' : stats.activeSensors}</p>
+                <p className="text-xs text-gray-600 mb-0.5">Active Sensors</p>
+                <p className="text-lg font-bold text-gray-900">{loading ? '...' : stats.activeSensors}</p>
               </div>
-              <Activity className="w-6 h-6 text-green-600" />
+              <Activity className="w-5 h-5 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-3 border border-gray-200">
+          <div className="bg-white rounded-lg shadow p-2.5 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600 mb-1">Active Alerts</p>
-                <p className="text-xl font-bold text-gray-900">{loading ? '...' : stats.activeAlerts}</p>
+                <p className="text-xs text-gray-600 mb-0.5">Active Alerts</p>
+                <p className="text-lg font-bold text-gray-900">{loading ? '...' : stats.activeAlerts}</p>
               </div>
-              <AlertTriangle className="w-6 h-6 text-red-600" />
+              <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
           </div>
 
-          {/* Trend Analysis - Compact Version Next to Metrics */}
           {predictionData && sortedReadings.length > 1 && (
-            <div className="bg-white rounded-lg shadow p-4 border border-green-200 lg:col-span-1">
-              <div className="mb-2">
-                <div className="flex items-center gap-1 mb-2">
+            <div className="bg-white rounded-lg shadow p-2.5 border border-green-200 lg:col-span-1">
+              <div className="mb-1">
+                <div className="flex items-center gap-1 mb-1">
                   <TrendingUp className="w-4 h-4 text-green-600" />
                   <p className="text-xs text-gray-600 font-semibold">Trend Analysis</p>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-0.5 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Temp Δ/s:</span>
                     <span className={`font-bold ${predictionData.trend.temp_delta_per_second > 0 ? 'text-red-600' : 'text-blue-600'}`}>
@@ -438,7 +437,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={80}>
+              <ResponsiveContainer width="100%" height={60}>
                 <LineChart
                   data={sortedReadings.slice(-10).map((reading, idx, arr) => {
                     const tempDelta = idx > 0 ? reading.temperature - arr[idx - 1].temperature : 0;

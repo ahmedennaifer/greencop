@@ -222,6 +222,39 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <AlertTriangle className="w-4 h-4" />
                 <span className="text-sm font-medium">Alerts</span>
               </Link>
+              <Link
+                to="/anomalies"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/anomalies'
+                    ? 'text-green-600 bg-green-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Brain className="w-4 h-4" />
+                <span className="text-sm font-medium">Anomalies</span>
+              </Link>
+              <Link
+                to="/predictions"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/predictions'
+                    ? 'text-green-600 bg-green-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-medium">Predictions</span>
+              </Link>
+              <Link
+                to="/settings"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/settings'
+                    ? 'text-green-600 bg-green-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                <span className="text-sm font-medium">Settings</span>
+              </Link>
             </nav>
 
             <div className="flex items-center space-x-4">
