@@ -22,7 +22,10 @@ import {
   MessageSquare,
   FlaskConical,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
+  Bell,
+  Mail,
+  Webhook
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
@@ -396,6 +399,81 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* --- Feature 6: Smart Notifications --- */}
+      <section className="py-24 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
+              <div className="w-full lg:w-5/12">
+                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-4">
+                    <Bell size={14} /> SMART NOTIFICATIONS
+                 </div>
+                 <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
+                    Stay Informed.<br />Email & Webhooks.
+                 </h2>
+                 <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                    Never miss a critical event. Get real-time notifications via email or webhooks for ML training events, anomaly detections, and alert surges—all configurable per event type.
+                 </p>
+                 <ul className="space-y-4 mb-8">
+                    {[
+                       { icon: Mail, title: 'Email Notifications', desc: 'Instant alerts delivered to your inbox' },
+                       { icon: Webhook, title: 'Webhook Integration', desc: 'Push events to Slack, Discord, or custom endpoints' },
+                       { icon: Bell, title: 'Event-Specific Controls', desc: 'Choose which events trigger notifications' },
+                    ].map(item => (
+                       <li key={item.title} className="flex items-start gap-3">
+                          <div className="mt-1">
+                             <item.icon size={20} className="text-blue-500" />
+                          </div>
+                          <div>
+                             <strong className="block text-slate-900">{item.title}</strong>
+                             <span className="text-slate-600 text-sm">{item.desc}</span>
+                          </div>
+                       </li>
+                    ))}
+                 </ul>
+              </div>
+              <div className="w-full lg:w-3/5">
+                 <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-xl">
+                    <div className="space-y-6">
+                       <div className="border-b border-slate-200 pb-4">
+                          <h3 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
+                             <Bell className="w-5 h-5 text-blue-500" />
+                             Notification Events
+                          </h3>
+                          <p className="text-sm text-slate-600">Configure which events trigger notifications</p>
+                       </div>
+
+                       {[
+                          { event: 'ML Training Started', desc: 'Get notified when model retraining begins', color: 'purple' },
+                          { event: 'ML Training Complete', desc: 'Know when new models are deployed', color: 'green' },
+                          { event: 'Anomaly Detected', desc: 'Immediate alerts for ML-detected anomalies', color: 'orange' },
+                          { event: 'Alert Surge', desc: 'Warning when 5+ alerts occur in 10 minutes', color: 'red' },
+                       ].map(item => (
+                          <div key={item.event} className={`p-4 bg-${item.color}-50 rounded-lg border border-${item.color}-200`}>
+                             <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                   <div className={`font-semibold text-${item.color}-900 mb-1`}>{item.event}</div>
+                                   <div className={`text-sm text-${item.color}-700`}>{item.desc}</div>
+                                </div>
+                                <div className="flex gap-3 ml-4">
+                                   <div className={`flex items-center gap-1 px-2 py-1 bg-white rounded border border-${item.color}-300`}>
+                                      <Mail size={14} className={`text-${item.color}-600`} />
+                                      <span className="text-xs text-slate-700">Email</span>
+                                   </div>
+                                   <div className={`flex items-center gap-1 px-2 py-1 bg-white rounded border border-${item.color}-300`}>
+                                      <Webhook size={14} className={`text-${item.color}-600`} />
+                                      <span className="text-xs text-slate-700">Webhook</span>
+                                   </div>
+                                </div>
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+      </section>
+
       {/* --- Feature Grid (Solutions) --- */}
       <section id="solutions" className="py-24 bg-slate-50 text-slate-900 border-y border-slate-200">
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -480,8 +558,8 @@ const LandingPage: React.FC = () => {
                     <span>5-min polling interval</span>
                   </div>
                   <div className="flex gap-3 text-sm text-slate-700">
-                    <Check size={18} className="text-slate-400 shrink-0" /> 
-                    <span>Email Alerts</span>
+                    <Mail size={18} className="text-slate-400 shrink-0" />
+                    <span><strong>Email Notifications</strong></span>
                   </div>
                </div>
                <Button variant="outline" className="w-full">Create Free Account</Button>
@@ -519,8 +597,12 @@ const LandingPage: React.FC = () => {
                     <span><strong>GreenCop AI Assistant</strong></span>
                   </div>
                   <div className="flex gap-3 text-sm text-slate-700">
-                    <Activity size={18} className="text-emerald-500 shrink-0" /> 
+                    <Activity size={18} className="text-emerald-500 shrink-0" />
                     <span>1s Polling Rate</span>
+                  </div>
+                  <div className="flex gap-3 text-sm text-slate-700">
+                    <Mail size={18} className="text-emerald-500 shrink-0" />
+                    <span><strong>Email + Webhook Notifications</strong></span>
                   </div>
                </div>
                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200">Start 14-Day Trial</Button>
@@ -555,7 +637,11 @@ const LandingPage: React.FC = () => {
                     <span>AI Fleet Manager (Adv.)</span>
                   </div>
                   <div className="flex gap-3 text-sm text-slate-700">
-                    <Check size={18} className="text-purple-500 shrink-0" /> 
+                    <Webhook size={18} className="text-purple-500 shrink-0" />
+                    <span><strong>Advanced Notifications</strong></span>
+                  </div>
+                  <div className="flex gap-3 text-sm text-slate-700">
+                    <Check size={18} className="text-purple-500 shrink-0" />
                     <span>Priority Support</span>
                   </div>
                </div>
@@ -586,11 +672,15 @@ const LandingPage: React.FC = () => {
                     <span>SOC2 Compliance Logs</span>
                   </div>
                   <div className="flex gap-3 text-sm text-slate-300">
-                    <Check size={18} className="text-emerald-400 shrink-0" /> 
+                    <Bell size={18} className="text-emerald-400 shrink-0" />
+                    <span><strong>Multi-Channel Notifications</strong></span>
+                  </div>
+                  <div className="flex gap-3 text-sm text-slate-300">
+                    <Check size={18} className="text-emerald-400 shrink-0" />
                     <span>99.99% Uptime SLA</span>
                   </div>
                   <div className="flex gap-3 text-sm text-slate-300">
-                    <Check size={18} className="text-emerald-400 shrink-0" /> 
+                    <Check size={18} className="text-emerald-400 shrink-0" />
                     <span>Dedicated Solution Engineer</span>
                   </div>
                </div>
