@@ -1,22 +1,29 @@
+import json
 import logging
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+import os
 from typing import List
 
-from customers.database.session import get_db
-from customers.database.models.prediction_feedback import (
-    PredictionFeedback as PredictionFeedbackModel,
-)
 from customers.api.schemas.prediction_feedback import (
     PredictionFeedback,
     PredictionFeedbackCreate,
     PredictionFeedbackUpdate,
 )
+from customers.database.models.prediction_feedback import (
+    PredictionFeedback as PredictionFeedbackModel,
+)
+from customers.database.session import get_db
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from google.cloud import bigquery, pubsub_v1
+from sqlalchemy.orm import Session
 
 prediction_feedback_router = APIRouter()
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+PROJECT_ID = os.environ.get("PROJECT_ID")
+DATASET_ID = os.environ.get("DATASET_ID", "sensor_data")
+TABLE_ID = os.environ.get("TABLE_ID", "readings")
 
 
 @prediction_feedback_router.post("/", response_model=PredictionFeedback)
@@ -36,13 +43,86 @@ async def create_prediction_feedback(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+
+def _check_and_trigger_retraining():
+    logger.info("=== FUNCTION ENTERED ===")
+    try:
+        logger.info("=== TRIGGER CHECK STARTED ===")
+        from customers.database.session import SessionLocal
+
+        logger.info("=== GETTING DB SESSION ===")
+        db = SessionLocal()
+        logger.info("=== DB SESSION ACQUIRED ===")
+        try:
+            ok_count = (
+                db.query(PredictionFeedbackModel)
+                .filter(PredictionFeedbackModel.feedback == "ok")
+                .filter(PredictionFeedbackModel.used_in_training == False)
+                .count()
+            )
+
+            logger.info(f"Unused validated predictions: {ok_count}")
+
+            if ok_count < 100:
+                logger.info("Below 100 threshold, exiting")
+                return
+
+            logger.info("Importing ModelTrainingRun")
+            from customers.database.models.model_training_run import ModelTrainingRun
+            logger.info("ModelTrainingRun imported successfully")
+
+            running = (
+                db.query(ModelTrainingRun)
+                .filter(ModelTrainingRun.triggered_by == "auto_100_validated")
+                .filter(ModelTrainingRun.status == "running")
+                .first()
+            )
+
+            if running:
+                logger.info(f"Training run {running.id} already in progress")
+                return
+
+            logger.info(f"Unused validated predictions ready for training: {ok_count}")
+
+            if ok_count < 100:
+                logger.info(f"Only {ok_count} unused validations, need 100")
+                return
+
+            logger.info("CREATING TRAINING RUN")
+            training_run = ModelTrainingRun(
+                status="running",
+                model_type="both",
+                validated_data_count=ok_count,
+                triggered_by="auto_100_validated",
+            )
+            db.add(training_run)
+            db.commit()
+            db.refresh(training_run)
+
+            logger.info(f"Training run {training_run.id} created, publishing to Pub/Sub")
+            publisher = pubsub_v1.PublisherClient()
+            topic_path = f"projects/{PROJECT_ID}/topics/model-retraining"
+            message = {
+                "training_run_id": training_run.id,
+                "validated_count": ok_count,
+                "trigger": "auto_100_validated",
+            }
+
+            publisher.publish(topic_path, json.dumps(message).encode())
+            logger.info(f"Triggered retraining run {training_run.id} with {ok_count} validations")
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"TRIGGER ERROR: {e}", exc_info=True)
+
+
 @prediction_feedback_router.put("/{feedback_id}", response_model=PredictionFeedback)
 async def update_prediction_feedback(
     feedback_id: int,
     feedback_update: PredictionFeedbackUpdate,
     db: Session = Depends(get_db),
 ):
-    """Update prediction feedback (OK/KO)"""
     try:
         feedback = (
             db.query(PredictionFeedbackModel)
@@ -56,6 +136,10 @@ async def update_prediction_feedback(
         feedback.feedback = feedback_update.feedback
         db.commit()
         db.refresh(feedback)
+
+        if feedback_update.feedback in ["ok", "not_ok"]:
+            _check_and_trigger_retraining()
+
         return feedback
     except HTTPException:
         raise
@@ -110,24 +194,27 @@ async def get_validated_training_data(db: Session = Depends(get_db)):
     try:
         validated = (
             db.query(PredictionFeedbackModel)
-            .filter(PredictionFeedbackModel.feedback == 'ok')
+            .filter(PredictionFeedbackModel.feedback == "ok")
             .all()
         )
 
-        training_data = [{
-            'sensor_id': fb.sensor_id,
-            'timestamp': fb.timestamp.isoformat(),
-            'predicted_temp': fb.predicted_temp,
-            'predicted_humidity': fb.predicted_humidity,
-            'actual_temp': fb.actual_temp,
-            'actual_humidity': fb.actual_humidity,
-            'anomaly_predicted': fb.anomaly_predicted,
-        } for fb in validated]
+        training_data = [
+            {
+                "sensor_id": fb.sensor_id,
+                "timestamp": fb.timestamp.isoformat(),
+                "predicted_temp": fb.predicted_temp,
+                "predicted_humidity": fb.predicted_humidity,
+                "actual_temp": fb.actual_temp,
+                "actual_humidity": fb.actual_humidity,
+                "anomaly_predicted": fb.anomaly_predicted,
+            }
+            for fb in validated
+        ]
 
         return {
-            'total_validated_ok': len(training_data),
-            'ready_for_retraining': len(training_data) >= 100,
-            'training_data': training_data
+            "total_validated_ok": len(training_data),
+            "ready_for_retraining": len(training_data) >= 100,
+            "training_data": training_data,
         }
     except Exception as e:
         logger.error(f"Error fetching validated training data: {e}")
@@ -139,16 +226,24 @@ async def get_feedback_stats(db: Session = Depends(get_db)):
     """Get prediction feedback statistics"""
     try:
         total_predictions = db.query(PredictionFeedbackModel).count()
-        ok_count = db.query(PredictionFeedbackModel).filter(PredictionFeedbackModel.feedback == 'ok').count()
-        not_ok_count = db.query(PredictionFeedbackModel).filter(PredictionFeedbackModel.feedback == 'not_ok').count()
+        ok_count = (
+            db.query(PredictionFeedbackModel)
+            .filter(PredictionFeedbackModel.feedback == "ok")
+            .count()
+        )
+        not_ok_count = (
+            db.query(PredictionFeedbackModel)
+            .filter(PredictionFeedbackModel.feedback == "not_ok")
+            .count()
+        )
         validated_count = ok_count + not_ok_count
 
         return {
-            'total_predictions': total_predictions,
-            'validated_count': validated_count,
-            'ok_count': ok_count,
-            'not_ok_count': not_ok_count,
-            'ready_for_retraining': ok_count >= 100
+            "total_predictions": total_predictions,
+            "validated_count": validated_count,
+            "ok_count": ok_count,
+            "not_ok_count": not_ok_count,
+            "ready_for_retraining": ok_count >= 100,
         }
     except Exception as e:
         logger.error(f"Error fetching feedback stats: {e}")
@@ -162,9 +257,9 @@ async def search_predictions(
     end_date: str = None,
     limit: int = 100,
     offset: int = 0,
-    order_by: str = 'timestamp',
-    order_dir: str = 'desc',
-    db: Session = Depends(get_db)
+    order_by: str = "timestamp",
+    order_dir: str = "desc",
+    db: Session = Depends(get_db),
 ):
     """Search predictions with filters"""
     try:
@@ -176,19 +271,19 @@ async def search_predictions(
             query = query.filter(PredictionFeedbackModel.sensor_id == sensor_id)
 
         if start_date:
-            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
             query = query.filter(PredictionFeedbackModel.timestamp >= start_dt)
 
         if end_date:
-            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
             query = query.filter(PredictionFeedbackModel.timestamp <= end_dt)
 
-        if order_by == 'timestamp':
+        if order_by == "timestamp":
             order_col = PredictionFeedbackModel.timestamp
         else:
             order_col = PredictionFeedbackModel.id
 
-        if order_dir == 'desc':
+        if order_dir == "desc":
             query = query.order_by(order_col.desc())
         else:
             query = query.order_by(order_col.asc())
@@ -204,7 +299,11 @@ async def search_predictions(
 async def get_prediction_by_id(feedback_id: int, db: Session = Depends(get_db)):
     """Get prediction by ID"""
     try:
-        prediction = db.query(PredictionFeedbackModel).filter(PredictionFeedbackModel.id == feedback_id).first()
+        prediction = (
+            db.query(PredictionFeedbackModel)
+            .filter(PredictionFeedbackModel.id == feedback_id)
+            .first()
+        )
         if not prediction:
             raise HTTPException(status_code=404, detail="Prediction not found")
         return prediction

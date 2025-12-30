@@ -18,8 +18,8 @@ def train_forecasting_model(df):
         'day_of_week',
         'temp_delta',
         'humidity_delta',
-        'temp_rolling_mean',
-        'humidity_rolling_mean'
+        'temp_rolling_mean_6h',
+        'humidity_rolling_mean_6h'
     ]
 
     X = df[features].values

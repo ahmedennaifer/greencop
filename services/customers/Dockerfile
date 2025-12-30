@@ -41,12 +41,14 @@ COPY main.py .
 COPY run_migration.py .
 COPY .env .
 
+RUN echo "build-$(date +%s)" > /app/BUILD_VERSION
+
 RUN chown -R app:app /app
 USER app
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "python run_migration.py && uvicorn main:app --host 0.0.0.0 --port 8080"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 
 

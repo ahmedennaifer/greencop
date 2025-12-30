@@ -12,6 +12,7 @@ import SensorDetailPage from './pages/SensorDetailPage';
 import AlertsPage from './pages/AlertsPage';
 import AnomaliesPage from './pages/AnomaliesPage';
 import PredictionsPage from './pages/PredictionsPage';
+import ModelsPage from './pages/ModelsPage';
 import SettingsPage from './pages/SettingsPage';
 import AssistantPage from './pages/AssistantPage';
 
@@ -76,6 +77,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PredictionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/models"
+            element={
+              <ProtectedRoute>
+                <ModelsPage />
               </ProtectedRoute>
             }
           />

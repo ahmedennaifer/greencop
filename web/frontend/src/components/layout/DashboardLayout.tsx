@@ -8,11 +8,11 @@ import {
   AlertTriangle,
   Settings,
   LogOut,
+  Brain,
   Menu,
   X,
   Shield,
   MessageSquare,
-  Brain,
   TrendingUp,
 } from 'lucide-react';
 import Button from '../ui/Button';
@@ -43,6 +43,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Alerts', href: '/alerts', icon: AlertTriangle },
     { name: 'Anomalies', href: '/anomalies', icon: Brain },
     { name: 'Predictions', href: '/predictions', icon: TrendingUp },
+    { name: 'Models', href: '/models', icon: Brain },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

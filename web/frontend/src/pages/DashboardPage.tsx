@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRooms } from '../hooks/useRooms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Server, Activity, AlertTriangle, Thermometer, ThumbsUp, ThumbsDown, TrendingUp, TrendingDown, Settings, Info, CheckCircle, XCircle, Shield } from 'lucide-react';
+import { Server, Activity, AlertTriangle, Thermometer, ThumbsUp, ThumbsDown, TrendingUp, TrendingDown, Settings, Info, CheckCircle, XCircle, Shield, Loader } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { sensorService } from '../api/services/sensor.service';
 import { alertService } from '../api/services/alert.service';
@@ -44,6 +44,11 @@ const DashboardPage: React.FC = () => {
   });
   const [thresholdAlerts, setThresholdAlerts] = useState<string[]>([]);
   const [showThresholdSettings, setShowThresholdSettings] = useState(false);
+  const [trainingStatus, setTrainingStatus] = useState<{
+    isTraining: boolean;
+    runId: number | null;
+    message: string;
+  } | null>(null);
   const [predictionAccuracy, setPredictionAccuracy] = useState<{
     totalPredictions: number;
     accuratePredictions: number;
@@ -137,6 +142,39 @@ const DashboardPage: React.FC = () => {
     const interval = setInterval(fetchLiveData, 3000);
     return () => clearInterval(interval);
   }, [selectedSensor]);
+
+  useEffect(() => {
+    const checkTrainingStatus = async () => {
+      try {
+        const response = await apiClient.get('/api/v1/ml/retraining/history?limit=1');
+        const latestRun = response.data[0];
+
+        if (latestRun && latestRun.status === 'running') {
+          setTrainingStatus({
+            isTraining: true,
+            runId: latestRun.id,
+            message: `Model retraining in progress (using ${latestRun.validated_data_count || 0} validated predictions)...`
+          });
+        } else if (latestRun && latestRun.status === 'completed' &&
+                   Date.now() - new Date(latestRun.completed_at).getTime() < 60000) {
+          setTrainingStatus({
+            isTraining: false,
+            runId: latestRun.id,
+            message: `Model retrained successfully! New version: ${latestRun.model_version}`
+          });
+          setTimeout(() => setTrainingStatus(null), 10000);
+        } else {
+          setTrainingStatus(null);
+        }
+      } catch (err) {
+        console.error('Error checking training status:', err);
+      }
+    };
+
+    checkTrainingStatus();
+    const interval = setInterval(checkTrainingStatus, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchLiveData = async () => {
     try {
@@ -381,6 +419,29 @@ const DashboardPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Live Sensor Monitoring</h1>
           <p className="text-gray-600">Real-time data with ML-powered anomaly detection</p>
         </div>
+
+        {trainingStatus && (
+          <div className={`mb-6 p-4 rounded-lg border-2 ${
+            trainingStatus.isTraining
+              ? 'bg-blue-50 border-blue-300'
+              : 'bg-green-50 border-green-300'
+          }`}>
+            <div className="flex items-center gap-3">
+              {trainingStatus.isTraining ? (
+                <Loader className="w-5 h-5 animate-spin text-blue-600" />
+              ) : (
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              )}
+              <div className="flex-1">
+                <span className={`font-semibold ${
+                  trainingStatus.isTraining ? 'text-blue-900' : 'text-green-900'
+                }`}>
+                  {trainingStatus.message}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-6">
           <div className="bg-white rounded-lg shadow p-2.5 border border-gray-200">

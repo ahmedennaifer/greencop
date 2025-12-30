@@ -5,6 +5,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt uvicorn
 
-COPY predict_server.py .
+COPY predict_server.py train.py train_forecasting.py ./
 
 CMD ["uvicorn", "predict_server:app", "--host", "0.0.0.0", "--port", "8080"]

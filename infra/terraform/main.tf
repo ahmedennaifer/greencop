@@ -232,6 +232,38 @@ module "alert_subscriber_function" {
   ]
 }
 
+module "ml_training_function" {
+  source              = "./modules/cloud_function"
+  project_id          = var.project_id
+  region              = var.region
+  function_name       = "ml-training"
+  entry_point         = "train_model_handler"
+  source_archive_path = "../../services/ml/function_source.zip"
+  pubsub_topic_id     = module.model_retraining_pubsub.topic_id
+  bucket_name         = google_storage_bucket.cloud_functions_bucket.name
+
+  environment_variables = {
+    PROJECT_ID   = var.project_id
+    DATASET_ID   = module.sensor_bigquery.dataset_id
+    TABLE_ID     = module.sensor_bigquery.table_id
+    MODEL_BUCKET = google_storage_bucket.ml_models.name
+    REGION       = var.region
+    DB_URL       = "postgresql://${var.db_user}:${var.db_user_password}@${module.customers_service_db.instance_ip}/customers-db"
+    USE_SYNTHETIC_DATA = "false"
+  }
+
+  depends_on = [
+    google_project_service.cloudfunctions_api,
+    google_project_service.cloudbuild_api,
+    google_project_service.eventarc_api,
+    module.model_retraining_pubsub,
+    module.sensor_bigquery,
+    google_storage_bucket.cloud_functions_bucket,
+    google_storage_bucket.ml_models,
+    module.customers_service_db
+  ]
+}
+
 module "ml_training_pubsub" {
   source        = "./modules/pubsub"
   project_id    = var.project_id
@@ -254,6 +286,23 @@ module "ml_deployment_pubsub" {
   project_id    = var.project_id
   topic_name    = "ml-deployment-trigger"
   service_label = "ml-deployment"
+
+  publisher_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  subscriber_members = [
+    "serviceAccount:${var.service_account_email}"
+  ]
+
+  depends_on = [google_project_service.pubsub_api]
+}
+
+module "model_retraining_pubsub" {
+  source        = "./modules/pubsub"
+  project_id    = var.project_id
+  topic_name    = "model-retraining"
+  service_label = "model-retraining"
 
   publisher_members = [
     "serviceAccount:${var.service_account_email}"

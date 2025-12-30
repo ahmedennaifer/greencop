@@ -11,3 +11,4 @@ sqlalchemy
 functions-framework
 fastapi
 pydantic
+db-dtypes

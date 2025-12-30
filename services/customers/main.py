@@ -4,6 +4,7 @@ from customers.api.routes.sensor import sensor_router
 from customers.api.routes.data import data_router
 from customers.api.routes.alert import alert_router
 from customers.api.routes.prediction_feedback import prediction_feedback_router
+from customers.api.routes.ml_retraining import ml_retraining_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -35,6 +36,7 @@ app.include_router(sensor_router, prefix="/api/v1/sensors", tags=["sensors"])
 app.include_router(data_router, prefix="/api/v1/data", tags=["data"])
 app.include_router(alert_router, prefix="/api/v1/alerts", tags=["alerts"])
 app.include_router(prediction_feedback_router, prefix="/api/v1/prediction-feedback", tags=["prediction-feedback"])
+app.include_router(ml_retraining_router, prefix="/api/v1/ml/retraining", tags=["ml-retraining"])
 
 
 @app.get("/health")

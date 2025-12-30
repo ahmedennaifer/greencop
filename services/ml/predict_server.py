@@ -71,3 +71,23 @@ async def predict(request: PredictRequest):
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+@app.post("/")
+async def train_handler(request: dict):
+    from train import train_model_handler
+    import base64
+    import json
+
+    message = request.get("message", {})
+    if message:
+        data_str = base64.b64decode(message.get("data", "")).decode()
+        data = json.loads(data_str)
+
+        cloud_event = type('CloudEvent', (), {
+            'data': {'message': {'data': message.get("data")}}
+        })()
+
+        result = train_model_handler(cloud_event)
+        return result
+
+    return {"status": "no message"}

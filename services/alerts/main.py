@@ -16,8 +16,11 @@ MAX_ALLOWED_TEMP = float(os.environ.get("MAX_ALLOWED_TEMP", 50.0))
 MAX_ALLOWED_HUMIDITY = float(os.environ.get("MAX_ALLOWED_HUMIDITY", 40.0))
 ALERT_TOPIC = os.environ.get("ALERT_TOPIC", "alerts")
 ML_PREDICT_URL = os.environ.get("ML_PREDICT_URL")
+ML_FORECAST_URL = os.environ.get("ML_FORECAST_URL")
 DATASET_ID = os.environ.get("DATASET_ID", "sensor_data")
 TABLE_ID = os.environ.get("TABLE_ID", "readings")
+DB_URL = os.environ.get("DB_URL")
+CUSTOMERS_API_URL = os.environ.get("CUSTOMERS_API_URL")
 
 
 def fetch_recent_sensor_data(node_id, hours=6):
@@ -147,6 +150,49 @@ def detect_excessive_metrics(cloud_event):
                     except Exception as e:
                         logger.error(f"ML prediction failed: {e}")
                         prediction = 1
+
+                # Get forecast prediction
+                forecast_temp = sensor_data['temperature']
+                forecast_humidity = sensor_data['humidity']
+                if ML_FORECAST_URL:
+                    try:
+                        import requests
+                        response = requests.post(
+                            f"{ML_FORECAST_URL}/predict",
+                            json={"instances": [features]},
+                            timeout=5
+                        )
+                        response.raise_for_status()
+                        forecast_data = response.json()
+                        if "predictions" in forecast_data and forecast_data["predictions"]:
+                            forecast = forecast_data["predictions"][0]
+                            forecast_temp = forecast[0]
+                            forecast_humidity = forecast[1]
+                    except Exception as e:
+                        logger.error(f"Forecast prediction failed: {e}")
+
+                # Store prediction feedback in PostgreSQL via API
+                if CUSTOMERS_API_URL:
+                    try:
+                        import requests
+                        payload = {
+                            "sensor_id": sensor_data['node_id'],
+                            "timestamp": sensor_data['timestamp'],
+                            "predicted_temp": float(forecast_temp),
+                            "predicted_humidity": float(forecast_humidity),
+                            "actual_temp": float(sensor_data['temperature']),
+                            "actual_humidity": float(sensor_data['humidity']),
+                            "anomaly_predicted": prediction == -1
+                        }
+                        response = requests.post(
+                            f"{CUSTOMERS_API_URL}/api/v1/prediction-feedback/",
+                            json=payload,
+                            timeout=5
+                        )
+                        response.raise_for_status()
+                        logger.info(f"Stored prediction feedback for {sensor_data['node_id']}")
+                    except Exception as e:
+                        logger.error(f"Failed to store prediction feedback: {e}")
 
                 # Insert sensor data with prediction to BigQuery
                 try:
