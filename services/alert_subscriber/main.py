@@ -111,6 +111,7 @@ def check_alert_surge(sensor_id, db_url):
     from datetime import datetime, timedelta
     from google.cloud import pubsub_v1
 
+    logger.info(f"Checking surge for sensor {sensor_id}")
     try:
         conn = psycopg2.connect(db_url)
         cur = conn.cursor()
@@ -127,7 +128,10 @@ def check_alert_surge(sensor_id, db_url):
         count = cur.fetchone()[0]
         conn.close()
 
+        logger.info(f"Found {count} alerts in last 10 minutes for sensor {sensor_id}")
+
         if count >= 5:
+            logger.warning(f"SURGE DETECTED for {sensor_id}: {count} alerts")
             PROJECT_ID = os.environ.get("PROJECT_ID", "atomic-climate-482314-q7")
             publisher = pubsub_v1.PublisherClient()
             topic_path = f"projects/{PROJECT_ID}/topics/alert-surge-events"
