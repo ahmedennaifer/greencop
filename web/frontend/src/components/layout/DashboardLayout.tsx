@@ -14,6 +14,7 @@ import {
   Shield,
   MessageSquare,
   TrendingUp,
+  FlaskConical,
 } from 'lucide-react';
 import Button from '../ui/Button';
 
@@ -43,7 +44,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { name: 'Alerts', href: '/alerts', icon: AlertTriangle },
     { name: 'Anomalies', href: '/anomalies', icon: Brain },
     { name: 'Predictions', href: '/predictions', icon: TrendingUp },
-    { name: 'Models', href: '/models', icon: Brain },
+    { name: 'Models', href: '/models', icon: FlaskConical },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

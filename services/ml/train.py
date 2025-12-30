@@ -23,7 +23,6 @@ REGION = os.environ.get("REGION", "us-central1")
 def fetch_training_data():
     from sqlalchemy import text
 
-    # Fetch validated predictions from PostgreSQL
     engine = create_engine(DB_URL)
 
     validated_query = text("""
@@ -56,10 +55,12 @@ def fetch_training_data():
 
     df_historical = client.query(historical_query).to_dataframe()
 
-    logger.info(f"Fetched {len(df_validated)} validated rows, {len(df_historical)} historical rows")
+    logger.info(
+        f"Fetched {len(df_validated)} validated rows, {len(df_historical)} historical rows"
+    )
 
-    if 'label' not in df_historical.columns:
-        df_historical['label'] = None
+    if "label" not in df_historical.columns:
+        df_historical["label"] = None
 
     df = pd.concat([df_validated, df_historical], ignore_index=True)
 
@@ -136,14 +137,16 @@ def train_model(df):
     from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
     X = df[features]
-    y = df['label'] if 'label' in df.columns else None
+    y = df["label"] if "label" in df.columns else None
 
     # Filter out rows with None labels for evaluation
     if y is not None and y.notna().sum() > 100:
         mask = y.notna() & y.isin([-1, 1])
         X_labeled = X[mask]
         y_labeled = y[mask]
-        X_train, X_test, y_train, y_test = train_test_split(X_labeled, y_labeled, test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_labeled, y_labeled, test_size=0.2, random_state=42
+        )
         # Train on all data including unlabeled
         X_train_full = X
     else:
@@ -167,13 +170,15 @@ def train_model(df):
         accuracy = accuracy_score(y_test, y_pred)
 
         metrics = {
-            'precision': precision,
-            'recall': recall,
-            'f1_score': f1,
-            'accuracy': accuracy
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1,
+            "accuracy": accuracy,
         }
 
-        logger.info(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}, Accuracy: {accuracy:.4f}")
+        logger.info(
+            f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}, Accuracy: {accuracy:.4f}"
+        )
 
     logger.info("Model training completed")
     return model, features, metrics
@@ -199,7 +204,7 @@ def save_model(model, features, num_samples, metrics=None, model_type="anomaly")
         "features": features,
         "model_type": model_type,
         "contamination": 0.05 if model_type == "anomaly" else None,
-        "metrics": metrics or {}
+        "metrics": metrics or {},
     }
 
     metadata_blob = bucket.blob(f"models/metadata_{model_type}_{timestamp}.json")
@@ -234,8 +239,16 @@ def trigger_deployment():
         logger.error(f"Failed to trigger deployment: {e}")
 
 
-def update_training_run(run_id, status=None, completed_at=None, training_data_count=None,
-                        validated_data_count=None, metrics=None, model_version=None, error_message=None):
+def update_training_run(
+    run_id,
+    status=None,
+    completed_at=None,
+    training_data_count=None,
+    validated_data_count=None,
+    metrics=None,
+    model_version=None,
+    error_message=None,
+):
     if not DB_URL:
         logger.warning("DB_URL not set, skipping training run update")
         return
@@ -268,11 +281,13 @@ def update_training_run(run_id, status=None, completed_at=None, training_data_co
         updates.append("error_message = :error_message")
         params["error_message"] = error_message
 
-    if status == 'completed' and not completed_at:
+    if status == "completed" and not completed_at:
         updates.append("completed_at = NOW()")
 
     if updates:
-        query = text(f"UPDATE model_training_runs SET {', '.join(updates)} WHERE id = :run_id")
+        query = text(
+            f"UPDATE model_training_runs SET {', '.join(updates)} WHERE id = :run_id"
+        )
         with engine.connect() as conn:
             conn.execute(query, params)
             conn.commit()
@@ -296,7 +311,9 @@ def mark_predictions_as_used(run_id):
     with engine.connect() as conn:
         result = conn.execute(query, {"run_id": run_id})
         conn.commit()
-        logger.info(f"Marked {result.rowcount} predictions as used in training run {run_id}")
+        logger.info(
+            f"Marked {result.rowcount} predictions as used in training run {run_id}"
+        )
 
 
 @functions_framework.cloud_event
@@ -309,24 +326,33 @@ def train_model_handler(cloud_event):
         triggered_by = None
 
         if cloud_event and cloud_event.data:
-            message_data = json.loads(base64.b64decode(cloud_event.data['message']['data']).decode())
-            training_run_id = message_data.get('training_run_id')
-            validated_count = message_data.get('validated_count', 0)
-            triggered_by = message_data.get('trigger')
-            logger.info(f"Received training request for run {training_run_id} with {validated_count} validated predictions (trigger: {triggered_by})")
+            message_data = json.loads(
+                base64.b64decode(cloud_event.data["message"]["data"]).decode()
+            )
+            training_run_id = message_data.get("training_run_id")
+            validated_count = message_data.get("validated_count", 0)
+            triggered_by = message_data.get("trigger")
+            logger.info(
+                f"Received training request for run {training_run_id} with {validated_count} validated predictions (trigger: {triggered_by})"
+            )
 
         # Use real data if triggered automatically by validations, otherwise use synthetic
-        use_synthetic = triggered_by != 'auto_100_validated'
+        use_synthetic = triggered_by != "auto_100_validated"
 
         if use_synthetic:
             storage_client = storage.Client()
             bucket = storage_client.bucket(MODEL_BUCKET)
-            blob = bucket.blob('training_data/sensor_data_7days.csv')
-            blob.download_to_filename('/tmp/training_data.csv')
+            blob = bucket.blob("training_data/sensor_data_7days.csv")
+            blob.download_to_filename("/tmp/training_data.csv")
 
-            df = pd.read_csv('/tmp/training_data.csv')
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-            df = df.rename(columns={'temp_rolling_mean': 'temp_rolling_mean_6h', 'humidity_rolling_mean': 'humidity_rolling_mean_6h'})
+            df = pd.read_csv("/tmp/training_data.csv")
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            df = df.rename(
+                columns={
+                    "temp_rolling_mean": "temp_rolling_mean_6h",
+                    "humidity_rolling_mean": "humidity_rolling_mean_6h",
+                }
+            )
             validated_count = 0
         else:
             df, validated_count = fetch_training_data()
@@ -336,37 +362,81 @@ def train_model_handler(cloud_event):
 
         # Train anomaly detection model
         anomaly_model, features, anomaly_metrics = train_model(df)
-        anomaly_filename = save_model(anomaly_model, features, len(df), anomaly_metrics, model_type="anomaly")
+        anomaly_filename = save_model(
+            anomaly_model, features, len(df), anomaly_metrics, model_type="anomaly"
+        )
 
         # Train forecasting model
         from train_forecasting import train_forecasting_model
-        forecasting_model, forecasting_features, forecasting_metrics = train_forecasting_model(df)
-        forecasting_filename = save_model(forecasting_model, forecasting_features, len(df), forecasting_metrics, model_type="forecasting")
+
+        forecasting_model, forecasting_features, forecasting_metrics = (
+            train_forecasting_model(df)
+        )
+        forecasting_filename = save_model(
+            forecasting_model,
+            forecasting_features,
+            len(df),
+            forecasting_metrics,
+            model_type="forecasting",
+        )
 
         # Combine metrics
         combined_metrics = {
-            'anomaly': anomaly_metrics,
-            'forecasting': forecasting_metrics
+            "anomaly": anomaly_metrics,
+            "forecasting": forecasting_metrics,
         }
+
+        logger.info(f"About to update training run. training_run_id={training_run_id}")
+
+        import time
+        logger.info("Adding 15 second delay for frontend visibility...")
+        time.sleep(15)
 
         if training_run_id:
             update_training_run(
                 training_run_id,
-                status='completed',
+                status="completed",
                 training_data_count=len(df),
                 metrics=combined_metrics,
-                model_version=f"{anomaly_filename}, {forecasting_filename}"
+                model_version=f"{anomaly_filename}, {forecasting_filename}",
             )
             mark_predictions_as_used(training_run_id)
 
+            logger.info(f"About to publish training_complete notification for run {training_run_id}")
+
+            from google.cloud import pubsub_v1
+            from datetime import datetime
+
+            publisher = pubsub_v1.PublisherClient()
+            topic_path = f"projects/{PROJECT_ID}/topics/model-retraining"
+            notification_message = {
+                "event_type": "training_complete",
+                "data": {
+                    "run_id": training_run_id,
+                    "metrics": combined_metrics,
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
+            }
+
+            logger.info(f"Publishing message: {json.dumps(notification_message)}")
+            publisher.publish(topic_path, json.dumps(notification_message).encode())
+            logger.info(
+                f"Published training_complete notification for run {training_run_id}"
+            )
+
         trigger_deployment()
 
-        return {"status": "success", "anomaly_model": anomaly_filename, "forecasting_model": forecasting_filename, "metrics": combined_metrics}
+        return {
+            "status": "success",
+            "anomaly_model": anomaly_filename,
+            "forecasting_model": forecasting_filename,
+            "metrics": combined_metrics,
+        }
 
     except Exception as e:
         logger.error(f"Training failed: {str(e)}")
         if training_run_id:
-            update_training_run(training_run_id, status='failed', error_message=str(e))
+            update_training_run(training_run_id, status="failed", error_message=str(e))
         raise
 
 

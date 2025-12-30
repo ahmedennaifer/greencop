@@ -137,6 +137,20 @@ def detect_excessive_metrics(cloud_event):
                             if prediction == -1:
                                 logger.warning(f"Anomaly detected by ML model")
                                 publish_alert(sensor_data, "ml_anomaly")
+
+                                publisher_notif = pubsub_v1.PublisherClient()
+                                topic_path_notif = f"projects/{PROJECT_ID}/topics/anomaly-events"
+                                anomaly_message = {
+                                    "event_type": "anomaly",
+                                    "data": {
+                                        "sensor_id": sensor_data.get('node_id'),
+                                        "temperature": sensor_data.get('temperature'),
+                                        "humidity": sensor_data.get('humidity'),
+                                        "timestamp": sensor_data.get('timestamp')
+                                    }
+                                }
+                                publisher_notif.publish(topic_path_notif, json.dumps(anomaly_message).encode())
+                                logger.info(f"Published anomaly notification for sensor {sensor_data.get('node_id')}")
                         else:
                             logger.error(f"ML service response missing predictions")
                             prediction = 1

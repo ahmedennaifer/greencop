@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from typing import List
+from datetime import datetime
 
 from customers.api.schemas.prediction_feedback import (
     PredictionFeedback,
@@ -108,6 +109,9 @@ def _check_and_trigger_retraining():
                 "validated_count": ok_count,
                 "trigger": "auto_100_validated",
             }
+
+            message["event_type"] = "training_start"
+            message["timestamp"] = datetime.utcnow().isoformat()
 
             publisher.publish(topic_path, json.dumps(message).encode())
             logger.info(f"Triggered retraining run {training_run.id} with {ok_count} validations")

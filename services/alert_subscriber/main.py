@@ -98,6 +98,50 @@ def store_alert_to_db(alert_data: dict):
         conn.close()
 
         logger.info(f"Stored alert to database: {alert_data}")
+
+        check_alert_surge(alert_data["sensor_id"], db_url)
     except Exception as e:
         logger.error(f"Failed to store alert to database: {e}")
         raise
+
+
+def check_alert_surge(sensor_id, db_url):
+    """Check if 5+ alerts in last 10 minutes"""
+    import psycopg2
+    from datetime import datetime, timedelta
+    from google.cloud import pubsub_v1
+
+    try:
+        conn = psycopg2.connect(db_url)
+        cur = conn.cursor()
+
+        ten_min_ago = datetime.utcnow() - timedelta(minutes=10)
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM alerts
+            WHERE sensor_id = %s
+              AND timestamp > %s
+        """, (sensor_id, ten_min_ago))
+
+        count = cur.fetchone()[0]
+        conn.close()
+
+        if count >= 5:
+            PROJECT_ID = os.environ.get("PROJECT_ID", "atomic-climate-482314-q7")
+            publisher = pubsub_v1.PublisherClient()
+            topic_path = f"projects/{PROJECT_ID}/topics/alert-surge-events"
+
+            message = {
+                "event_type": "alert_surge",
+                "data": {
+                    "sensor_id": sensor_id,
+                    "alert_count": count,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            }
+
+            publisher.publish(topic_path, json.dumps(message).encode())
+            logger.info(f"Published alert surge notification for sensor {sensor_id}: {count} alerts")
+    except Exception as e:
+        logger.error(f"Failed to check alert surge: {e}")

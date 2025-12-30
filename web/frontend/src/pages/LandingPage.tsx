@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Menu, 
+import {
+  Menu,
   X,
   ArrowRight,
   CheckCircle2,
@@ -19,7 +19,10 @@ import {
   HardDrive,
   BrainCircuit,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  FlaskConical,
+  TrendingUp,
+  RefreshCw
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
@@ -299,8 +302,102 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* --- Feature 5: Automatic Model Retraining --- */}
+      <section className="py-24 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+              <div className="w-full lg:w-5/12">
+                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold mb-4">
+                    <FlaskConical size={14} /> SELF-IMPROVING AI
+                 </div>
+                 <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
+                    Models That Learn<br />From Your Feedback.
+                 </h2>
+                 <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                    Every time you validate a prediction, you're training the AI. After 100 validated predictions, the system automatically retrains both anomaly detection and forecasting models with zero downtime.
+                 </p>
+                 <ul className="space-y-4 mb-8">
+                    {[
+                       { icon: RefreshCw, title: 'Automatic Triggers', desc: 'Retrains every 100 validated predictions' },
+                       { icon: TrendingUp, title: 'Performance Tracking', desc: 'F1 Score, Accuracy, RMSE metrics for every run' },
+                       { icon: Zap, title: 'Zero Downtime', desc: 'New models deploy instantly without service interruption' },
+                    ].map(item => (
+                       <li key={item.title} className="flex items-start gap-3">
+                          <div className="mt-1">
+                             <item.icon size={20} className="text-emerald-500" />
+                          </div>
+                          <div>
+                             <strong className="block text-slate-900">{item.title}</strong>
+                             <span className="text-slate-600 text-sm">{item.desc}</span>
+                          </div>
+                       </li>
+                    ))}
+                 </ul>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                       <div className="text-2xl font-bold text-purple-900 mb-1">95%+</div>
+                       <div className="text-xs text-purple-600">Accuracy After 500 Validations</div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                       <div className="text-2xl font-bold text-blue-900 mb-1">0s</div>
+                       <div className="text-xs text-blue-600">Deployment Downtime</div>
+                    </div>
+                 </div>
+              </div>
+              <div className="w-full lg:w-3/5">
+                 <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-8 border border-slate-200 shadow-xl">
+                    <div className="space-y-4">
+                       <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+                          <div className="flex items-center justify-between mb-4">
+                             <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                   <FlaskConical className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                   <div className="font-bold text-slate-900">Run #428</div>
+                                   <div className="text-xs text-slate-500">Completed in 3s</div>
+                                </div>
+                             </div>
+                             <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Completed</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-4 mb-4">
+                             <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="text-lg font-bold text-blue-900">6,560</div>
+                                <div className="text-xs text-blue-600">Training Rows</div>
+                             </div>
+                             <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                                <div className="text-lg font-bold text-green-900">120</div>
+                                <div className="text-xs text-green-600">Validated</div>
+                             </div>
+                             <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+                                <div className="text-lg font-bold text-purple-900">Both</div>
+                                <div className="text-xs text-purple-600">Model Type</div>
+                             </div>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                             <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                                <span className="text-blue-700 font-medium">Anomaly F1</span>
+                                <span className="font-bold text-blue-900">0.865</span>
+                             </div>
+                             <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                                <span className="text-green-700 font-medium">Forecast RMSE</span>
+                                <span className="font-bold text-green-900">5.20°C</span>
+                             </div>
+                          </div>
+                       </div>
+                       <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+                          <RefreshCw size={16} className="animate-spin" />
+                          <span>Continuous learning in progress...</span>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+      </section>
+
       {/* --- Feature Grid (Solutions) --- */}
-      <section id="solutions" className="py-24 bg-white text-slate-900">
+      <section id="solutions" className="py-24 bg-slate-50 text-slate-900 border-y border-slate-200">
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
                <h2 className="text-3xl font-bold mb-4">Solutions for every scale.</h2>

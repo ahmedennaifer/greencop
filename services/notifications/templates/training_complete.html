@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+        .metric { background: white; padding: 15px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #10b981; }
+        .button { display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Model Training Complete</h1>
+        </div>
+        <div class="content">
+            <p>Your ML models have been successfully retrained with the latest validated predictions.</p>
+
+            <div class="metric">
+                <strong>Training Run:</strong> #{{ run_id }}<br>
+                {% if metrics %}
+                {% if metrics.anomaly %}
+                <strong>Anomaly F1 Score:</strong> {{ "%.3f"|format(metrics.anomaly.f1_score) }}<br>
+                <strong>Accuracy:</strong> {{ "%.3f"|format(metrics.anomaly.accuracy) }}<br>
+                {% endif %}
+                {% if metrics.forecasting %}
+                <strong>Forecast RMSE (Temp):</strong> {{ "%.2f"|format(metrics.forecasting.rmse_temp) }}°C<br>
+                <strong>Forecast MAE (Humidity):</strong> {{ "%.2f"|format(metrics.forecasting.mae_humidity) }}%
+                {% endif %}
+                {% endif %}
+            </div>
+
+            <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                The new models are now deployed and serving predictions.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

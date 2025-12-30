@@ -14,8 +14,10 @@ forecasting_model = None
 anomaly_model = None
 features = None
 
+
 class PredictRequest(BaseModel):
     instances: list
+
 
 def load_models():
     global forecasting_model, anomaly_model, features
@@ -29,8 +31,8 @@ def load_models():
 
     with open(forecast_path, "rb") as f:
         forecast_data = pickle.load(f)
-        forecasting_model = forecast_data['model']
-        features = forecast_data['features']
+        forecasting_model = forecast_data["model"]
+        features = forecast_data["features"]
 
     latest_blob = bucket.blob("models/latest_model.txt")
     anomaly_filename = latest_blob.download_as_text().strip()
@@ -41,6 +43,7 @@ def load_models():
 
     with open(anomaly_path, "rb") as f:
         anomaly_model = pickle.load(f)
+
 
 @app.post("/predict")
 async def predict(request: PredictRequest):
@@ -68,9 +71,11 @@ async def predict(request: PredictRequest):
 
     return {"predictions": anomaly_predictions.tolist()}
 
+
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
 
 @app.post("/")
 async def train_handler(request: dict):
@@ -83,9 +88,9 @@ async def train_handler(request: dict):
         data_str = base64.b64decode(message.get("data", "")).decode()
         data = json.loads(data_str)
 
-        cloud_event = type('CloudEvent', (), {
-            'data': {'message': {'data': message.get("data")}}
-        })()
+        cloud_event = type(
+            "CloudEvent", (), {"data": {"message": {"data": message.get("data")}}}
+        )()
 
         result = train_model_handler(cloud_event)
         return result
