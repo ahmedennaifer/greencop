@@ -35,6 +35,13 @@ import predictionsImg from '../assets/predictions.png';
 import anomaliesImg from '../assets/anomalies.png';
 import alertsImg from '../assets/alerts.png';
 import aiAssistantImg from '../assets/AiAssistant.png';
+import modelsImg from '../assets/models.png';
+import notificationsSettingsImg from '../assets/notifications_settings.png';
+import notificationsReceivedImg from '../assets/notifications_email_received.png';
+import notificationsDetailImg from '../assets/notifications_detail.png';
+import esgiLogo from '../assets/download.png';
+import skolaLogo from '../assets/skola.png';
+import gesLogo from '../assets/ges.png';
 
 // ----------------------------------------------------------------------
 // --- LANDING PAGE COMPONENT ---
@@ -51,6 +58,10 @@ const LandingPage: React.FC = () => {
     anomalies: anomaliesImg,
     alerts: alertsImg,
     assistant: aiAssistantImg,
+    models: modelsImg,
+    notificationsSettings: notificationsSettingsImg,
+    notificationsReceived: notificationsReceivedImg,
+    notificationsDetail: notificationsDetailImg,
   };
 
   return (
@@ -141,22 +152,20 @@ const LandingPage: React.FC = () => {
       {/* --- Trusted By Strip --- */}
       <section className="py-10 border-y border-slate-100 bg-slate-50/50">
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">Trusted by engineering teams at</p>
-            <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale">
-               {['Acme Corp', 'GlobalTech', 'Nebula', 'Vertex', 'Quantico'].map(logo => (
-                  <div key={logo} className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                     <div className="w-6 h-6 bg-slate-800 rounded-sm"></div> {logo}
-                  </div>
-               ))}
+            <p className="text-center text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">Trusted by</p>
+            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-70 grayscale">
+               <img src={esgiLogo} alt="" className="h-12 w-auto" />
+               <img src={skolaLogo} alt="" className="h-12 w-auto" />
+               <img src={gesLogo} alt="" className="h-12 w-auto" />
             </div>
          </div>
       </section>
 
       {/* --- Feature 1: Predictive Forecasting --- */}
       <section id="features" className="py-24 bg-white">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-              <div className="w-full lg:w-5/12">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+              <div className="w-full lg:w-1/3 shrink-0">
                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-4">
                     <Activity size={14} /> PREDICTIVE INTELLIGENCE
                  </div>
@@ -179,7 +188,7 @@ const LandingPage: React.FC = () => {
                     ))}
                  </ul>
               </div>
-              <div className="w-full lg:w-3/5">
+              <div className="w-full lg:flex-1">
                  <div className="rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-slate-50 transform hover:scale-[1.02] transition-transform duration-500">
                     <img
                       src={screenshots.predictions}
@@ -194,9 +203,9 @@ const LandingPage: React.FC = () => {
 
       {/* --- Feature 2: Anomaly Detection --- */}
       <section className="py-24 bg-slate-50 border-y border-slate-200">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
-              <div className="w-full lg:w-5/12">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-16">
+              <div className="w-full lg:w-1/3 shrink-0">
                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold mb-4">
                     <Zap size={14} /> ANOMALY AI
                  </div>
@@ -217,7 +226,7 @@ const LandingPage: React.FC = () => {
                     </div>
                  </div>
               </div>
-              <div className="w-full lg:w-3/5">
+              <div className="w-full lg:flex-1">
                  <div className="rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white transform hover:scale-[1.02] transition-transform duration-500">
                     <img
                       src={screenshots.anomalies}
@@ -232,9 +241,9 @@ const LandingPage: React.FC = () => {
 
       {/* --- Feature 3: Alerts --- */}
       <section className="py-24 bg-white">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-              <div className="w-full lg:w-5/12">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+              <div className="w-full lg:w-1/3 shrink-0">
                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-bold mb-4">
                     <AlertTriangle size={14} /> ALERT MANAGEMENT
                  </div>
@@ -248,7 +257,7 @@ const LandingPage: React.FC = () => {
                     View Alert Documentation <ArrowRight size={16} />
                  </Button>
               </div>
-              <div className="w-full lg:w-3/5">
+              <div className="w-full lg:flex-1">
                  <div className="rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white transform hover:scale-[1.02] transition-transform duration-500">
                     <img
                       src={screenshots.alerts}
@@ -263,36 +272,36 @@ const LandingPage: React.FC = () => {
 
        {/* --- Feature 4: AI Assistant (Separate Section) --- */}
        <section className="py-24 bg-slate-900 text-white border-y border-slate-800">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
-              <div className="w-full lg:w-5/12">
-                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-bold mb-4 border border-emerald-500/30">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-16">
+              <div className="w-full lg:w-1/3 shrink-0">
+                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-bold mb-6 border border-emerald-500/30">
                     <Sparkles size={14} /> GENERATIVE AI ASSISTANT
                  </div>
-                 <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
+                 <h2 className="text-xl lg:text-2xl font-bold text-white mb-6 whitespace-nowrap">
                     "Hello! I'm your GreenCop Assistant."
                  </h2>
-                 <p className="text-lg text-slate-400 mb-8 leading-relaxed">
+                 <p className="text-base text-slate-400 mb-10 leading-loose">
                     An AI-powered interface for managing your IoT monitoring system. Use natural language to perform data queries, manage system configurations, or ask for "Smart Insights" about your infrastructure.
                  </p>
-                 <ul className="space-y-4">
+                 <ul className="space-y-6">
                     <li className="flex items-start gap-3">
                        <MessageSquare size={20} className="text-emerald-500 mt-1" />
                        <div>
-                          <strong className="block text-white">Data Queries</strong>
-                          <span className="text-slate-400 text-sm">"Analyze temperature patterns for Sensor X."</span>
+                          <strong className="block text-white mb-1">Data Queries</strong>
+                          <span className="text-slate-400 text-sm leading-relaxed">"Analyze temperature patterns for Sensor X."</span>
                        </div>
                     </li>
                     <li className="flex items-start gap-3">
                        <BrainCircuit size={20} className="text-emerald-500 mt-1" />
                        <div>
-                          <strong className="block text-white">System Management</strong>
-                          <span className="text-slate-400 text-sm">Create rooms, register sensors, or configure thresholds via chat.</span>
+                          <strong className="block text-white mb-1">System Management</strong>
+                          <span className="text-slate-400 text-sm leading-relaxed">Create rooms, register sensors, or configure thresholds via chat.</span>
                        </div>
                     </li>
                  </ul>
               </div>
-              <div className="w-full lg:w-3/5">
+              <div className="w-full lg:flex-1">
                  <div className="rounded-xl shadow-2xl border border-slate-700 overflow-hidden bg-slate-800 transform hover:scale-[1.02] transition-transform duration-500">
                     <img
                       src={screenshots.assistant}
@@ -307,9 +316,9 @@ const LandingPage: React.FC = () => {
 
       {/* --- Feature 5: Automatic Model Retraining --- */}
       <section className="py-24 bg-white">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-              <div className="w-full lg:w-5/12">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+              <div className="w-full lg:w-1/3 shrink-0">
                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold mb-4">
                     <FlaskConical size={14} /> SELF-IMPROVING AI
                  </div>
@@ -347,52 +356,13 @@ const LandingPage: React.FC = () => {
                     </div>
                  </div>
               </div>
-              <div className="w-full lg:w-3/5">
-                 <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-8 border border-slate-200 shadow-xl">
-                    <div className="space-y-4">
-                       <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-                          <div className="flex items-center justify-between mb-4">
-                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                   <FlaskConical className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                   <div className="font-bold text-slate-900">Run #428</div>
-                                   <div className="text-xs text-slate-500">Completed in 3s</div>
-                                </div>
-                             </div>
-                             <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Completed</span>
-                          </div>
-                          <div className="grid grid-cols-3 gap-4 mb-4">
-                             <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <div className="text-lg font-bold text-blue-900">6,560</div>
-                                <div className="text-xs text-blue-600">Training Rows</div>
-                             </div>
-                             <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                                <div className="text-lg font-bold text-green-900">120</div>
-                                <div className="text-xs text-green-600">Validated</div>
-                             </div>
-                             <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
-                                <div className="text-lg font-bold text-purple-900">Both</div>
-                                <div className="text-xs text-purple-600">Model Type</div>
-                             </div>
-                          </div>
-                          <div className="space-y-2 text-sm">
-                             <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
-                                <span className="text-blue-700 font-medium">Anomaly F1</span>
-                                <span className="font-bold text-blue-900">0.865</span>
-                             </div>
-                             <div className="flex justify-between items-center p-2 bg-green-50 rounded">
-                                <span className="text-green-700 font-medium">Forecast RMSE</span>
-                                <span className="font-bold text-green-900">5.20°C</span>
-                             </div>
-                          </div>
-                       </div>
-                       <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
-                          <RefreshCw size={16} className="animate-spin" />
-                          <span>Continuous learning in progress...</span>
-                       </div>
-                    </div>
+              <div className="w-full lg:flex-1">
+                 <div className="rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white transform hover:scale-[1.02] transition-transform duration-500">
+                    <img
+                      src={screenshots.models}
+                      alt="ML Model Retraining Dashboard"
+                      className="w-full h-auto"
+                    />
                  </div>
               </div>
            </div>
@@ -401,76 +371,147 @@ const LandingPage: React.FC = () => {
 
       {/* --- Feature 6: Smart Notifications --- */}
       <section className="py-24 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
-              <div className="w-full lg:w-5/12">
-                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-4">
-                    <Bell size={14} /> SMART NOTIFICATIONS
-                 </div>
-                 <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 leading-tight">
-                    Stay Informed.<br />Email & Webhooks.
-                 </h2>
-                 <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                    Never miss a critical event. Get real-time notifications via email or webhooks for ML training events, anomaly detections, and alert surges—all configurable per event type.
-                 </p>
-                 <ul className="space-y-4 mb-8">
-                    {[
-                       { icon: Mail, title: 'Email Notifications', desc: 'Instant alerts delivered to your inbox' },
-                       { icon: Webhook, title: 'Webhook Integration', desc: 'Push events to Slack, Discord, or custom endpoints' },
-                       { icon: Bell, title: 'Event-Specific Controls', desc: 'Choose which events trigger notifications' },
-                    ].map(item => (
-                       <li key={item.title} className="flex items-start gap-3">
-                          <div className="mt-1">
-                             <item.icon size={20} className="text-blue-500" />
-                          </div>
-                          <div>
-                             <strong className="block text-slate-900">{item.title}</strong>
-                             <span className="text-slate-600 text-sm">{item.desc}</span>
-                          </div>
-                       </li>
-                    ))}
-                 </ul>
-              </div>
-              <div className="w-full lg:w-3/5">
-                 <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-xl">
-                    <div className="space-y-6">
-                       <div className="border-b border-slate-200 pb-4">
-                          <h3 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                             <Bell className="w-5 h-5 text-blue-500" />
-                             Notification Events
-                          </h3>
-                          <p className="text-sm text-slate-600">Configure which events trigger notifications</p>
-                       </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                       {[
-                          { event: 'ML Training Started', desc: 'Get notified when model retraining begins', color: 'purple' },
-                          { event: 'ML Training Complete', desc: 'Know when new models are deployed', color: 'green' },
-                          { event: 'Anomaly Detected', desc: 'Immediate alerts for ML-detected anomalies', color: 'orange' },
-                          { event: 'Alert Surge', desc: 'Warning when 5+ alerts occur in 10 minutes', color: 'red' },
-                       ].map(item => (
-                          <div key={item.event} className={`p-4 bg-${item.color}-50 rounded-lg border border-${item.color}-200`}>
-                             <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                   <div className={`font-semibold text-${item.color}-900 mb-1`}>{item.event}</div>
-                                   <div className={`text-sm text-${item.color}-700`}>{item.desc}</div>
-                                </div>
-                                <div className="flex gap-3 ml-4">
-                                   <div className={`flex items-center gap-1 px-2 py-1 bg-white rounded border border-${item.color}-300`}>
-                                      <Mail size={14} className={`text-${item.color}-600`} />
-                                      <span className="text-xs text-slate-700">Email</span>
-                                   </div>
-                                   <div className={`flex items-center gap-1 px-2 py-1 bg-white rounded border border-${item.color}-300`}>
-                                      <Webhook size={14} className={`text-${item.color}-600`} />
-                                      <span className="text-xs text-slate-700">Webhook</span>
-                                   </div>
-                                </div>
-                             </div>
-                          </div>
-                       ))}
-                    </div>
-                 </div>
+          <div className="space-y-24">
+
+            {/* --- ROW 1: Main Intro & Event Types Visual --- */}
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+              {/* LEFT: Visual (The Configuration Box) */}
+              <div className="w-full">
+                <div className="bg-white rounded-xl p-6 md:p-8 border border-slate-200 shadow-2xl transform hover:scale-[1.01] transition-transform duration-500">
+                  <div className="border-b border-slate-100 pb-4 mb-6">
+                    <h3 className="font-bold text-slate-900 mb-1 flex items-center gap-2">
+                      <Bell className="w-5 h-5 text-blue-500" />
+                      Notification Events
+                    </h3>
+                    <p className="text-sm text-slate-500">Configure triggers per severity level.</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    {[
+                      { event: 'ML Training Started', desc: 'Notify when retraining begins', color: 'purple' },
+                      { event: 'Anomaly Detected', desc: 'Critical alert for ML deviation', color: 'orange' },
+                      { event: 'Alert Surge', desc: 'Warning: 5+ alerts in 10m', color: 'red' },
+                      { event: 'System Offline', desc: 'Sensor timeout > 5 mins', color: 'slate' },
+                    ].map(item => (
+                      <div key={item.event} className={`p-3 bg-${item.color}-50 rounded-lg border border-${item.color}-100 flex items-center justify-between`}>
+                        <div>
+                          <div className={`font-semibold text-${item.color}-900 text-sm`}>{item.event}</div>
+                          <div className={`text-xs text-${item.color}-700/70`}>{item.desc}</div>
+                        </div>
+                        <div className="flex gap-2 opacity-60">
+                          <Mail size={14} className={`text-${item.color}-700`} />
+                          <Webhook size={14} className={`text-${item.color}-700`} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-           </div>
+
+              {/* RIGHT: Text (Main Title & Intro) */}
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-4 border border-blue-100">
+                  <Bell size={14} /> SMART NOTIFICATIONS
+                </div>
+                <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6 leading-tight">
+                  Stay Informed.<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Email & Webhooks.</span>
+                </h2>
+                <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                  Never miss a critical event. Get real-time notifications via email or webhooks for ML training events, anomaly detections, and alert surges—all configurable per event type.
+                </p>
+
+                <ul className="space-y-4">
+                  {[
+                    { icon: Mail, title: 'Email Notifications', desc: 'Instant alerts delivered to your inbox' },
+                    { icon: Webhook, title: 'Webhook Integration', desc: 'Push events to Slack, Discord, or custom endpoints' },
+                    { icon: Bell, title: 'Event-Specific Controls', desc: 'Choose which events trigger notifications' },
+                  ].map(item => (
+                    <li key={item.title} className="flex items-start gap-3">
+                      <div className="mt-1 p-1 bg-blue-50 rounded text-blue-600">
+                        <item.icon size={18} />
+                      </div>
+                      <div>
+                        <strong className="block text-slate-900 text-sm">{item.title}</strong>
+                        <span className="text-slate-500 text-sm">{item.desc}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* --- ROW 2: Settings --- */}
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+              {/* LEFT: Image */}
+              <div className="w-full rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white transform hover:scale-[1.02] transition-transform duration-500">
+                <img
+                  src={screenshots.notificationsSettings}
+                  alt="Notification Settings Configuration"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+
+              {/* RIGHT: Description */}
+              <div>
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 mb-4">
+                   <Bell size={20} />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">Notification Settings</h3>
+                <p className="text-slate-600 text-lg leading-relaxed">
+                  Granular control over your team's alerts. Toggle specific event types and choose your delivery channels (Email, Webhook, or both) for each severity level.
+                </p>
+              </div>
+            </div>
+
+            {/* --- ROW 3: Inbox Grouping --- */}
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+              {/* LEFT: Image */}
+              <div className="w-full rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white transform hover:scale-[1.02] transition-transform duration-500">
+                <img
+                  src={screenshots.notificationsReceived}
+                  alt="Notifications Received in Email Inbox"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+
+              {/* RIGHT: Description */}
+              <div>
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 mb-4">
+                   <Mail size={20} />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">Smart Inbox Grouping</h3>
+                <p className="text-slate-600 text-lg leading-relaxed">
+                  See all your notifications organized with clear subject lines, priority flags, and timestamps. We group related alerts to prevent inbox spamming during surges.
+                </p>
+              </div>
+            </div>
+
+            {/* --- ROW 4: Rich Details --- */}
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+              {/* LEFT: Image */}
+              <div className="w-full rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white transform hover:scale-[1.02] transition-transform duration-500">
+                <img
+                  src={screenshots.notificationsDetail}
+                  alt="Notification Email Detail"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+
+              {/* RIGHT: Description */}
+              <div>
+                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600 mb-4">
+                   <Activity size={20} />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">Rich Context Details</h3>
+                <p className="text-slate-600 text-lg leading-relaxed">
+                  Don't just get an alert; get the context. Each email includes snapshot data, sensor IDs, and direct links to the specific dashboard view for immediate remediation.
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
@@ -645,7 +686,9 @@ const LandingPage: React.FC = () => {
                     <span>Priority Support</span>
                   </div>
                </div>
-               <Button variant="outline" className="w-full">Contact Sales</Button>
+               <a href="mailto:sales@greencop.com">
+                  <Button variant="outline" className="w-full">Contact Sales</Button>
+               </a>
             </div>
 
             {/* 4. Mission Critical Tier */}
@@ -684,7 +727,9 @@ const LandingPage: React.FC = () => {
                     <span>Dedicated Solution Engineer</span>
                   </div>
                </div>
-               <Button variant="outline" className="w-full border-slate-700 text-white hover:bg-slate-800 hover:text-white hover:border-slate-600">Contact Sales</Button>
+               <a href="mailto:sales@greencop.com">
+                  <Button variant="outline" className="w-full border-emerald-400 text-emerald-400 hover:bg-emerald-400 hover:text-slate-900 hover:border-emerald-400">Contact Sales</Button>
+               </a>
             </div>
           </div>
 
@@ -714,11 +759,11 @@ const LandingPage: React.FC = () => {
                      Start Free Trial
                   </button>
                </Link>
-               <Link to="/contact">
+               <a href="mailto:sales@greencop.com">
                   <button className="inline-flex items-center justify-center bg-transparent border-2 border-emerald-400 text-white hover:bg-emerald-700 hover:border-emerald-700 w-full sm:w-auto px-10 py-4 text-lg rounded-lg transition-all duration-200">
                      Contact Sales
                   </button>
-               </Link>
+               </a>
             </div>
          </div>
       </section>
@@ -732,7 +777,7 @@ const LandingPage: React.FC = () => {
                   <span className="font-bold text-slate-900">GreenCop</span>
                </div>
                <p className="text-slate-500 text-sm">
-                  Enterprise IoT monitoring. <br/> San Francisco, CA.
+                  Enterprise IoT monitoring. <br/> Paris, France.
                </p>
             </div>
             <div>
@@ -747,7 +792,7 @@ const LandingPage: React.FC = () => {
                <h4 className="font-bold text-slate-900 mb-4 text-sm uppercase tracking-wide">Resources</h4>
                <ul className="space-y-2 text-sm text-slate-500">
                   <li><a href="#" className="hover:text-emerald-600">Documentation</a></li>
-                  <li><a href="#" className="hover:text-emerald-600">API Reference</a></li>
+                  <li><a href="https://ahmedennaifer.github.io/greencop/#unified-dashboard" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">API Reference</a></li>
                   <li><a href="#" className="hover:text-emerald-600">Status</a></li>
                </ul>
             </div>

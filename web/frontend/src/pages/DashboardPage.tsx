@@ -303,12 +303,11 @@ const DashboardPage: React.FC = () => {
   });
 
   // Add prediction points for chart using backend's short_predictions (5-20 seconds)
-  if (predictionData && predictionData.short_predictions && sortedReadings.length > 0) {
+  if (sortedReadings.length > 0) {
     const lastReading = sortedReadings[sortedReadings.length - 1];
-    const isPredictedAnomaly = predictionData.anomaly_predicted;
     const lastTimestamp = new Date(lastReading.timestamp);
 
-    // Add connecting point
+    // Always add "Now" marker
     chartData.push({
       time: 'Now',
       timestamp: lastReading.timestamp,
@@ -322,28 +321,32 @@ const DashboardPage: React.FC = () => {
       index: chartData.length,
     });
 
-    // Add prediction points from backend (5, 10, 15, 20 seconds ahead)
-    predictionData.short_predictions.forEach((pred: any) => {
-      // Calculate future timestamp (seconds ahead)
-      const futureTime = new Date(lastTimestamp.getTime() + pred.timeframe_seconds * 1000);
+    // Add prediction points from backend if available
+    if (predictionData && predictionData.short_predictions) {
+      const isPredictedAnomaly = predictionData.anomaly_predicted;
 
-      chartData.push({
-        time: futureTime.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        }),
-        timestamp: futureTime.toISOString(),
-        temp_actual: null,
-        hum_actual: null,
-        temp_predicted: pred.predicted_temp,
-        hum_predicted: pred.predicted_humidity,
-        isCurrentAnomaly: false,
-        isPredictiveAnomaly: isPredictedAnomaly,
-        isPrediction: true,
-        index: chartData.length,
+      predictionData.short_predictions.forEach((pred: any) => {
+        // Calculate future timestamp (seconds ahead)
+        const futureTime = new Date(lastTimestamp.getTime() + pred.timeframe_seconds * 1000);
+
+        chartData.push({
+          time: futureTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }),
+          timestamp: futureTime.toISOString(),
+          temp_actual: null,
+          hum_actual: null,
+          temp_predicted: pred.predicted_temp,
+          hum_predicted: pred.predicted_humidity,
+          isCurrentAnomaly: false,
+          isPredictiveAnomaly: isPredictedAnomaly,
+          isPrediction: true,
+          index: chartData.length,
+        });
       });
-    });
+    }
   }
 
   // Calculate stable Y-axis domain with fixed padding

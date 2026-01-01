@@ -1,8 +1,4 @@
 import os
-from typing import Annotated, TypedDict, List
-from datetime import datetime
-import re
-from io import StringIO
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,8 +12,6 @@ from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import MemorySaver
 from google.cloud import bigquery
-import requests
-from tabulate import tabulate
 
 load_dotenv()
 
@@ -114,12 +108,14 @@ def get_sensor_readings(sensor_id: str, hours: int = 24, limit: int = 100) -> di
 
         data = []
         for row in results:
-            data.append({
-                "sensor_id": row.node_id,
-                "timestamp": row.timestamp.isoformat(),
-                "temperature": float(row.temperature),
-                "humidity": float(row.humidity)
-            })
+            data.append(
+                {
+                    "sensor_id": row.node_id,
+                    "timestamp": row.timestamp.isoformat(),
+                    "temperature": float(row.temperature),
+                    "humidity": float(row.humidity),
+                }
+            )
 
         return {"data": data, "count": len(data)}
     except Exception as e:
@@ -550,7 +546,9 @@ async def chat(request: ChatRequest):
         )
 
         last_message = result["messages"][-1]
-        response_text = last_message.text if hasattr(last_message, 'text') else last_message.content
+        response_text = (
+            last_message.text if hasattr(last_message, "text") else last_message.content
+        )
 
         return ChatResponse(response=response_text)
 
