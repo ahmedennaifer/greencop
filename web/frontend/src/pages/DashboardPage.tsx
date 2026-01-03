@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRooms } from '../hooks/useRooms';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
@@ -36,6 +36,9 @@ const DashboardPage: React.FC = () => {
   const [predictedAnomaly, setPredictedAnomaly] = useState<boolean>(false);
   const [predictionData, setPredictionData] = useState<any>(null);
   const [feedback, setFeedback] = useState<{ [key: string]: 'correct' | 'incorrect' | null }>({});
+  const lastProcessedTimestamp = useRef<string | null>(null);
+  const [noNewData, setNoNewData] = useState<boolean>(false);
+  const lastDataTimestamp = useRef<string | null>(null);
   const [thresholds, setThresholds] = useState({
     maxTemp: 50,
     minTemp: 10,
@@ -137,6 +140,35 @@ const DashboardPage: React.FC = () => {
     fetchPredictionFeedbacks();
   }, []);
 
+  // Fetch all sensors on mount
+  useEffect(() => {
+    const fetchAllSensors = async () => {
+      try {
+        if (!rooms || rooms.length === 0) return;
+
+        const allSensors: string[] = [];
+        for (const room of rooms) {
+          try {
+            const sensors = await sensorService.listSensorsByRoom(room.id);
+            allSensors.push(...sensors.map(s => s.id));
+          } catch (err) {
+            console.error(`Error fetching sensors for room ${room.id}:`, err);
+          }
+        }
+        setAvailableSensors(allSensors);
+
+        // Auto-select first sensor if current selection is not valid
+        if (allSensors.length > 0 && !allSensors.includes(selectedSensor)) {
+          setSelectedSensor(allSensors[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching sensors:', err);
+      }
+    };
+
+    fetchAllSensors();
+  }, [rooms]);
+
   useEffect(() => {
     fetchLiveData();
     const interval = setInterval(fetchLiveData, 3000);
@@ -183,22 +215,33 @@ const DashboardPage: React.FC = () => {
       });
 
       const readings = response.data.filter((r: SensorReading) => r.node_id === selectedSensor);
+
+      // Check if there's new data
+      if (readings.length > 0) {
+        const latestTimestamp = readings[readings.length - 1].timestamp;
+        if (lastDataTimestamp.current === latestTimestamp) {
+          setNoNewData(true);
+        } else {
+          setNoNewData(false);
+          lastDataTimestamp.current = latestTimestamp;
+        }
+      } else {
+        setNoNewData(true);
+      }
+
       setLiveData(readings);
 
-      const sensors = [...new Set(response.data.map((r: SensorReading) => r.node_id))];
-      setAvailableSensors(sensors);
-
-      if (selectedSensor) {
+      if (selectedSensor && readings.length > 0) {
         try {
           const predictionResponse = await apiClient.get(`/api/v1/data/predict-anomaly/${selectedSensor}`);
           setPredictedAnomaly(predictionResponse.data.anomaly_predicted);
           setPredictionData(predictionResponse.data);
 
-          // ALWAYS store predictions in backend for validation
+          // Only store predictions for NEW sensor data
           const currentReading = readings[readings.length - 1];
-          if (currentReading) {
+          if (currentReading && currentReading.timestamp !== lastProcessedTimestamp.current) {
             try {
-              // Save prediction to backend
+              // Save prediction to backend only if this is a new reading
               const feedbackResponse = await apiClient.post('/api/v1/prediction-feedback/', {
                 sensor_id: selectedSensor,
                 timestamp: new Date().toISOString(),
@@ -209,6 +252,9 @@ const DashboardPage: React.FC = () => {
                 anomaly_predicted: predictionResponse.data.anomaly_predicted,
                 feedback: null,
               });
+
+              // Update last processed timestamp
+              lastProcessedTimestamp.current = currentReading.timestamp;
 
               // Refresh predictions from backend after saving
               const refreshResponse = await apiClient.get('/api/v1/prediction-feedback/all', {
@@ -440,6 +486,19 @@ const DashboardPage: React.FC = () => {
                   trainingStatus.isTraining ? 'text-blue-900' : 'text-green-900'
                 }`}>
                   {trainingStatus.message}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {noNewData && (
+          <div className="mb-6 p-4 rounded-lg border-2 bg-yellow-50 border-yellow-300">
+            <div className="flex items-center gap-3">
+              <Info className="w-5 h-5 text-yellow-600" />
+              <div className="flex-1">
+                <span className="font-semibold text-yellow-900">
+                  No new data - Displaying last available readings
                 </span>
               </div>
             </div>

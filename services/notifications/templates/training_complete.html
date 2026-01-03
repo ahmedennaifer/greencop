@@ -22,12 +22,12 @@
                 <strong>Training Run:</strong> #{{ run_id }}<br>
                 {% if metrics %}
                 {% if metrics.anomaly %}
-                <strong>Anomaly F1 Score:</strong> {{ "%.3f"|format(metrics.anomaly.f1_score) }}<br>
-                <strong>Accuracy:</strong> {{ "%.3f"|format(metrics.anomaly.accuracy) }}<br>
+                <strong>Anomaly F1 Score:</strong> {{ "%.3f"|format(metrics.anomaly.f1_score if metrics.anomaly.f1_score is not none else 0) }}<br>
+                <strong>Accuracy:</strong> {{ "%.3f"|format(metrics.anomaly.accuracy if metrics.anomaly.accuracy is not none else 0) }}<br>
                 {% endif %}
                 {% if metrics.forecasting %}
-                <strong>Forecast RMSE (Temp):</strong> {{ "%.2f"|format(metrics.forecasting.rmse_temp) }}°C<br>
-                <strong>Forecast MAE (Humidity):</strong> {{ "%.2f"|format(metrics.forecasting.mae_humidity) }}%
+                <strong>Forecast RMSE (Temp):</strong> {{ "%.2f"|format(metrics.forecasting.rmse_temp if metrics.forecasting.rmse_temp is not none else 0) }}°C<br>
+                <strong>Forecast MAE (Humidity):</strong> {{ "%.2f"|format(metrics.forecasting.mae_humidity if metrics.forecasting.mae_humidity is not none else 0) }}%
                 {% endif %}
                 {% endif %}
             </div>

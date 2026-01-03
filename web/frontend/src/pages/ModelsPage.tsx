@@ -196,11 +196,11 @@ const ModelsPage: React.FC = () => {
                   <>
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
                       <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">Anomaly F1</p>
-                      <p className="text-xl font-bold text-blue-900">{(run.metrics.anomaly.f1_score || run.metrics.f1_score)?.toFixed(3)}</p>
+                      <p className="text-xl font-bold text-blue-900">{(run.metrics.anomaly.f1_score ?? run.metrics.f1_score ?? 0).toFixed(3)}</p>
                     </div>
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
                       <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">Accuracy</p>
-                      <p className="text-xl font-bold text-blue-900">{(run.metrics.anomaly.accuracy || run.metrics.accuracy)?.toFixed(3)}</p>
+                      <p className="text-xl font-bold text-blue-900">{(run.metrics.anomaly.accuracy ?? run.metrics.accuracy ?? 0).toFixed(3)}</p>
                     </div>
                   </>
                 )}
@@ -208,11 +208,11 @@ const ModelsPage: React.FC = () => {
                   <>
                     <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
                       <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">RMSE (Temp)</p>
-                      <p className="text-xl font-bold text-green-900">{run.metrics.forecasting.rmse_temp?.toFixed(2)}°C</p>
+                      <p className="text-xl font-bold text-green-900">{(run.metrics.forecasting.rmse_temp ?? 0).toFixed(2)}°C</p>
                     </div>
                     <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
                       <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">MAE (Hum)</p>
-                      <p className="text-xl font-bold text-green-900">{run.metrics.forecasting.mae_humidity?.toFixed(2)}%</p>
+                      <p className="text-xl font-bold text-green-900">{(run.metrics.forecasting.mae_humidity ?? 0).toFixed(2)}%</p>
                     </div>
                   </>
                 )}

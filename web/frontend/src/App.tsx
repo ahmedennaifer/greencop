@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import RoomsPage from './pages/RoomsPage';
+import RoomDetailPage from './pages/RoomDetailPage';
 import SensorsPage from './pages/SensorsPage';
 import SensorDetailPage from './pages/SensorDetailPage';
 import AlertsPage from './pages/AlertsPage';
@@ -37,6 +38,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <RoomsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/rooms/:roomId"
+            element={
+              <ProtectedRoute>
+                <RoomDetailPage />
               </ProtectedRoute>
             }
           />
