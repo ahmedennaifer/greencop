@@ -925,65 +925,15 @@ const DashboardPage: React.FC = () => {
 
         {/* PREDICTION VALIDATION - ONE TABLE + TWO CHARTS */}
         {pendingValidations.length > 0 && (() => {
-          const filteredData = pendingValidations.slice(0, 5);
+          const filteredData = pendingValidations.slice(0, 20);
 
           return (
             <Card className="mb-6 border border-gray-200 shadow">
               <CardHeader className="bg-gray-50 border-b border-gray-200">
                 <CardTitle className="text-lg font-bold text-gray-900">Latest Predictions</CardTitle>
-                <CardDescription className="text-gray-600">Last 5 predictions updating live</CardDescription>
+                <CardDescription className="text-gray-600">Last 20 predictions updating live</CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
-
-                {/* TWO CHARTS - Temperature and Humidity */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {/* Temperature Chart */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-3">
-                    <h5 className="text-xs font-bold text-gray-900 mb-2">Temperature (°C)</h5>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <LineChart
-                        data={filteredData.slice().reverse().map(pred => ({
-                          time: new Date(pred.timestamp).toLocaleTimeString('en-US', { timeZone: 'UTC' }),
-                          predicted: pred.predicted_temp,
-                          actual: pred.current_temp,
-                        }))}
-                        margin={{ top: 5, right: 5, left: 0, bottom: 30 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="time" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
-                        <YAxis tick={{ fontSize: 9 }} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '10px' }} />
-                        <Line type="monotone" dataKey="predicted" stroke="#ef4444" strokeWidth={3} strokeDasharray="5 5" name="Predicted" dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={3} name="Actual" dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Humidity Chart */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-3">
-                    <h5 className="text-xs font-bold text-gray-900 mb-2">Humidity (%)</h5>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <LineChart
-                        data={filteredData.slice().reverse().map(pred => ({
-                          time: new Date(pred.timestamp).toLocaleTimeString('en-US', { timeZone: 'UTC' }),
-                          predicted: pred.predicted_humidity,
-                          actual: pred.current_humidity,
-                        }))}
-                        margin={{ top: 5, right: 5, left: 0, bottom: 30 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="time" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
-                        <YAxis tick={{ fontSize: 9 }} />
-                        <Tooltip />
-                        <Legend wrapperStyle={{ fontSize: '10px' }} />
-                        <Line type="monotone" dataKey="predicted" stroke="#ef4444" strokeWidth={3} strokeDasharray="5 5" name="Predicted" dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={3} name="Actual" dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
                 {/* Table */}
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                   <table className="w-full text-xs">

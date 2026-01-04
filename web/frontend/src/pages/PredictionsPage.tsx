@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Search } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import apiClient from '../api/client';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface Prediction {
   id: number;
@@ -17,16 +18,8 @@ interface Prediction {
   created_at: string;
 }
 
-interface Alert {
-  id: number;
-  sensor_id: string;
-  alert_type: string;
-  timestamp: string;
-}
-
 const PredictionsPage: React.FC = () => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchId, setSearchId] = useState('');
   const [filterSensor, setFilterSensor] = useState('');
@@ -55,10 +48,6 @@ const PredictionsPage: React.FC = () => {
 
       const res = await apiClient.get('/api/v1/prediction-feedback/search', { params });
       setPredictions(res.data);
-
-      // Fetch anomaly alerts to cross-reference
-      const alertsRes = await apiClient.get('/api/v1/alerts/history', { params: { limit: 500 } });
-      setAlerts(alertsRes.data.filter((a: any) => a.alert_type === 'anomaly'));
     } catch (err) {
       console.error('Error fetching predictions:', err);
     } finally {
@@ -187,6 +176,70 @@ const PredictionsPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Charts Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Prediction vs Actual Trends</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Temperature Chart */}
+              <div className="bg-white border border-gray-200 rounded-lg p-3">
+                <h5 className="text-xs font-bold text-gray-900 mb-2">Temperature (°C)</h5>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart
+                    data={predictions
+                      .filter(p => p.actual_temp !== 0)
+                      .slice(0, 50)
+                      .reverse()
+                      .map(p => ({
+                        time: formatDate(p.timestamp).split(' ')[1],
+                        predicted: p.predicted_temp,
+                        actual: p.actual_temp
+                      }))}
+                    margin={{ top: 5, right: 5, left: 0, bottom: 30 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="time" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                    <YAxis tick={{ fontSize: 9 }} />
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: '10px' }} />
+                    <Line type="monotone" dataKey="predicted" stroke="#ef4444" strokeWidth={3} strokeDasharray="5 5" name="Predicted" dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={3} name="Actual" dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Humidity Chart */}
+              <div className="bg-white border border-gray-200 rounded-lg p-3">
+                <h5 className="text-xs font-bold text-gray-900 mb-2">Humidity (%)</h5>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart
+                    data={predictions
+                      .filter(p => p.actual_humidity !== 0)
+                      .slice(0, 50)
+                      .reverse()
+                      .map(p => ({
+                        time: formatDate(p.timestamp).split(' ')[1],
+                        predicted: p.predicted_humidity,
+                        actual: p.actual_humidity
+                      }))}
+                    margin={{ top: 5, right: 5, left: 0, bottom: 30 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="time" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={50} />
+                    <YAxis tick={{ fontSize: 9 }} />
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: '10px' }} />
+                    <Line type="monotone" dataKey="predicted" stroke="#ef4444" strokeWidth={3} strokeDasharray="5 5" name="Predicted" dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={3} name="Actual" dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Prediction Results ({predictions.length})</CardTitle>
@@ -212,13 +265,6 @@ const PredictionsPage: React.FC = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {predictions.map((pred) => {
-                      // Check if there's a matching anomaly alert within 30 seconds
-                      const predTime = new Date(pred.timestamp).getTime();
-                      const hasAnomalyAlert = alerts.some(alert => {
-                        const alertTime = new Date(alert.timestamp).getTime();
-                        return alert.sensor_id === pred.sensor_id && Math.abs(alertTime - predTime) < 30000;
-                      });
-
                       return (
                       <tr key={pred.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pred.id}</td>
@@ -229,7 +275,7 @@ const PredictionsPage: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pred.predicted_humidity.toFixed(1)}%</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pred.actual_humidity.toFixed(1)}%</td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {hasAnomalyAlert ? (
+                          {pred.anomaly_predicted ? (
                             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Yes</span>
                           ) : (
                             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">No</span>
