@@ -40,7 +40,6 @@ def fetch_training_data():
     with engine.connect() as conn:
         df_validated = pd.read_sql(validated_query, conn)
 
-    # Fetch historical sensor data from BigQuery
     client = bigquery.Client(project=PROJECT_ID)
     historical_query = f"""
         SELECT
@@ -139,7 +138,6 @@ def train_model(df):
     X = df[features]
     y = df["label"] if "label" in df.columns else None
 
-    # Filter out rows with None labels for evaluation
     if y is not None and y.notna().sum() > 100:
         mask = y.notna() & y.isin([-1, 1])
         X_labeled = X[mask]
@@ -147,7 +145,6 @@ def train_model(df):
         X_train, X_test, y_train, y_test = train_test_split(
             X_labeled, y_labeled, test_size=0.2, random_state=42
         )
-        # Train on all data including unlabeled
         X_train_full = X
     else:
         X_train_full = X
@@ -336,7 +333,6 @@ def train_model_handler(cloud_event):
                 f"Received training request for run {training_run_id} with {validated_count} validated predictions (trigger: {triggered_by})"
             )
 
-        # Use real data if triggered automatically by validations, otherwise use synthetic
         use_synthetic = triggered_by != "auto_100_validated"
 
         if use_synthetic:
@@ -360,13 +356,11 @@ def train_model_handler(cloud_event):
             df = exclude_false_positives(df, fps)
             df = engineer_features(df)
 
-        # Train anomaly detection model
         anomaly_model, features, anomaly_metrics = train_model(df)
         anomaly_filename = save_model(
             anomaly_model, features, len(df), anomaly_metrics, model_type="anomaly"
         )
 
-        # Train forecasting model
         from train_forecasting import train_forecasting_model
 
         forecasting_model, forecasting_features, forecasting_metrics = (
@@ -380,7 +374,6 @@ def train_model_handler(cloud_event):
             model_type="forecasting",
         )
 
-        # Combine metrics
         combined_metrics = {
             "anomaly": anomaly_metrics,
             "forecasting": forecasting_metrics,
@@ -389,6 +382,7 @@ def train_model_handler(cloud_event):
         logger.info(f"About to update training run. training_run_id={training_run_id}")
 
         import time
+
         logger.info("Adding 15 second delay for frontend visibility...")
         time.sleep(15)
 
@@ -402,7 +396,9 @@ def train_model_handler(cloud_event):
             )
             mark_predictions_as_used(training_run_id)
 
-            logger.info(f"About to publish training_complete notification for run {training_run_id}")
+            logger.info(
+                f"About to publish training_complete notification for run {training_run_id}"
+            )
 
             from google.cloud import pubsub_v1
             from datetime import datetime

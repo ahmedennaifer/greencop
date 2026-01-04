@@ -285,9 +285,7 @@ async def predict_anomaly(sensor_id: str, lookback: int = Query(100, le=500)):
 
         try:
             response = requests.post(
-                f"{ML_PREDICT_URL}/predict",
-                json={"instances": [features]},
-                timeout=5
+                f"{ML_PREDICT_URL}/predict", json={"instances": [features]}, timeout=5
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
@@ -297,7 +295,7 @@ async def predict_anomaly(sensor_id: str, lookback: int = Query(100, le=500)):
             try:
                 data = response.json()
                 if "predictions" not in data or not data["predictions"]:
-                    logger.error(f"ML service response missing predictions")
+                    logger.error("ML service response missing predictions")
                     prediction = 1
                 else:
                     prediction = data["predictions"][0]

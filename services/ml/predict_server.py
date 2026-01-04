@@ -57,8 +57,10 @@ async def predict(request: PredictRequest):
     forecast = forecasting_model.predict(current_features)
 
     forecast_with_features = []
+    forecasts_list = []
     for predicted_values in forecast:
         temp_pred, hum_pred = predicted_values
+        forecasts_list.append([float(temp_pred), float(hum_pred)])
 
         forecast_features = current_features[0].copy()
         forecast_features[0] = temp_pred
@@ -69,7 +71,10 @@ async def predict(request: PredictRequest):
     forecast_array = np.array(forecast_with_features)
     anomaly_predictions = anomaly_model.predict(forecast_array)
 
-    return {"predictions": anomaly_predictions.tolist()}
+    return {
+        "predictions": anomaly_predictions.tolist(),
+        "forecasts": forecasts_list
+    }
 
 
 @app.get("/health")

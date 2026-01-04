@@ -10,9 +10,6 @@ GreenCop's REST API lets you integrate monitoring data into your existing workfl
 - Export data to compliance reporting systems
 - Build custom dashboards in Grafana
 
-!!! tip
-    Use API keys (generated in dashboard settings) for service-to-service integrations instead of JWT tokens. Keys don't expire and can be scoped to specific permissions.
-
 ## API Overview
 
 Complete guide to the GreenCop REST API.

@@ -17,8 +17,16 @@ interface Prediction {
   created_at: string;
 }
 
+interface Alert {
+  id: number;
+  sensor_id: string;
+  alert_type: string;
+  timestamp: string;
+}
+
 const PredictionsPage: React.FC = () => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchId, setSearchId] = useState('');
   const [filterSensor, setFilterSensor] = useState('');
@@ -47,6 +55,10 @@ const PredictionsPage: React.FC = () => {
 
       const res = await apiClient.get('/api/v1/prediction-feedback/search', { params });
       setPredictions(res.data);
+
+      // Fetch anomaly alerts to cross-reference
+      const alertsRes = await apiClient.get('/api/v1/alerts/history', { params: { limit: 500 } });
+      setAlerts(alertsRes.data.filter((a: any) => a.alert_type === 'anomaly'));
     } catch (err) {
       console.error('Error fetching predictions:', err);
     } finally {
@@ -69,12 +81,12 @@ const PredictionsPage: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const year = date.getUTCFullYear();
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
@@ -199,7 +211,15 @@ const PredictionsPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {predictions.map((pred) => (
+                    {predictions.map((pred) => {
+                      // Check if there's a matching anomaly alert within 30 seconds
+                      const predTime = new Date(pred.timestamp).getTime();
+                      const hasAnomalyAlert = alerts.some(alert => {
+                        const alertTime = new Date(alert.timestamp).getTime();
+                        return alert.sensor_id === pred.sensor_id && Math.abs(alertTime - predTime) < 30000;
+                      });
+
+                      return (
                       <tr key={pred.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pred.id}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(pred.timestamp)}</td>
@@ -209,7 +229,7 @@ const PredictionsPage: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pred.predicted_humidity.toFixed(1)}%</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pred.actual_humidity.toFixed(1)}%</td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {pred.anomaly_predicted ? (
+                          {hasAnomalyAlert ? (
                             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Yes</span>
                           ) : (
                             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">No</span>
@@ -256,7 +276,8 @@ const PredictionsPage: React.FC = () => {
                           )}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

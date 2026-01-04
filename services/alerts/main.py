@@ -115,6 +115,9 @@ def detect_excessive_metrics(cloud_event):
                     publish_alert(sensor_data, "threshold")
 
                 prediction = None
+                forecast_temp = sensor_data['temperature']
+                forecast_humidity = sensor_data['humidity']
+
                 if ML_PREDICT_URL:
                     try:
                         import requests
@@ -155,6 +158,11 @@ def detect_excessive_metrics(cloud_event):
                             logger.error(f"ML service response missing predictions")
                             prediction = 1
 
+                        if "forecasts" in data and data["forecasts"]:
+                            forecast = data["forecasts"][0]
+                            forecast_temp = forecast[0]
+                            forecast_humidity = forecast[1]
+
                     except requests.exceptions.RequestException as e:
                         logger.error(f"ML prediction request failed: {e}")
                         prediction = 1
@@ -165,48 +173,62 @@ def detect_excessive_metrics(cloud_event):
                         logger.error(f"ML prediction failed: {e}")
                         prediction = 1
 
-                # Get forecast prediction
-                forecast_temp = sensor_data['temperature']
-                forecast_humidity = sensor_data['humidity']
-                if ML_FORECAST_URL:
-                    try:
-                        import requests
-                        response = requests.post(
-                            f"{ML_FORECAST_URL}/predict",
-                            json={"instances": [features]},
-                            timeout=5
-                        )
-                        response.raise_for_status()
-                        forecast_data = response.json()
-                        if "predictions" in forecast_data and forecast_data["predictions"]:
-                            forecast = forecast_data["predictions"][0]
-                            forecast_temp = forecast[0]
-                            forecast_humidity = forecast[1]
-                    except Exception as e:
-                        logger.error(f"Forecast prediction failed: {e}")
-
-                # Store prediction feedback in PostgreSQL via API
                 if CUSTOMERS_API_URL:
                     try:
                         import requests
-                        payload = {
+
+                        current_ts = datetime.fromisoformat(sensor_data['timestamp'].replace('Z', '+00:00'))
+                        search_start = (current_ts - timedelta(seconds=2)).isoformat().replace('+00:00', 'Z')
+                        search_end = (current_ts + timedelta(seconds=2)).isoformat().replace('+00:00', 'Z')
+
+                        try:
+                            search_response = requests.get(
+                                f"{CUSTOMERS_API_URL}/api/v1/prediction-feedback/search",
+                                params={
+                                    "sensor_id": sensor_data['node_id'],
+                                    "start_date": search_start,
+                                    "end_date": search_end
+                                },
+                                timeout=5
+                            )
+
+                            if search_response.status_code == 200:
+                                predictions = search_response.json()
+                                for pred in predictions:
+                                    if pred.get('actual_temp') == 0.0:
+                                        update_payload = {
+                                            "actual_temp": float(sensor_data['temperature']),
+                                            "actual_humidity": float(sensor_data['humidity'])
+                                        }
+                                        update_response = requests.put(
+                                            f"{CUSTOMERS_API_URL}/api/v1/prediction-feedback/{pred['id']}",
+                                            json=update_payload,
+                                            timeout=5
+                                        )
+                                        if update_response.status_code == 200:
+                                            logger.info(f"Updated prediction {pred['id']} with actual values")
+                        except Exception as e:
+                            logger.error(f"Failed to update predictions: {e}")
+
+                        future_ts = current_ts + timedelta(seconds=10)
+                        create_payload = {
                             "sensor_id": sensor_data['node_id'],
-                            "timestamp": sensor_data['timestamp'],
+                            "timestamp": future_ts.isoformat().replace('+00:00', 'Z'),
                             "predicted_temp": float(forecast_temp),
                             "predicted_humidity": float(forecast_humidity),
-                            "actual_temp": float(sensor_data['temperature']),
-                            "actual_humidity": float(sensor_data['humidity']),
+                            "actual_temp": 0.0,
+                            "actual_humidity": 0.0,
                             "anomaly_predicted": prediction == -1
                         }
-                        response = requests.post(
+                        create_response = requests.post(
                             f"{CUSTOMERS_API_URL}/api/v1/prediction-feedback/",
-                            json=payload,
+                            json=create_payload,
                             timeout=5
                         )
-                        response.raise_for_status()
-                        logger.info(f"Stored prediction feedback for {sensor_data['node_id']}")
+                        create_response.raise_for_status()
+                        logger.info(f"Created prediction for {sensor_data['node_id']} at {future_ts.isoformat()}")
                     except Exception as e:
-                        logger.error(f"Failed to store prediction feedback: {e}")
+                        logger.error(f"Failed to manage prediction feedback: {e}")
 
                 # Insert sensor data with prediction to BigQuery
                 try:

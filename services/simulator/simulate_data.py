@@ -16,7 +16,7 @@ if not PROJECT_ID:
 publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path(PROJECT_ID, TOPIC_NAME)
 
-SENSOR_IDS = ["test"]
+SENSOR_IDS = ["20e7c89f14ec"]
 
 
 def generate_normal_reading(sensor_id):

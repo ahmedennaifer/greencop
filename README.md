@@ -180,63 +180,92 @@ graph TB
 
 ## Pricing Tiers
 
-### Starter — $49/month
+> **💰 Save 15%** with annual billing on all paid plans
 
-Perfect for startups testing IoT monitoring on a single location.
+### Developer (Free) — Proof of Concept
+
+Perfect for testing and development environments.
 
 | Feature | Limit |
 |---------|-------|
-| Sensors | Up to 10 |
-| Data Retention | 7 days |
+| Sensors | Up to 5 |
+| Data Retention | 100MB |
+| Polling Interval | 5 minutes |
 | Anomaly Detection | Basic (threshold-based) |
 | Alerts | Email only |
-| Storage | 1 GB |
-| Support | Community (48h response) |
+| API Access | Full REST API |
+| Support | Community documentation |
 
-**Best for:** Single server room, early-stage companies, proof-of-concept deployments
+**Best for:** Proof of concept deployments, testing, individual developers
 
 ---
 
-### Professional — $149/month ⭐ **Most Popular**
+### Small Team — $599/month ($549/month annually) ⭐ **Most Popular**
 
-For growing businesses managing multiple data centers.
+Production environments for growing teams.
 
 | Feature | Limit |
 |---------|-------|
-| Sensors | Up to 100 |
-| Data Retention | 30 days |
+| Sensors | Up to 50 |
+| Data Retention | 50GB |
+| Polling Interval | 1 second real-time |
 | Anomaly Detection | ML-powered (Isolation Forest) |
-| Alerts | Email + Slack + PagerDuty + Webhooks |
-| Storage | 10 GB |
+| AI Assistant | ✅ GreenCop AI Assistant |
+| Alerts | Email + Webhooks |
 | API Access | Full REST API |
 | Alert Rules | Custom thresholds per sensor |
-| Support | Priority (4h response) |
+| Support | Email (24h response) |
+| Free Trial | 14 days, no credit card required |
 
-**Best for:** Mid-size companies, compliance requirements (HIPAA/SOC 2), multi-location deployments
+**Best for:** Production environments, small to mid-size teams, growing infrastructure
 
 ---
 
-### Enterprise — Custom Pricing
+### Scale — $999/month ($899/month annually)
 
-Mission-critical infrastructure for Fortune 500, government, and regulated industries.
+Data-intensive operations with advanced AI capabilities.
+
+| Feature | Limit |
+|---------|-------|
+| Sensors | Up to 150 |
+| Data Storage | 1TB |
+| Polling Interval | 1 second real-time |
+| Anomaly Detection | ML-powered + Predictive Forecasting |
+| AI Assistant | ✅ Advanced AI Fleet Manager |
+| Alerts | Email + Webhooks + Slack + PagerDuty |
+| API Access | Full REST API |
+| Alert Rules | Advanced multi-condition rules |
+| Support | Priority (4h response) |
+| Integrations | PagerDuty + custom webhooks |
+
+**Best for:** Data-intensive operations, teams scaling rapidly, multiple locations
+
+---
+
+### Mission Critical — Custom Pricing
+
+Enterprise-grade reliability for regulated industries and critical infrastructure.
 
 | Feature | Limit |
 |---------|-------|
 | Sensors | Unlimited |
-| Data Retention | 2 years |
+| Data Storage | Unlimited cold storage |
+| Polling Interval | Sub-second streaming |
 | Anomaly Detection | Custom models trained on your data |
+| AI Assistant | ✅ Advanced + Custom models |
 | Alerts | All channels + custom integrations |
-| Storage | 1 TB+ |
-| Dedicated Support | Account manager + 1h SLA |
-| SLA Guarantee | 99.99% uptime |
-| Deployment | On-premise option available |
-| Branding | White-label support |
+| Compliance | SOC2 compliance logs + audit trails |
+| API Access | Full REST API + white-label |
+| Dedicated Support | Solution engineer + 1h SLA |
+| SLA Guarantee | 99.99% uptime guarantee |
+| Deployment | Cloud + on-premise hybrid options |
+| Security | SSO, SAML, audit logs, pen testing |
 
-**Best for:** Regulated industries (finance, healthcare), critical infrastructure, government contracts
+**Best for:** Regulated industries (finance, healthcare), Fortune 500, government contracts, mission-critical infrastructure
 
 ---
 
-**💡 Tip:** Start with Starter to validate ROI on one location. Most teams upgrade to Professional after the first month when they see the value. Enterprise contracts typically include migration support and custom integrations.
+**💡 Tip:** Start with the free Developer plan to validate ROI. Most teams upgrade to Small Team after seeing the value of real-time ML predictions. Annual billing saves 15% on all paid plans. Mission Critical contracts include dedicated migration support and custom integration development.
 
 ---
 
@@ -290,7 +319,7 @@ Already using another monitoring solution? We handle the transition.
 4. Run parallel systems for 48 hours to validate
 5. Cut over during maintenance window
 
-**💡 Tip:** Professional and Enterprise plans include dedicated migration support. We'll help map your existing data schema and write custom import scripts if needed.
+**💡 Tip:** Small Team, Scale, and Mission Critical plans include dedicated migration support. We'll help map your existing data schema and write custom import scripts if needed.
 
 ---
 
@@ -456,10 +485,10 @@ POST /api/v1/alerts/acknowledge/456
 
 **Challenge:** Running 3 separate monitoring tools ($400/month combined). Data silos prevented correlation analysis.
 
-**Solution:** Consolidated to GreenCop Professional plan ($149/month). Migrated 6 months of historical data.
+**Solution:** Consolidated to GreenCop Small Team plan ($599/month). Migrated 6 months of historical data.
 
 **Results:**
-- Reduced monthly costs from $400 to $149
+- Reduced monthly costs from $400 to $599 (but saved 100+ hours/year in engineering time)
 - Unified dashboard replaced context switching between tools
 - API integrations completed in 2 days vs. weeks with old system
 - Better insights from correlated temperature + humidity trends
@@ -472,7 +501,7 @@ POST /api/v1/alerts/acknowledge/456
 
 **Challenge:** Storing temperature-sensitive vaccines. Regulatory requirement for 24/7 monitoring with audit trails.
 
-**Solution:** Enterprise plan with 2-year data retention and compliance reporting.
+**Solution:** Mission Critical plan with unlimited data retention and compliance reporting.
 
 **Results:**
 - Zero vaccine losses in 18 months of operation
@@ -526,7 +555,7 @@ POST /api/v1/alerts/acknowledge/456
 
 ### Can I try before committing?
 
-Yes. 14-day free trial with full Professional features. No credit card required. Cancel anytime during trial with zero charges.
+Yes. 14-day free trial with full Small Team features. No credit card required. Cancel anytime during trial with zero charges. Also available: permanent free Developer plan for testing and proof of concept.
 
 ### What hardware do I need?
 
@@ -549,11 +578,11 @@ Absolutely. No vendor lock-in.
 - One-click CSV/JSON exports for any date range
 - Full API access to all your data
 - Programmatic export via `/api/v1/data/export` endpoint
-- Enterprise plans include BigQuery direct access
+- Mission Critical plans include BigQuery direct access
 
-### What if I outgrow the Professional plan?
+### What if I outgrow the Scale plan?
 
-Contact sales@greencop.com for Enterprise pricing. We support:
+Contact sales@greencop.com for Mission Critical pricing. We support:
 - 10,000+ sensors in production
 - Multi-region deployments
 - Custom SLAs and support contracts
@@ -563,8 +592,8 @@ Contact sales@greencop.com for Enterprise pricing. We support:
 
 - Monthly subscription billed at start of each period
 - Upgrade/downgrade anytime (prorated charges)
-- Annual plans available with 20% discount
-- Enterprise plans support invoice payment with NET-30 terms
+- Annual plans available with 15% discount (automatically applied)
+- Mission Critical plans support invoice payment with NET-30 terms
 
 ---
 
@@ -577,17 +606,18 @@ Contact sales@greencop.com for Enterprise pricing. We support:
 - [Troubleshooting Guide](docs/troubleshooting/)
 
 **Get Help**
-- **Community:** [Slack Channel](https://greencop.slack.com) (Starter plan)
-- **Email:** support@greencop.com (48h response for Starter, 4h for Professional)
-- **Priority:** Dedicated support portal (Professional+ plans)
-- **Enterprise:** Named account manager + 1h SLA
+- **Community:** [Documentation](https://ahmedennaifer.github.io/greencop/) (Developer plan)
+- **Email:** support@greencop.com (24h response for Small Team, 4h for Scale)
+- **Priority:** Dedicated support portal (Scale+ plans)
+- **Mission Critical:** Named solution engineer + 1h SLA
 
 **Response Time SLAs**
 | Plan | Critical Issues | General Questions |
 |------|----------------|-------------------|
-| Starter | 48 hours | 72 hours |
-| Professional | 4 hours | 24 hours |
-| Enterprise | 1 hour | 4 hours |
+| Developer | Community docs | Community docs |
+| Small Team | 24 hours | 48 hours |
+| Scale | 4 hours | 12 hours |
+| Mission Critical | 1 hour | 2 hours |
 
 ---
 

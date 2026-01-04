@@ -237,46 +237,27 @@ const DashboardPage: React.FC = () => {
           setPredictedAnomaly(predictionResponse.data.anomaly_predicted);
           setPredictionData(predictionResponse.data);
 
-          // Only store predictions for NEW sensor data
-          const currentReading = readings[readings.length - 1];
-          if (currentReading && currentReading.timestamp !== lastProcessedTimestamp.current) {
-            try {
-              // Save prediction to backend only if this is a new reading
-              const feedbackResponse = await apiClient.post('/api/v1/prediction-feedback/', {
-                sensor_id: selectedSensor,
-                timestamp: new Date().toISOString(),
-                predicted_temp: predictionResponse.data.predicted_temp,
-                predicted_humidity: predictionResponse.data.predicted_humidity,
-                actual_temp: currentReading.temperature,
-                actual_humidity: currentReading.humidity,
-                anomaly_predicted: predictionResponse.data.anomaly_predicted,
-                feedback: null,
-              });
+          // Fetch latest 10 predictions from database and display them
+          try {
+            const refreshResponse = await apiClient.get(`/api/v1/prediction-feedback/sensor/${selectedSensor}`, {
+              params: { limit: 10 }
+            });
 
-              // Update last processed timestamp
-              lastProcessedTimestamp.current = currentReading.timestamp;
+            const feedbacks = refreshResponse.data.map((fb: any) => ({
+              id: fb.id,
+              timestamp: fb.timestamp,
+              sensor_id: fb.sensor_id,
+              predicted_temp: fb.predicted_temp,
+              predicted_humidity: fb.predicted_humidity,
+              current_temp: fb.actual_temp,
+              current_humidity: fb.actual_humidity,
+              anomaly: fb.anomaly_predicted,
+              validated: fb.feedback,
+            }));
 
-              // Refresh predictions from backend after saving
-              const refreshResponse = await apiClient.get('/api/v1/prediction-feedback/all', {
-                params: { limit: 10 }
-              });
-
-              const feedbacks = refreshResponse.data.map((fb: any) => ({
-                id: fb.id,
-                timestamp: fb.timestamp,
-                sensor_id: fb.sensor_id,
-                predicted_temp: fb.predicted_temp,
-                predicted_humidity: fb.predicted_humidity,
-                current_temp: fb.actual_temp,
-                current_humidity: fb.actual_humidity,
-                anomaly: fb.anomaly_predicted,
-                validated: fb.feedback,
-              }));
-
-              setPendingValidations(feedbacks);
-            } catch (err) {
-              console.error('Error saving prediction feedback:', err);
-            }
+            setPendingValidations(feedbacks);
+          } catch (err) {
+            console.error('Error fetching prediction feedbacks:', err);
           }
 
           // Check threshold alerts
@@ -335,7 +316,8 @@ const DashboardPage: React.FC = () => {
       time: new Date(reading.timestamp).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit'
+        second: '2-digit',
+        timeZone: 'UTC'
       }),
       timestamp: reading.timestamp,
       temp_actual: reading.temperature,
@@ -379,7 +361,8 @@ const DashboardPage: React.FC = () => {
           time: futureTime.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit'
+            second: '2-digit',
+            timeZone: 'UTC'
           }),
           timestamp: futureTime.toISOString(),
           temp_actual: null,
@@ -960,7 +943,7 @@ const DashboardPage: React.FC = () => {
                     <ResponsiveContainer width="100%" height={200}>
                       <LineChart
                         data={filteredData.slice().reverse().map(pred => ({
-                          time: new Date(pred.timestamp).toLocaleTimeString(),
+                          time: new Date(pred.timestamp).toLocaleTimeString('en-US', { timeZone: 'UTC' }),
                           predicted: pred.predicted_temp,
                           actual: pred.current_temp,
                         }))}
@@ -983,7 +966,7 @@ const DashboardPage: React.FC = () => {
                     <ResponsiveContainer width="100%" height={200}>
                       <LineChart
                         data={filteredData.slice().reverse().map(pred => ({
-                          time: new Date(pred.timestamp).toLocaleTimeString(),
+                          time: new Date(pred.timestamp).toLocaleTimeString('en-US', { timeZone: 'UTC' }),
                           predicted: pred.predicted_humidity,
                           actual: pred.current_humidity,
                         }))}
@@ -1023,7 +1006,7 @@ const DashboardPage: React.FC = () => {
 
                         return (
                           <tr key={pred.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                            <td className="py-2 px-2 text-gray-900">{new Date(pred.timestamp).toLocaleTimeString()}</td>
+                            <td className="py-2 px-2 text-gray-900">{new Date(pred.timestamp).toLocaleTimeString('en-US', { timeZone: 'UTC' })}</td>
                             <td className="py-2 px-2 text-center text-gray-900">{pred.predicted_temp.toFixed(1)}</td>
                             <td className="py-2 px-2 text-center text-gray-900">{pred.current_temp.toFixed(1)}</td>
                             <td className="py-2 px-2 text-center text-gray-900">{tempDiff.toFixed(2)}</td>

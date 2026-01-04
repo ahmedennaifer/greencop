@@ -137,7 +137,13 @@ async def update_prediction_feedback(
         if not feedback:
             raise HTTPException(status_code=404, detail="Feedback not found")
 
-        feedback.feedback = feedback_update.feedback
+        if feedback_update.feedback is not None:
+            feedback.feedback = feedback_update.feedback
+        if feedback_update.actual_temp is not None:
+            feedback.actual_temp = feedback_update.actual_temp
+        if feedback_update.actual_humidity is not None:
+            feedback.actual_humidity = feedback_update.actual_humidity
+
         db.commit()
         db.refresh(feedback)
 

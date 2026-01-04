@@ -15,7 +15,9 @@ class PredictionFeedbackCreate(BaseModel):
 
 
 class PredictionFeedbackUpdate(BaseModel):
-    feedback: str
+    feedback: Optional[str] = None
+    actual_temp: Optional[float] = None
+    actual_humidity: Optional[float] = None
 
 
 class PredictionFeedback(BaseModel):
