@@ -6,6 +6,7 @@ import network
 import time
 import usocket
 import random
+import ntptime
 from config import WIFI_SSID, WIFI_PASSWORD
 
 
@@ -31,23 +32,32 @@ class Node:
     def _connect_wifi(self):
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
-        if wlan.isconnected():
+        already_connected = wlan.isconnected()
+
+        if not already_connected:
+            try:
+                wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+                while self.max_wait > 0:
+                    if wlan.status() < 0 or wlan.status() >= 3:
+                        break
+                    elif wlan.isconnected():
+                        self.connected = True
+                        break
+                    self.max_wait -= 1
+                    time.sleep(1)
+            except Exception as e:
+                raise ValueError(f"cannot connect to wifi: {e}") from e
+            if not wlan.isconnected():
+                raise RuntimeError(f"cannot connect to wifi {WIFI_SSID}")
+        else:
             self.connected = True
-            return
+
         try:
-            wlan.connect(WIFI_SSID, WIFI_PASSWORD)
-            while self.max_wait > 0:
-                if wlan.status() < 0 or wlan.status() >= 3:
-                    break
-                elif wlan.isconnected():
-                    self.connected = True
-                    break
-                self.max_wait -= 1
-                time.sleep(1)
+            print("Syncing time with NTP...")
+            ntptime.settime()
+            print("Time synced successfully")
         except Exception as e:
-            raise ValueError(f"cannot connect to wifi: {e}") from e
-        if not wlan.isconnected():
-            raise RuntimeError(f"cannot connect to wifi {WIFI_SSID}")
+            print(f"NTP sync failed: {e}")
 
     def resolve_host(self):
         addr_info = usocket.getaddrinfo(self.host_name, self.port)
@@ -87,13 +97,21 @@ class Node:
 
     def send_message(self) -> None:
         server_ip = self.resolve_host()
-        message = bytes([urandom.getrandbits(8) for _ in range(4)])
+        message = bytes([urandom.getrandbits(8) for _ in range(16)])
         msg_id = ubinascii.hexlify(message).decode()
+
+        current_time = time.time() + 3600
+        t = time.gmtime(current_time)
+        timestamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}Z".format(
+            t[0], t[1], t[2], t[3], t[4], t[5]
+        )
+
         payload = {
-            "id": msg_id,
             "node_id": self.node_id,
-            "temperature": random.uniform(20, 60),
-            "humidity": random.uniform(30, 60),
+            "message_id": msg_id,
+            "temperature": round(random.uniform(18.0, 28.0), 2),
+            "humidity": round(random.uniform(30.0, 45.0), 2),
+            "timestamp": timestamp,
         }
 
         self.led_green.on()
